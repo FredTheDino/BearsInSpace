@@ -29,7 +29,8 @@ int bear_main()
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
 		DEBUG_LOG("Unable to initalize SDL.");
-		goto INIT_ERROR;
+		SDL_Quit();
+		return -1;
 	}
 
 	SDL_Window *window = SDL_CreateWindow(
@@ -54,7 +55,8 @@ int bear_main()
 	if (gladLoadGL() == 0)
 	{
 		DEBUG_LOG("Unable to load OpenGL.");
-		goto INIT_ERROR;
+		SDL_Quit();
+		return -1;
 	}
 
 	bool running = true;
@@ -88,8 +90,4 @@ int bear_main()
 
 	SDL_Quit();
 	return 0;
-
-INIT_ERROR:
-	SDL_Quit();
-	return -1;
 }
