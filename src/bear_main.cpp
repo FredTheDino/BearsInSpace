@@ -13,7 +13,7 @@
 #define DEBUG_LOG(message) DEBUG_LOG_(__FILE__, __LINE__, message)
 void DEBUG_LOG_(const char *file_name, const int line_number, const char *message)
 {
-	printf("[%s:%d] %s", file_name, line_number, message);
+	printf("[%s:%d] %s\n", file_name, line_number, message);
 }
 
 #else
