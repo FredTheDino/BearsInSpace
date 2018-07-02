@@ -1,4 +1,5 @@
 #include "bear_main.h"
+#include "bear_memory.h"
 #include <SDL2/SDL.h>
 #include <sys/stat.h>
 #include <dlfcn.h>
@@ -6,8 +7,8 @@
 
 UpdateFunc game_update;
 DrawFunc game_draw;
-static int last_edit;
-static int count_down = -1;
+int32 last_edit;
+int32 count_down = -1;
 void *handle;
 
 const char *path = "./bin/libgame.so";
@@ -49,7 +50,10 @@ bool load_libgame()
 
 int main(int varc, char *varv[])
 {
-	DEBUG_LOG("Linux launch!");
+	world.plt.print = DEBUG_LOG_;
+	world.plt.malloc = malloc_;
+	world.plt.free = free_;
+	world.plt.realloc = realloc_;
 
 	if (load_libgame() == false)
 	{
@@ -81,7 +85,8 @@ int main(int varc, char *varv[])
 	SDL_GL_SetSwapInterval(1);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	SDL_GLContext glcontext = SDL_GL_CreateContext(window);
+	//SDL_GLContext glcontext = // Do I need this?
+	SDL_GL_CreateContext(window);
 
 	if (gladLoadGL() == 0)
 	{
@@ -96,6 +101,8 @@ int main(int varc, char *varv[])
 	world.gl.end = glEnd;
 	world.gl.color3f = glColor3f;
 	world.gl.vertex2f = glVertex2f;
+
+	DEBUG_LOG("Linux launch!");
 
 	bool running = true;
 	while (running)
