@@ -2,6 +2,8 @@
 
 #define BEAR_GAME
 #include "bear_main.h"
+#include "glad.c"
+
 // This file is included in each platform specific file. 
 // This file should _NOT HAVE ANY_ platform specific code.
 
@@ -9,9 +11,14 @@
 // since windows dosn't allow it when not running a console 
 // application.
 
-
 void update(World *_world, float32 delta)
 {
+	// Initialize GLAD if necessary
+	if (!glClear)
+	{
+		gladLoadGL();
+	}
+	
 	world = _world;
 	if (world->input.jump)
 		DEBUG_LOG("It really dose!");
@@ -20,20 +27,19 @@ void update(World *_world, float32 delta)
 
 void draw(World *world)
 {
-	GL gl = world->gl;
-	gl.clear_color(0.1f, 0.1f, 0.1f, 1.0f);
-	gl.clear(GL_COLOR_BUFFER_BIT);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 
-	gl.begin(GL_TRIANGLES);
-	gl.color3f(0.0f, 0.0f, 1.0f);
-	gl.vertex2f(-0.5f, -0.5f);
+	glBegin(GL_TRIANGLES);
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glVertex2f(-0.5f, -0.5f);
 
-	gl.color3f(1.0f, 0.0f, 1.0f);
-	gl.vertex2f(0.0f, 0.5f);
+	glColor3f(1.0f, 0.0f, 1.0f);
+	glVertex2f(0.0f, 0.5f);
 
-	gl.color3f(1.0f, 0.0f, 0.0f);
-	gl.vertex2f(0.5f, -0.5f);
-	gl.end();
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glVertex2f(0.5f, -0.5f);
+	glEnd();
 
 
 }

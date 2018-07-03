@@ -5,25 +5,6 @@
 
 #include "bear_types.h"
 
-
-
-struct GL
-{
-#define PROC(name) PFNGL##name##PROC
-	PROC(CLEAR) 
-		clear;
-	PROC(CLEARCOLOR) 
-		clear_color;
-	PROC(BEGIN) 
-		begin;
-	PROC(END)	
-		end;
-	PROC(COLOR3F)	
-		color3f;
-	PROC(VERTEX2F)	
-		vertex2f;
-};
-
 struct PLAT
 {
 	void *(*malloc)	(const char *, uint32, uint64);
@@ -46,9 +27,6 @@ struct World
 	{
 		bool jump;
 	} input;
-
-	// GL functions.
-	GL gl;
 
 	// Platform functions.
 	PLAT plt;

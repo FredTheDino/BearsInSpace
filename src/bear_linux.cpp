@@ -95,13 +95,6 @@ int main(int varc, char *varv[])
 		return(-1);
 	}
 
-	world.gl.clear = glClear;
-	world.gl.clear_color = glClearColor;
-	world.gl.begin = glBegin;
-	world.gl.end = glEnd;
-	world.gl.color3f = glColor3f;
-	world.gl.vertex2f = glVertex2f;
-
 	DEBUG_LOG("Linux launch!");
 
 	bool running = true;
