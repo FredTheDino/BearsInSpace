@@ -1,4 +1,4 @@
-// Types
+// Primitive types
 typedef const char *string;
 
 typedef char	int8;

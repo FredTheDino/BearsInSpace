@@ -13,13 +13,22 @@
 
 void update(World *_world, float32 delta)
 {
+	world = _world;
+	
 	// Initialize GLAD if necessary
 	if (!glClear)
 	{
 		gladLoadGL();
+		Array<uint64> arr = create_array<uint64>(3);
+		append(&arr, (uint64) 69);
+		append(&arr, (uint64) 420);
+		prepend(&arr, (uint64) 1337);
+		printf("%d\n", (int) remove(&arr, (uint64) 0));
+		printf("%d\n", (int) size(&arr));
+		printf("%d\n", (int) limit(&arr));
+		printf("%d\n", (int) get(&arr, (uint64) 1));
 	}
 	
-	world = _world;
 	if (world->input.jump)
 		DEBUG_LOG("It really dose!");
 	ASSERT(true);

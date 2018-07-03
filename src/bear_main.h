@@ -85,4 +85,4 @@ void inline ASSERT_(const char *file_name, const int line_number, const char *ch
 
 #endif
 
-
+#include "array.h"

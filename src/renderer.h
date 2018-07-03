@@ -8,7 +8,7 @@
 #include "transform.h"
 #include "texture.h"
 
-namespace SK
+namespace Renderer
 {
 	struct Renderable
 	{
@@ -20,36 +20,31 @@ namespace SK
 		std::string uniform;
 	};
 
-	class Renderer
+	void draw(Renderable r, unsigned int mode=GL_TRIANGLES, bool use_profiles=true)
 	{
-		public:
-			static void draw(Renderable r, unsigned int mode=GL_TRIANGLES, bool use_profiles=true)
-			{
-				r.program->bind();
+		r.program->bind();
 
-				if (use_profiles)
-					for (auto mp : _matrix_profiles)
-						r.program->sendM4(mp.first.c_str(), mp.second->matrix());
+		if (use_profiles)
+			for (auto mp : _matrix_profiles)
+				r.program->sendM4(mp.first.c_str(), mp.second->matrix());
 
-				if (r.texture != nullptr)
-					r.texture->bind();
+		if (r.texture != nullptr)
+			r.texture->bind();
 
-				r.program->sendM4(r.uniform.c_str(), r.transform->matrix());
+		r.program->sendM4(r.uniform.c_str(), r.transform->matrix());
 
-				r.vertex_array->bind();
+		r.vertex_array->bind();
 
-				if (r.vertex_array->hasIndices())
-					glDrawElements(mode, r.num_vertices, GL_UNSIGNED_INT, NULL);
-				else
-					glDrawArrays(mode, 0, r.num_vertices);
-			}
+		if (r.vertex_array->hasIndices())
+			glDrawElements(mode, r.num_vertices, GL_UNSIGNED_INT, NULL);
+		else
+			glDrawArrays(mode, 0, r.num_vertices);
+	}
 
-			static void matrixProfile(std::string uniform, Transform* transform)
-			{
-				_matrix_profiles.emplace(uniform, transform);
-			}
+	void matrixProfile(std::string uniform, Transform* transform)
+	{
+		_matrix_profiles.emplace(uniform, transform);
+	}
 
-		private:
-			static std::unordered_map<std::string, Transform*> _matrix_profiles;
-	};
+	std::unordered_map<std::string, Transform*> _matrix_profiles;
 }
