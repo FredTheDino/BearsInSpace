@@ -13,6 +13,8 @@ DrawFunc game_draw;
 int32 last_edit;
 void *handle;
 
+MemoryAllocation __mem[1024];
+
 int32 get_file_edit_time(const char *path)
 {
 	struct stat attr;
@@ -85,6 +87,8 @@ int main(int varc, char *varv[])
 	world.plt.malloc = malloc_;
 	world.plt.free = free_;
 	world.plt.realloc = realloc_;
+
+	world.__mem = (MemoryAllocation *)(void *)__mem;
 
 	if (!load_libgame())
 	{
@@ -162,6 +166,17 @@ int main(int varc, char *varv[])
 		SDL_GL_SwapWindow(window);
 	}
 	SDL_Quit();
+
+	//TODO: Make this a function so each platform layer can call it.
+	// Memory check
+	if (world.__mem_length != 0)
+	{
+		for (uint8 i = 0; i < world.__mem_length; i++)
+		{
+			MemoryAllocation alloc = world.__mem[i];
+			printf("[MEM] Not freed (%s:%d)", alloc.file, alloc.line);
+		}
+	}
 
 	return(1);
 }

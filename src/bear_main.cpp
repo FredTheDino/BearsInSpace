@@ -15,7 +15,9 @@ void update(World *_world, float32 delta)
 	world = _world;
 	if (world->input.jump)
 		DEBUG_LOG("Woot!");
-	ASSERT(true);
+	int *ptr = MALLOC(int, 100);
+	REALLOC(ptr, 200);
+	FREE(ptr);
 }
 
 void draw(World *world)
@@ -25,10 +27,10 @@ void draw(World *world)
 	gl.clear(GL_COLOR_BUFFER_BIT);
 
 	gl.begin(GL_TRIANGLES);
-	gl.color3f(0.0f, 0.0f, 1.0f);
+	gl.color3f(0.0f, 1.0f, 0.0f);
 	gl.vertex2f(-0.5f, -0.5f);
 
-	gl.color3f(0.0f, 1.0f, 0.0f);
+	gl.color3f(0.0f, 0.0f, 1.0f);
 	gl.vertex2f(0.0f, 0.5f);
 
 	gl.color3f(1.0f, 0.0f, 0.0f);
@@ -36,9 +38,3 @@ void draw(World *world)
 	gl.end();
 }
 
-int bear_main()
-{
-	DEBUG_LOG("Game started!");
-
-	return 0;
-}

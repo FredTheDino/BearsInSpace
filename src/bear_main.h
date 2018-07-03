@@ -22,7 +22,7 @@ struct GL
 		vertex2f;
 };
 
-struct PLAT
+struct PLT
 {
 	void *(*malloc)	(const char *, uint32, uint64);
 	void  (*free)	(void *);
@@ -49,7 +49,7 @@ struct World
 	GL gl;
 
 	// Platform functions.
-	PLAT plt;
+	PLT plt;
 
 	// TODO: Remove in reloase
 	uint32 __mem_length = 0;
@@ -68,9 +68,22 @@ void draw(World *world);
 //
 // Memory, checks some memory for you.
 
+#define HALT_AND_CATCH_FIRE() ((int *)(void *)0)[0] = 1
 
 #ifdef BEAR_GAME
 World *world;
+
+#define MALLOC2(type, num) (type *) \
+	world->plt.malloc(__FILE__, __LINE__, sizeof(type) * num)
+#define MALLOC1(type) (type *) \
+	world->plt.malloc(__FILE__, __LINE__, sizeof(type))
+
+#define GET_MACRO(_2, _1, NAME, ...) NAME
+#define MALLOC(...) GET_MACRO(__VA_ARGS__, MALLOC2, MALLOC1) (__VA_ARGS__)
+
+#define FREE(ptr) world->plt.free((void *)ptr)
+
+#define REALLOC(ptr, size) world->plt.realloc(__FILE__, __LINE__, (void *) ptr, size)
 
 #define DEBUG_LOG(message)  world->plt.print(__FILE__, __LINE__, "DEBUG", message)
 #define ERROR_LOG(message)  world->plt.print(__FILE__, __LINE__, "ERROR", message)
@@ -80,7 +93,7 @@ World *world;
 void assert_(const char *file, uint32 line, const char *check)
 {
 	world->plt.print(file, line, "ASSERT", check);
-	exit(-1);
+	HALT_AND_CATCH_FIRE();
 }
 
 #else
@@ -100,7 +113,7 @@ void DEBUG_LOG_(const char *file_name, const int line_number, const char *type, 
 void inline ASSERT_(const char *file_name, const int line_number, const char *check)
 {
 	DEBUG_LOG_(file_name, line_number, "ASSERT", check);
-	exit(-1);
+	HALT_AND_CATCH_FIRE();
 }
 
 #endif
