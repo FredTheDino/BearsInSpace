@@ -1,6 +1,6 @@
 @echo off
 
-set C_FLAGS=-FC -I../inc -DWINDOWS=1
+set C_FLAGS=-FC -I../inc -DWINDOWS=1 
 set D_FLAGS=-Zi -MT -Od -D__DEBUG
 set R_FLAGS=-MD -O2 
 set C_LINK_FLAGS=/link /LIBPATH:..\lib\win64 SDL2.lib SDL2main.lib 
@@ -19,8 +19,11 @@ set IS_RELEASE=""
 
 if %IS_RELEASE% == "yes" (
 	cl %C_FLAGS% %R_FLAGS% -Fegame.exe  ..\src\bear_windows.cpp %C_LINK_FLAGS% %R_LINK_FLAGS%
+	cl %C_FLAGS% %R_FLAGS% -Fegame.exe  ..\src\bear_windows.cpp %C_LINK_FLAGS% %R_LINK_FLAGS%
 ) else (
-	cl %C_FLAGS% %D_FLAGS% -Fedebug.exe ..\src\bear_windows.cpp %C_LINK_FLAGS%
+	del *.pdb
+	cl %C_FLAGS% %D_FLAGS% /LD -Felibbear.dll ..\src\bear_main.cpp /link /PDB:handmade_%RANDOM%.pdb /EXPORT:update /EXPORT:draw -incremental:no
+	cl %C_FLAGS% %D_FLAGS% -Fegame.exe ..\src\bear_windows.cpp %C_LINK_FLAGS%
 )
 
 if not %ErrorLevel% == 0 (
@@ -34,7 +37,7 @@ if "%1" == "run" (
 	if %IS_RELEASE% == "yes" (
 		start bin/game.exe
 	) else (
-		start bin/debug.exe
+		start bin/game.exe
 	)
 )
 :_END

@@ -61,6 +61,7 @@ typedef void (*DrawFunc)(World *);
 
 extern "C"
 void update(World *world, float32 delta);
+
 extern "C"
 void draw(World *world);
 
@@ -106,7 +107,11 @@ World world;
 void DEBUG_LOG_(const char *file_name, const int line_number, const char *type, const char *message)
 {
 	// Replace this.
+#ifdef WIN32
+	win_printf("[%s:%d] %s: %s\n", file_name, line_number, type, message);
+#else
 	printf("[%s:%d] %s: %s\n", file_name, line_number, type, message);
+#endif
 }
 
 #define ASSERT(check) ((check) ? (void)0 : ASSERT_(__FILE__, __LINE__, #check))

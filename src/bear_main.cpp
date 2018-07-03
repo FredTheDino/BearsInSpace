@@ -9,7 +9,6 @@
 // since windows dosn't allow it when not running a console 
 // application.
 
-
 void update(World *_world, float32 delta)
 {
 	world = _world;
@@ -27,14 +26,13 @@ void draw(World *world)
 	gl.clear(GL_COLOR_BUFFER_BIT);
 
 	gl.begin(GL_TRIANGLES);
-	gl.color3f(0.0f, 1.0f, 0.0f);
+	gl.color3f(0.0f, 0.0f, 1.0f);
 	gl.vertex2f(-0.5f, -0.5f);
 
-	gl.color3f(0.0f, 0.0f, 1.0f);
+	gl.color3f(0.0f, 1.0f, 0.0f);
 	gl.vertex2f(0.0f, 0.5f);
 
 	gl.color3f(1.0f, 0.0f, 0.0f);
 	gl.vertex2f(0.5f, -0.5f);
 	gl.end();
 }
-
