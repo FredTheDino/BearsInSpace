@@ -14,7 +14,7 @@ void update(World *_world, float32 delta)
 {
 	world = _world;
 	if (world->input.jump)
-		DEBUG_LOG("It really dose!");
+		DEBUG_LOG("Woot!");
 	ASSERT(true);
 }
 
@@ -28,14 +28,12 @@ void draw(World *world)
 	gl.color3f(0.0f, 0.0f, 1.0f);
 	gl.vertex2f(-0.5f, -0.5f);
 
-	gl.color3f(1.0f, 0.0f, 1.0f);
+	gl.color3f(0.0f, 1.0f, 0.0f);
 	gl.vertex2f(0.0f, 0.5f);
 
 	gl.color3f(1.0f, 0.0f, 0.0f);
 	gl.vertex2f(0.5f, -0.5f);
 	gl.end();
-
-
 }
 
 int bear_main()

@@ -5,8 +5,6 @@
 
 #include "bear_types.h"
 
-
-
 struct GL
 {
 #define PROC(name) PFNGL##name##PROC
