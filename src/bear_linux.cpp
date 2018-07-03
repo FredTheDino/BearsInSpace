@@ -7,11 +7,15 @@
 
 UpdateFunc game_update;
 DrawFunc game_draw;
+
+// Maybe fix this?
 int32 last_edit;
 int32 count_down = -1;
 void *handle;
 
 const char *path = "./bin/libgame.so";
+
+#if 0
 bool has_file_changed()
 {
 	struct stat attr;
@@ -25,12 +29,11 @@ bool has_file_changed()
 	}
 	return false;
 }
+#endif
 
 bool load_libgame()
 {
-	// Check if it has rebuilt, assume it has
 	DEBUG_LOG("Reload!");
-
 	if (handle)
 	{
 		dlclose(handle);

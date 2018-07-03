@@ -9,7 +9,6 @@
 // since windows dosn't allow it when not running a console 
 // application.
 
-
 void update(World *_world, float32 delta)
 {
 	world = _world;
@@ -28,19 +27,10 @@ void draw(World *world)
 	gl.color3f(0.0f, 0.0f, 1.0f);
 	gl.vertex2f(-0.5f, -0.5f);
 
-	gl.color3f(1.0f, 0.0f, 1.0f);
+	gl.color3f(0.0f, 1.0f, 0.0f);
 	gl.vertex2f(0.0f, 0.5f);
 
 	gl.color3f(1.0f, 0.0f, 0.0f);
 	gl.vertex2f(0.5f, -0.5f);
 	gl.end();
-
-
-}
-
-int bear_main()
-{
-	DEBUG_LOG("Game started!");
-
-	return 0;
 }
