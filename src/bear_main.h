@@ -12,23 +12,6 @@ struct OSFile
 	void *data;
 };
 
-struct GL
-{
-#define PROC(name) PFNGL##name##PROC
-	PROC(CLEAR) 
-		clear;
-	PROC(CLEARCOLOR) 
-		clear_color;
-	PROC(BEGIN) 
-		begin;
-	PROC(END)	
-		end;
-	PROC(COLOR3F)	
-		color3f;
-	PROC(VERTEX2F)	
-		vertex2f;
-};
-
 struct PLT
 {
 	void *(*malloc)	(const char *, uint32, uint64);

@@ -1,23 +1,28 @@
 #pragma once
 
-#include <unordered_map>
-#include <string>
-
 #include "vertexarray.h"
 #include "shaderprogram.h"
 #include "transform.h"
 #include "texture.h"
 
+#include "bear_array.h"
+
 namespace Renderer
 {
+	struct MatrixProfile
+	{
+		string        uniform_name;
+		uint8         *uniform_length;
+		Transform     *transform;
+	};
+	
 	struct Renderable
 	{
-		VertexArray* vertex_array;
-		ShaderProgram* program;
-		unsigned int num_vertices;
-		Texture* texture;
-		Transform* transform;
-		std::string uniform;
+		VertexArray   *vertex_array;
+		ShaderProgram *program;
+		unsigned int   num_vertices;
+		Texture       *texture;
+		MatrixProfile  matrix_profile;
 	};
 
 	void draw(Renderable r, unsigned int mode=GL_TRIANGLES, bool use_profiles=true)
