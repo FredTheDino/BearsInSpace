@@ -30,8 +30,11 @@ void update(World *_world, float32 delta)
 	}
 	
 	if (world->input.jump)
-		DEBUG_LOG("It really dose!");
-	ASSERT(true);
+		DEBUG_LOG("Woot!");
+
+	OSFile file = world->plt.read_file("res/tmp");
+	world->plt.print("tmp: %s\n", (char *) file.data);
+	world->plt.free_file(file);
 }
 
 void draw(World *world)
@@ -42,7 +45,7 @@ void draw(World *world)
 	glBegin(GL_TRIANGLES);
 	glColor3f(0.0f, 0.0f, 1.0f);
 	glVertex2f(-0.5f, -0.5f);
-
+	
 	glColor3f(1.0f, 0.0f, 1.0f);
 	glVertex2f(0.0f, 0.5f);
 

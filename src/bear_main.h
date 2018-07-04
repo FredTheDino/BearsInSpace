@@ -5,13 +5,25 @@
 
 #include "bear_types.h"
 
-struct PLAT
+struct OSFile
+{
+	int32 timestamp;
+	uint64 size;
+	void *data;
+};
+
+struct PLT
 {
 	void *(*malloc)	(const char *, uint32, uint64);
 	void  (*free)	(void *);
 	void *(*realloc)(const char *, uint32, void *, uint64);
 
-	void  (*print)	(const char *, int32, const char *, const char *);
+	void  (*log)	(const char *, int32, const char *, const char *);
+	int   (*print)	(const char *, ...); 
+
+	OSFile (*read_file)	(const char *);
+	void (*free_file)	(OSFile);
+	int32 (*last_write) (const char *);
 };
 
 struct MemoryAllocation
@@ -29,7 +41,7 @@ struct World
 	} input;
 
 	// Platform functions.
-	PLAT plt;
+	PLT plt;
 
 	// TODO: Remove in reloase
 	uint32 __mem_length = 0;
@@ -41,6 +53,7 @@ typedef void (*DrawFunc)(World *);
 
 extern "C"
 void update(World *world, float32 delta);
+
 extern "C"
 void draw(World *world);
 
@@ -48,19 +61,34 @@ void draw(World *world);
 //
 // Memory, checks some memory for you.
 
+#define HALT_AND_CATCH_FIRE() ((int *)(void *)0)[0] = 1
 
 #ifdef BEAR_GAME
 World *world;
 
-#define DEBUG_LOG(message)  world->plt.print(__FILE__, __LINE__, "DEBUG", message)
-#define ERROR_LOG(message)  world->plt.print(__FILE__, __LINE__, "ERROR", message)
-#define LOG(message)		world->plt.print(__FILE__, __LINE__, "LOG", message)
+#define MALLOC2(type, num) (type *) \
+	world->plt.malloc(__FILE__, __LINE__, sizeof(type) * num)
+#define MALLOC1(type) (type *) \
+	world->plt.malloc(__FILE__, __LINE__, sizeof(type))
+
+#define GET_MACRO(_2, _1, NAME, ...) NAME
+#define MALLOC(...) GET_MACRO(__VA_ARGS__, MALLOC2, MALLOC1) (__VA_ARGS__)
+
+#define FREE(ptr) world->plt.free((void *)ptr)
+
+#define REALLOC(ptr, size) world->plt.realloc(__FILE__, __LINE__, (void *) ptr, size)
+
+#define DEBUG_LOG(message)  world->plt.log(__FILE__, __LINE__, "DEBUG", message)
+#define ERROR_LOG(message)  world->plt.log(__FILE__, __LINE__, "ERROR", message)
+#define LOG(message)		world->plt.log(__FILE__, __LINE__, "LOG", message)
+
+#define PRINT(...)			world->plt.print(__VA_ARGS__)
 
 #define ASSERT(check) ((check) ? (void)0 : assert_(__FILE__, __LINE__, #check))
 void assert_(const char *file, uint32 line, const char *check)
 {
-	world->plt.print(file, line, "ASSERT", check);
-	exit(-1);
+	world->plt.log(file, line, "ASSERT", check);
+	HALT_AND_CATCH_FIRE();
 }
 
 #else
@@ -73,16 +101,20 @@ World world;
 void DEBUG_LOG_(const char *file_name, const int line_number, const char *type, const char *message)
 {
 	// Replace this.
+#ifdef WIN32
+	win_printf("[%s:%d] %s: %s\n", file_name, line_number, type, message);
+#else
 	printf("[%s:%d] %s: %s\n", file_name, line_number, type, message);
+#endif
 }
 
 #define ASSERT(check) ((check) ? (void)0 : ASSERT_(__FILE__, __LINE__, #check))
 void inline ASSERT_(const char *file_name, const int line_number, const char *check)
 {
 	DEBUG_LOG_(file_name, line_number, "ASSERT", check);
-	exit(-1);
+	HALT_AND_CATCH_FIRE();
 }
 
 #endif
 
-#include "array.h"
+#include "bear_array.h"

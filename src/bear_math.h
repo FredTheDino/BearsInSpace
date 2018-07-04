@@ -1,54 +1,36 @@
 #pragma once
 
-// SIMD this, later OFC.
+// What do we need?
+// Can we get rid of math.h?
+//  sin/cos 
+//  sqrt
+//  tan?
+//  pow?
+//
 
-struct Vec2f
+#include <math.h>
+
+// Custom Math functions.
+template <typename T>
+T min(T a, T b)
 {
-	float x, y;
+	return (a < b) ? a : b;
+}
 
-	Vec2f operator- (Vec2f in)
-	{
-		return {-in.x, -in.y};
-	}
+template <typename T>
+T max(T a, T b)
+{
+	return (a > b) ? a : b;
+}
 
-	Vec2f operator+ (Vec2f a, Vec2f b)
-	{
-		return {a.x + b.x, a.y + b.y};
-	}
+template <typename T>
+T lerp(T a, T b, float32 l)
+{
+	return a * l + b * (1.0f - l);
+}
 
-	Vec2f operator- (Vec2f a, Vec2f b)
-	{
-		return {a.x - b.x, a.y - b.y};
-	}
+#include "bear_vector.h"
+#include "bear_matrix.h"
+#include "bear_quaternion.h"
 
-	Vec2f operator* (Vec2f a, float s)
-	{
-		return {a.x * s, a.y * s};
-	}
 
-	Vec2f operator/ (Vec2f a, float s)
-	{
-		float d = 1.0f / s;
-		return {a.x * d, a.y * d};
-	}
-
-	void operator=+ (Vec2f &a, Vec2f b)
-	{
-		a = a + b;	
-	}
-
-	void operator=- (Vec2f &a, Vec2f b)
-	{
-		a = a - b;	
-	}
-
-	void operator=* (Vec2f &a, float s)
-	{
-		a = a * s;	
-	}
-
-	void operator=/ (Vec2f &a, float s)
-	{
-		a = a / s;	
-	}
-};

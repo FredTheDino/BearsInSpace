@@ -1,65 +1,141 @@
-#include "bear_main.h"
-#include "bear_memory.h"
 #include <SDL2/SDL.h>
 #include <sys/stat.h>
 #include <dlfcn.h>
+#include <unistd.h>
+
+#include "bear_main.h"
+#include "bear_memory.h"
 #include "glad.c"
 
 UpdateFunc game_update;
 DrawFunc game_draw;
+
 int32 last_edit;
-int32 count_down = -1;
 void *handle;
 
-const char *path = "./bin/libgame.so";
-bool has_file_changed()
+MemoryAllocation __mem[1024];
+
+int32 get_file_edit_time(const char *path)
 {
 	struct stat attr;
 	// Check for success
-	stat(path, &attr);
-	int mtime = attr.st_mtime;
-	if (mtime != last_edit)
+	if (stat(path, &attr))
 	{
-		last_edit = mtime;
-		return true;
+		return -1;
 	}
-	return false;
+	return attr.st_ctime;
 }
+
+OSFile read_entire_file(const char *path)
+{
+	OSFile file = {};
+	file.timestamp = get_file_edit_time(path);
+	if (file.timestamp == -1)
+	{
+		return file;
+	}
+
+	FILE *disk = fopen(path, "rb");
+	if (!disk)
+	{
+		return file;
+	}
+
+	fseek(disk, 0, SEEK_END);
+	file.size = ftell(disk);
+	fseek(disk, 0, SEEK_SET);
+	file.data = malloc_("FILE IO", 0, file.size + 1);
+	fread(file.data, file.size, 1, disk);
+	((uint8 *) file.data)[file.size] = 0; // Null terminate.
+	fclose(disk);
+
+	return file;
+}
+
+void free_file(OSFile file)
+{
+	if (file.data)
+	{
+		FREE(file.data);
+		file.data = 0;
+	}
+}
+
 
 bool load_libgame()
 {
 	// Check if it has rebuilt, assume it has
-	DEBUG_LOG("Reload!");
+	const char *path = "./bin/libbear.so";
+
+	int32 new_last_edit = get_file_edit_time(path);
+	if (new_last_edit == last_edit)
+	{
+		return false;
+	}
+
+	void *temp_handle = dlopen(path, RTLD_NOW);
+	if (!temp_handle)
+	{
+		printf("[DL-ERROR] %s\n", dlerror());
+		DEBUG_LOG("Failed to load libbear.so!");
+		return false;
+	}
+
+	dlerror();
+	dlsym(temp_handle, "update");
+	auto error_code = dlerror();
+	if (error_code)
+	{
+		return false;
+	}
+	dlclose(temp_handle);
 
 	if (handle)
 	{
 		dlclose(handle);
 	}
-
 	handle = dlopen(path, RTLD_NOW);
-	if (!handle)
+
+	UpdateFunc new_game_update = (UpdateFunc) dlsym(handle, "update");
+	DrawFunc   new_game_draw   = (DrawFunc)   dlsym(handle, "draw");
+
+	if (!new_game_draw)
 	{
-		printf("[DL-ERROR] %s\n", dlerror());
-		DEBUG_LOG("Failed to load libgame.so!");
 		return false;
+		DEBUG_LOG("Failed to load draw");
 	}
-	game_update = (UpdateFunc) dlsym(handle, "update");
-	game_draw   = (DrawFunc)   dlsym(handle, "draw");
+	game_draw = new_game_draw;
+	if (!new_game_update)
+	{
+		return false;
+		DEBUG_LOG("Failed to load update");
+	}
+	game_update = new_game_update;
+
+	DEBUG_LOG("Reload!");
+	last_edit = new_last_edit;
 	return true;
 }
 
 int main(int varc, char *varv[])
 {
-	world.plt.print = DEBUG_LOG_;
 	world.plt.malloc = malloc_;
 	world.plt.free = free_;
 	world.plt.realloc = realloc_;
 
-	if (load_libgame() == false)
+	world.plt.log = DEBUG_LOG_;
+	world.plt.print = printf;
+
+	world.plt.read_file = read_entire_file;
+	world.plt.free_file = free_file;
+	world.plt.last_write = get_file_edit_time;
+
+	world.__mem = (MemoryAllocation *)(void *)__mem;
+
+	if (!load_libgame())
 	{
 		return(-1);
 	}
-	has_file_changed();
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
@@ -100,21 +176,7 @@ int main(int varc, char *varv[])
 	bool running = true;
 	while (running)
 	{
-		if (has_file_changed())
-		{
-			DEBUG_LOG("====== Reloading!");
-			count_down = 60;
-		}
-
-		if (count_down >= 0)
-		{
-			count_down--;
-		}
-
-		if (count_down == 0)
-		{
-			load_libgame();
-		}
+		load_libgame();
 
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -140,5 +202,16 @@ int main(int varc, char *varv[])
 	}
 	SDL_Quit();
 
-	return(1);
+	//TODO: Make this a function so each platform layer can call it.
+	// Memory check
+	if (world.__mem_length != 0)
+	{
+		for (uint8 i = 0; i < world.__mem_length; i++)
+		{
+			MemoryAllocation alloc = world.__mem[i];
+			printf("[MEM] Not freed (%s:%d)", alloc.file, alloc.line);
+		}
+	}
+
+	return 0;
 }

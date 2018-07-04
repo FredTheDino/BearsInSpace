@@ -6,6 +6,11 @@ struct Array
 	T*     data  = nullptr; // pointer to data
 	uint64 limit = 0;       // number of elements allocated for
 	uint64 size  = 0;       // current number of elements
+
+	T operator[] (uint64 index)
+	{
+		return get(this, index);
+	}
 };
 
 template <typename T>
@@ -53,19 +58,19 @@ void relimit(Array<T> *arr, uint64 limit)
 }
 
 template <typename T>
-uint64 size(Array<T>* arr)
+uint64 size(Array<T> *arr)
 {
 	return arr->size;
 }
 
 template <typename T>
-uint64 limit(Array<T>* arr)
+uint64 limit(Array<T> *arr)
 {
 	return arr->limit;
 }
 
 template <typename T>
-T get(Array<T>* arr, uint64 index)
+T get(Array<T> *arr, uint64 index)
 {
 	ASSERT(index >= 0 && index < arr->size);
 	return arr->data[index];
@@ -82,7 +87,7 @@ T set(Array<T> *arr, T val, uint64 index)
 }
 
 template <typename T>
-T remove(Array<T>* arr, uint64 index)
+T remove(Array<T> *arr, uint64 index)
 {
 	T elem = get(arr, index);
 
