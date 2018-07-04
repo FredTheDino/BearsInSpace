@@ -3,9 +3,9 @@
 template <typename T>
 struct Array
 {
-	T*     data  = nullptr; // pointer to data
-	uint64 limit = 0;       // number of elements allocated for
-	uint64 size  = 0;       // current number of elements
+	T*     data;	// pointer to data
+	uint64 limit;	// number of elements allocated for
+	uint64 size;	// current number of elements
 
 	T operator[] (uint64 index)
 	{
@@ -17,8 +17,9 @@ template <typename T>
 Array<T> create_array(uint64 limit)
 {
 	Array<T> arr;
-	arr.data = (T*) calloc(limit, sizeof(T));
+	arr.data = MALLOC(T, limit);
 	arr.limit = limit;
+	arr.size = 0;
 	return arr;
 }
 
@@ -48,40 +49,40 @@ void prepend(Array<T> *arr, T val)
 template <typename T>
 void relimit(Array<T> *arr, uint64 limit)
 {
-	if (arr->limit == limit)
+	if (arr->limit >= limit)
 		return;
 	
-	arr->data = (T*) realloc((void*) arr->data, limit * sizeof(T));
+	arr->data = (T *) REALLOC(arr->data, limit * sizeof(T));
 	arr->limit = limit;
 	if (arr->size > arr->limit)
 		arr->size = limit;
 }
 
 template <typename T>
-uint64 size(Array<T> *arr)
+uint64 size(Array<T> arr)
 {
-	return arr->size;
+	return arr.size;
 }
 
 template <typename T>
-uint64 limit(Array<T> *arr)
+uint64 limit(Array<T> arr)
 {
-	return arr->limit;
+	return arr.limit;
 }
 
 template <typename T>
-T get(Array<T> *arr, uint64 index)
+T get(Array<T> arr, uint64 index)
 {
-	ASSERT(index >= 0 && index < arr->size);
-	return arr->data[index];
+	ASSERT(index >= 0 && index < arr.size);
+	return arr.data[index];
 }
 
 template <typename T>
-T set(Array<T> *arr, T val, uint64 index)
+T set(Array<T> arr, uint64 index, T val)
 {
 	T elem = get(arr, index);
 
-	arr->data[index] = val;
+	arr.data[index] = val;
 
 	return elem;
 }
@@ -89,7 +90,7 @@ T set(Array<T> *arr, T val, uint64 index)
 template <typename T>
 T remove(Array<T> *arr, uint64 index)
 {
-	T elem = get(arr, index);
+	T elem = get(*arr, index);
 
 	for (uint64 i = index + 1; i < arr->size; i++)
 		arr->data[i - 1] = arr->data[i];
@@ -102,5 +103,9 @@ T remove(Array<T> *arr, uint64 index)
 template <typename T>
 void free_array(Array<T> *arr)
 {
-	free((void*) arr->data);
+	if (arr->data)
+	{
+		FREE(arr->data);
+		arr->data = 0;
+	}
 }

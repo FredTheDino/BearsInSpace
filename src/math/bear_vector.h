@@ -4,6 +4,8 @@ struct Vec2f;
 struct Vec3f;
 struct Vec4f;
 
+#define FLOAT_EQ_MARGIN 0.0000000000001
+
 // SIMD this, later OFC.
 struct Vec2f
 {
@@ -66,7 +68,9 @@ struct Vec2f
 
 	bool operator== (Vec2f other)
 	{	
-		return x == other.x && y == other.y;
+		return
+			(x - other.x) * (x - other.x) < FLOAT_EQ_MARGIN && 
+			(y - other.y) * (y - other.y) < FLOAT_EQ_MARGIN;
 	}
 };
 
@@ -77,7 +81,7 @@ float32 dot(Vec2f a, Vec2f b)
 
 float32 length_squared(Vec2f a)
 {
-	return a.x * a.x + a.x * a.x;
+	return a.x * a.x + a.y * a.y;
 }
 
 float32 length(Vec2f a)
@@ -153,7 +157,10 @@ struct Vec3f
 
 	bool operator== (Vec3f other)
 	{	
-		return x == other.x && y == other.y && z == other.z;
+		return 
+			(x - other.x) * (x - other.x) < FLOAT_EQ_MARGIN && 
+			(y - other.y) * (y - other.y) < FLOAT_EQ_MARGIN && 
+			(z - other.z) * (z - other.z) < FLOAT_EQ_MARGIN;
 	}
 
 };
@@ -175,7 +182,7 @@ Vec3f cross(Vec3f a, Vec3f b)
 
 float32 length_squared(Vec3f a)
 {
-	return a.x * a.x + a.x * a.x + a.z * a.z;
+	return a.x * a.x + a.y * a.y + a.z * a.z;
 }
 
 float32 length(Vec3f a)
@@ -255,16 +262,21 @@ struct Vec4f
 	bool operator== (Vec4f other)
 	{	
 		return 
-			x == other.x && 
-			y == other.y &&
-			z == other.z &&
-			w == other.w;
+			(x - other.x) * (x - other.x) < FLOAT_EQ_MARGIN && 
+			(y - other.y) * (y - other.y) < FLOAT_EQ_MARGIN && 
+			(z - other.z) * (z - other.z) < FLOAT_EQ_MARGIN && 
+			(w - other.w) * (w - other.w) < FLOAT_EQ_MARGIN;
 	}
 };
 
+float32 dot(Vec4f a, Vec4f b)
+{
+	return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
 float32 length_squared(Vec4f a)
 {
-	return a.x * a.x + a.x * a.x + a.z * a.z + a.w * a.w;
+	return a.x * a.x + a.y * a.y + a.z * a.z + a.w * a.w;
 }
 
 float32 length(Vec4f a)
