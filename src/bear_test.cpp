@@ -49,13 +49,13 @@ void run_tests()
 	TEST(arr.size == 100);
 	bool all_values_checkout = true;
 	remove(&arr, 50);
-	set(&arr, 70, 0);
+	set(arr, 70, 0);
 	for (uint32 i = 0; i < arr.size; i++)
 	{
 		int32 actual = (i < 50) ? i : i + 1;
 		if (i == 70)
 			actual = 0;
-		if (get(&arr, i) != actual)
+		if (get(arr, i) != actual)
 		{
 			all_values_checkout = false;
 			break;

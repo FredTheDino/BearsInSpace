@@ -73,7 +73,7 @@ uint64 limit(Array<T> arr)
 template <typename T>
 T get(Array<T> arr, uint64 index)
 {
-	ASSERT(index >= 0 && index < arr->size);
+	ASSERT(index >= 0 && index < arr.size);
 	return arr.data[index];
 }
 
@@ -90,7 +90,7 @@ T set(Array<T> arr, uint64 index, T val)
 template <typename T>
 T remove(Array<T> *arr, uint64 index)
 {
-	T elem = get(arr, index);
+	T elem = get(*arr, index);
 
 	for (uint64 i = index + 1; i < arr->size; i++)
 		arr->data[i - 1] = arr->data[i];
