@@ -14,9 +14,10 @@ void update(World *_world, float32 delta)
 	world = _world;
 	if (world->input.jump)
 		DEBUG_LOG("Woot!");
-	int *ptr = MALLOC(int, 100);
-	REALLOC(ptr, 200);
-	FREE(ptr);
+
+	OSFile file = world->plt.read_file("res/tmp");
+	world->plt.print("tmp: %s\n", (char *) file.data);
+	world->plt.free_file(file);
 }
 
 void draw(World *world)

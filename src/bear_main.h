@@ -5,6 +5,13 @@
 
 #include "bear_types.h"
 
+struct OSFile
+{
+	int32 timestamp;
+	uint64 size;
+	void *data;
+};
+
 struct GL
 {
 #define PROC(name) PFNGL##name##PROC
@@ -28,7 +35,12 @@ struct PLT
 	void  (*free)	(void *);
 	void *(*realloc)(const char *, uint32, void *, uint64);
 
-	void  (*print)	(const char *, int32, const char *, const char *);
+	void  (*log)	(const char *, int32, const char *, const char *);
+	int   (*print)	(const char *, ...); 
+
+	OSFile (*read_file)	(const char *);
+	void (*free_file)	(OSFile);
+	int32 (*last_write) (const char *);
 };
 
 struct MemoryAllocation
@@ -86,14 +98,16 @@ World *world;
 
 #define REALLOC(ptr, size) world->plt.realloc(__FILE__, __LINE__, (void *) ptr, size)
 
-#define DEBUG_LOG(message)  world->plt.print(__FILE__, __LINE__, "DEBUG", message)
-#define ERROR_LOG(message)  world->plt.print(__FILE__, __LINE__, "ERROR", message)
-#define LOG(message)		world->plt.print(__FILE__, __LINE__, "LOG", message)
+#define DEBUG_LOG(message)  world->plt.log(__FILE__, __LINE__, "DEBUG", message)
+#define ERROR_LOG(message)  world->plt.log(__FILE__, __LINE__, "ERROR", message)
+#define LOG(message)		world->plt.log(__FILE__, __LINE__, "LOG", message)
+
+#define PRINT(...)			world->plt.print(__VA_ARGS__)
 
 #define ASSERT(check) ((check) ? (void)0 : assert_(__FILE__, __LINE__, #check))
 void assert_(const char *file, uint32 line, const char *check)
 {
-	world->plt.print(file, line, "ASSERT", check);
+	world->plt.log(file, line, "ASSERT", check);
 	HALT_AND_CATCH_FIRE();
 }
 

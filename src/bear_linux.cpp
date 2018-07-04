@@ -26,6 +26,42 @@ int32 get_file_edit_time(const char *path)
 	return attr.st_ctime;
 }
 
+OSFile read_entire_file(const char *path)
+{
+	OSFile file = {};
+	file.timestamp = get_file_edit_time(path);
+	if (file.timestamp == -1)
+	{
+		return file;
+	}
+
+	FILE *disk = fopen(path, "rb");
+	if (!disk)
+	{
+		return file;
+	}
+
+	fseek(disk, 0, SEEK_END);
+	file.size = ftell(disk);
+	fseek(disk, 0, SEEK_SET);
+	file.data = malloc_("FILE IO", 0, file.size + 1);
+	fread(file.data, file.size, 1, disk);
+	((uint8 *) file.data)[file.size] = 0; // Null terminate.
+	fclose(disk);
+
+	return file;
+}
+
+void free_file(OSFile file)
+{
+	if (file.data)
+	{
+		FREE(file.data);
+		file.data = 0;
+	}
+}
+
+
 bool load_libgame()
 {
 	// Check if it has rebuilt, assume it has
@@ -83,10 +119,16 @@ bool load_libgame()
 
 int main(int varc, char *varv[])
 {
-	world.plt.print = DEBUG_LOG_;
 	world.plt.malloc = malloc_;
 	world.plt.free = free_;
 	world.plt.realloc = realloc_;
+
+	world.plt.log = DEBUG_LOG_;
+	world.plt.print = printf;
+
+	world.plt.read_file = read_entire_file;
+	world.plt.free_file = free_file;
+	world.plt.last_write = get_file_edit_time;
 
 	world.__mem = (MemoryAllocation *)(void *)__mem;
 
@@ -178,5 +220,5 @@ int main(int varc, char *varv[])
 		}
 	}
 
-	return(1);
+	return 0;
 }

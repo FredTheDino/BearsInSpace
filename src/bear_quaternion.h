@@ -1,35 +1,4 @@
-
-struct Mat4
-{
-	union 
-	{
-		// Rows x Collumns
-		struct
-		{
-			float32 _00, _01, _02, _03;
-			float32 _10, _11, _12, _13;
-			float32 _20, _21, _22, _23;
-			float32 _30, _31, _32, _33;
-		};
-		float32 _[4][4];
-	};
-
-	Mat4 operator* (Mat4 m)
-	{
-		Mat4 out;
-		for (uint8 row = 0; row < 4; row++)
-		{
-			for (uint8 col = 0; col < 4; col++)
-			{
-				for (uint8 i = 0; i < 4; i++)
-				{
-					out._[row][col] += _[row][i] * m._[i][col];
-				}
-			}
-		}
-		return out;
-	}
-};
+#pragma once
 
 struct Q
 {
@@ -87,6 +56,7 @@ struct Q
 	}
 };
 
+typedef Q Quat;
 typedef Q Quaternion;
 
 float32 length_squared(Q q)
