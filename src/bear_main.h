@@ -63,9 +63,11 @@ void draw(World *world);
 
 #define HALT_AND_CATCH_FIRE() ((int *)(void *)0)[0] = 1
 
+// TODO: Clean this up
 #ifdef BEAR_GAME
 World *world;
 
+// TODO: This is essentially duplicate from bear_memory.h
 #define MALLOC2(type, num) (type *) \
 	world->plt.malloc(__FILE__, __LINE__, sizeof(type) * num)
 #define MALLOC1(type) (type *) \
@@ -117,4 +119,3 @@ void inline ASSERT_(const char *file_name, const int line_number, const char *ch
 
 #endif
 
-#include "bear_array.h"

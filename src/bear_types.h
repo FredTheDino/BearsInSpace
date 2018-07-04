@@ -14,5 +14,5 @@ typedef unsigned long	uint64;
 typedef float  float32;
 typedef double float64;
 
-#include "bear_math.h"
+#include "math/bear_math.h"
 

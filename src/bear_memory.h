@@ -1,6 +1,4 @@
-// Fix this so it streamlines it when in reloase mode.
 // TODO: Remove in reloase
-
 #define MALLOC2(type, num) (type *) malloc_(__FILE__, __LINE__, sizeof(type) * num)
 #define MALLOC1(type) (type *) malloc_(__FILE__, __LINE__, sizeof(type))
 
@@ -18,7 +16,6 @@ void *malloc_(const char *file_path, uint32 line, uint64 size)
 	ASSERT(length < 1024);
 
 	world.__mem_length = length;
-	world.__mem = list;
 	return ptr;
 }
 
@@ -45,14 +42,11 @@ void free_(void *ptr)
 			break;
 		}
 	}
-	ASSERT(length < 1024);
 	ASSERT(found);
 
 	world.__mem_length = length;
-	world.__mem = list;
 
 	free(ptr);
-
 }
 
 #define REALLOC(ptr, size) realloc_(__FILE__, __LINE__, (void *) ptr, size)
@@ -68,8 +62,7 @@ void *realloc_(const char *file_path, uint32 line, void *ptr, uint64 size)
 		MemoryAllocation mem = list[i];
 		if (mem.ptr == ptr)
 		{
-			mem.ptr = new_ptr;
-			list[i] = mem;
+			list[i].ptr = new_ptr;
 			found = true;
 			break;
 		}
@@ -77,7 +70,6 @@ void *realloc_(const char *file_path, uint32 line, void *ptr, uint64 size)
 	ASSERT(found);
 
 	world.__mem_length = length;
-	world.__mem = list;
 
 	return new_ptr;
 }
