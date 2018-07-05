@@ -2,12 +2,12 @@
 
 #define GL_LOADED glClear
 
-
 #define BEAR_GAME
 #include "bear_main.h"
 #include "bear_array.h"
 #include "math/bear_math.h"
 #include "bear_obj_loader.cpp"
+#include "bear_image_loader.cpp"
 #include "glad.c"
 
 #include "bear_test.cpp"
@@ -24,16 +24,9 @@ void update(World *_world, float32 delta)
 	world = _world;
 
 	if (should_run_tests)
+	{
 		run_tests();
-	
-	/*
-	if (world->input.jump)
-		DEBUG_LOG("Woot!");
-	OSFile file = world->plt.read_file("res/tmp");
-	world->plt.print("tmp: %s\n", (char *) file.data);
-	world->plt.free_file(file);
-	*/
-
+	}
 }
 
 void draw(World *world)

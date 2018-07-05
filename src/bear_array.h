@@ -50,7 +50,10 @@ template <typename T>
 void relimit(Array<T> *arr, uint64 limit)
 {
 	if (arr->limit >= limit)
+	{
+		arr->size = limit;
 		return;
+	}
 	
 	arr->data = (T *) REALLOC(arr->data, limit * sizeof(T));
 	arr->limit = limit;

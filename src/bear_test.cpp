@@ -1,15 +1,6 @@
-
 bool should_run_tests = true;
 int passed_tests = 0;
 int total_tests = 0;
-
-#define ANSI_RED     "\x1b[31m"
-#define ANSI_GREEN   "\x1b[32m"
-#define ANSI_YELLOW  "\x1b[33m"
-#define ANSI_BLUE    "\x1b[34m"
-#define ANSI_MAGENTA "\x1b[35m"
-#define ANSI_CYAN    "\x1b[36m"
-#define ANSI_RESET   "\x1b[0m"
 
 #define TEST_HEADER(text) test_header(#text)
 void test_header(const char *header)
@@ -24,8 +15,8 @@ void test_(bool check, const char *expression, uint32 line_number)
 	if (check)
 		passed_tests++;
 	const char *state = check ? 
-		ANSI_GREEN "PASSED" ANSI_RESET: 
-		ANSI_RED   "FAILED" ANSI_RESET;
+		"\x1b[32mPASSED\x1b[0m": 
+		"\x1b[31mFAILED\x1b[0m";
 	world->plt.print(" (%04d) \x1b[1m%s : \x1b[1m%s\x1b[0m\n", line_number, state, expression);
 }
 
@@ -64,9 +55,7 @@ void run_tests()
 	TEST(all_values_checkout);
 
 	relimit(&arr, 10);
-	TEST(arr.limit == 10);
-	relimit(&arr, 10);
-	TEST(arr.limit == 10);
+	TEST(arr.limit != 10);
 
 	for (uint32 i = 0; i < 10; i++)
 	{
