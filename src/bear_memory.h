@@ -37,7 +37,7 @@ void free_(void *ptr)
 				length--;
 				break;
 			}
-			list[i] = list[length];
+			list[i] = list[length - 1];
 			length--;
 			break;
 		}
