@@ -33,6 +33,11 @@ struct MemoryAllocation
 	void *ptr;
 };
 
+namespace GFX
+{
+	struct Renderable;
+}
+
 struct World
 {
 	struct Input
@@ -46,6 +51,9 @@ struct World
 	// TODO: Remove in reloase
 	uint32 __mem_length = 0;
 	MemoryAllocation *__mem;
+
+	//TODO: REMOVE GFX
+	GFX::Renderable* renderable;
 };
 
 typedef void (*UpdateFunc)(World *, float32);
@@ -119,3 +127,5 @@ void inline ASSERT_(const char *file_name, const int line_number, const char *ch
 
 #endif
 
+// Subsequently includes all graphics headers
+#include "bear_gfx.h"

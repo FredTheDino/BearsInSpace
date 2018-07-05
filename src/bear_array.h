@@ -9,7 +9,7 @@ struct Array
 
 	T operator[] (uint64 index)
 	{
-		return get(this, index);
+		return get(*this, index);
 	}
 };
 
@@ -17,7 +17,11 @@ template <typename T>
 Array<T> create_array(uint64 limit)
 {
 	Array<T> arr;
-	arr.data = MALLOC(T, limit);
+	#ifdef BEAR_GAME
+	arr.data = (T*) (world->plt.malloc(__FILE__, __LINE__, sizeof(T) * limit));
+	#else
+	arr.data = (T*) (world.plt.malloc(__FILE__, __LINE__, sizeof(T) * limit));
+	#endif
 	arr.limit = limit;
 	arr.size = 0;
 	return arr;
@@ -51,8 +55,13 @@ void relimit(Array<T> *arr, uint64 limit)
 {
 	if (arr->limit >= limit)
 		return;
-	
+
+	#ifdef BEAR_GAME
 	arr->data = (T *) REALLOC(arr->data, limit * sizeof(T));
+	#else
+	arr->data = (T *) realloc(arr->data, limit * sizeof(T));
+	#endif
+	
 	arr->limit = limit;
 	if (arr->size > arr->limit)
 		arr->size = limit;
@@ -68,6 +77,12 @@ template <typename T>
 uint64 limit(Array<T> arr)
 {
 	return arr.limit;
+}
+
+template <typename T>
+T* data_ptr(Array<T> arr)
+{
+	return arr.data;
 }
 
 template <typename T>
@@ -101,11 +116,15 @@ T remove(Array<T> *arr, uint64 index)
 }
 
 template <typename T>
-void free_array(Array<T> *arr)
+void delete_array(Array<T> *arr)
 {
 	if (arr->data)
 	{
+		#ifdef BEAR_GAME
 		FREE(arr->data);
+		#else
+		free(arr->data);
+		#endif
 		arr->data = 0;
 	}
 }

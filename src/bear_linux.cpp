@@ -173,11 +173,33 @@ int main(int varc, char *varv[])
 
 	DEBUG_LOG("Linux launch!");
 
+	//TODO: REMOVE GFX
+	Array<float32> vertex_data = create_array<float32>(6);
+	append(&vertex_data, 0.0f); append(&vertex_data, .5f);
+	append(&vertex_data, .5f); append(&vertex_data, -.5f);
+	append(&vertex_data, -.5f); append(&vertex_data, -.5f);
+		
+	GFX::VertexBuffer vertex_buffer = GFX::create_vertex_buffer(vertex_data);
+	delete_array(&vertex_data);
+		
+	Array<GFX::VertexAttribute> attribs = create_array<GFX::VertexAttribute>(1);
+	GFX::VertexAttribute attrib;
+	attrib.vertex_buffer = vertex_buffer;
+	attrib.location = 0;
+	attrib.size = 2;
+	attrib.type = GL_FLOAT;
+	append(&attribs, attrib);
+	GFX::VertexArray vertex_array = GFX::create_vertex_array(attribs);
+	delete_array(&attribs);
+		
+	GFX::Renderable r = {vertex_array, 3};
+	world.renderable = &r;
+	
 	bool running = true;
 	while (running)
 	{
 		load_libgame();
-
+		
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -200,6 +222,10 @@ int main(int varc, char *varv[])
 
 		SDL_GL_SwapWindow(window);
 	}
+	//TODO: REMOVE GFX
+	GFX::delete_vertex_array(vertex_array);
+	GFX::delete_vertex_buffer(vertex_buffer);
+	
 	SDL_Quit();
 
 	//TODO: Make this a function so each platform layer can call it.

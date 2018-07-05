@@ -80,7 +80,7 @@ void run_tests()
 	}
 	TEST(arr.size != 0);
 
-	free_array(&arr);
+	delete_array(&arr);
 	TEST(arr.data == 0);
 
 	TEST_HEADER(Vec2);
