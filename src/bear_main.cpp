@@ -7,6 +7,7 @@
 #include "bear_main.h"
 #include "bear_array.h"
 #include "math/bear_math.h"
+#include "bear_obj_loader.cpp"
 #include "glad.c"
 
 #include "bear_test.cpp"
@@ -32,6 +33,7 @@ void update(World *_world, float32 delta)
 	world->plt.print("tmp: %s\n", (char *) file.data);
 	world->plt.free_file(file);
 	*/
+
 }
 
 void draw(World *world)
@@ -40,6 +42,8 @@ void draw(World *world)
 	if (!GL_LOADED)
 	{
 		gladLoadGL();
+		Mesh mesh = load_mesh("res/monkey.obj");
+		free_mesh(mesh);
 	}
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
