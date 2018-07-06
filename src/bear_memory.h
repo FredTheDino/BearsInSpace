@@ -1,10 +1,5 @@
+#pragma once
 // TODO: Remove in reloase
-#define MALLOC2(type, num) (type *) malloc_(__FILE__, __LINE__, sizeof(type) * num)
-#define MALLOC1(type) (type *) malloc_(__FILE__, __LINE__, sizeof(type))
-
-#define MALLOC_GET(_1, NAME, ...) NAME
-#define MALLOC(...) MALLOC_GET(__VA_ARGS__, MALLOC1, MALLOC2)(__VA_ARGS__)
-
 void *malloc_(const char *file_path, uint32 line, uint64 size)
 {
 	void *ptr = malloc(size);
@@ -19,7 +14,6 @@ void *malloc_(const char *file_path, uint32 line, uint64 size)
 	return ptr;
 }
 
-#define FREE(ptr) free_((void *)ptr)
 void free_(void *ptr)
 {
 	uint32 length = world.__mem_length;
@@ -49,7 +43,6 @@ void free_(void *ptr)
 	free(ptr);
 }
 
-#define REALLOC(ptr, size) realloc_(__FILE__, __LINE__, (void *) ptr, size)
 void *realloc_(const char *file_path, uint32 line, void *ptr, uint64 size)
 {
 	uint32 length = world.__mem_length;

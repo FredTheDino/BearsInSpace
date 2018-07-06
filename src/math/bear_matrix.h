@@ -74,17 +74,18 @@ Mat4 zero_transform(Mat4 m)
 	return m;
 }
 
-Mat4 create_projection(float32 fov, float32 aspect_ratio, float32 near, float32 far)
+// NOTE: "near", and "far" as variable names cause syntax errors on Windows.
+Mat4 create_projection(float32 fov, float32 aspect_ratio, float32 near_clip, float32 far_clip)
 {
 	float32 w = tan(fov / 2.0f);
 	float32 h = w / aspect_ratio;
 	
 	Mat4 m = {};
-	m._00 = near / w;
-	m._11 = near / h;
-	m._22 = - (far + near) / (far - near);
+	m._00 = near_clip / w;
+	m._11 = near_clip / h;
+	m._22 = - (far_clip + near_clip) / (far_clip - near_clip);
 	m._23 = - 1.0f; // Switch with 32?
-	m._32 = - (2.0f * far * near) / (far - near); // Switch with 23?
+	m._32 = - (2.0f * far_clip * near_clip) / (far_clip - near_clip); // Switch with 23?
 	return m;
 }
 

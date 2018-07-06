@@ -123,8 +123,8 @@ void run_tests()
 		Vec4f c = {1.0f, 1.5f, 0.4f, 0.0f};
 
 		TEST(a == b);
-		a = {0.0f, 1.0f, 0.1f, -0.1};
-		b = {1.0f, 0.5f, 0.3f, 0.1};
+		a = {0.0f, 1.0f, 0.1f, -0.1f};
+		b = {1.0f, 0.5f, 0.3f,  0.1f};
 		TEST(a + b == c);
 		TEST(c - b == a);
 		TEST(dot(b, a) == (0.5f + 0.1f * 0.3f - 0.01f));

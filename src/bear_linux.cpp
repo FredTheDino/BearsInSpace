@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #include "bear_main.h"
-#include "bear_memory.h"
 #include "glad.c"
 
 UpdateFunc game_update;

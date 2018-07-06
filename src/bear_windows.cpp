@@ -4,20 +4,19 @@ int win_printf(const char *format, ...);
 
 #include <windows.h>
 #include <SDL2/SDL.h>
-#include "glad.h"
-#include "glad.c"
+
 #include "bear_main.h"
-#include "bear_memory.h"
+#include "glad.c"
 
 // Group this up?
 UpdateFunc game_update;
 DrawFunc game_draw;
 
+// This is ugly... I know.
+MemoryAllocation __mem[1024];
+
 int32 last_access_time = 0;
-
 HMODULE handle;
-
-
 
 int32 win_printf(const char *format, ...)
 {
@@ -29,7 +28,7 @@ int32 win_printf(const char *format, ...)
 	return len;
 }
 
-int32 get_last_file_access(const char *path)
+int32 get_file_edit_time(const char *path)
 {
 	FILETIME last_write;
 	HANDLE file_handle = CreateFileA(
@@ -62,7 +61,7 @@ bool load_libbear()
 {
 	const char *path = "libbear.dll";
 	const char *temp_path = "libbear_temp.dll";
-	int32 last = get_last_file_access(path);
+	int32 last = get_file_edit_time(path);
 	if (last == last_access_time)
 	{
 		return false;
@@ -99,7 +98,64 @@ bool load_libbear()
 	game_update = update;
 	game_draw = draw;
 	return true;
+}
 
+OSFile read_entire_file(const char *path)
+{
+	OSFile file = {};
+	file.timestamp = get_file_edit_time(path);
+	if (file.timestamp == -1)
+	{
+		return file;
+	}
+
+	FILE *disk = fopen(path, "rb");
+	if (!disk)
+	{
+		return file;
+	}
+
+	fseek(disk, 0, SEEK_END);
+	file.size = ftell(disk);
+	fseek(disk, 0, SEEK_SET);
+	file.data = malloc_("FILE IO", 0, file.size + 1);
+	fread(file.data, file.size, 1, disk);
+	((uint8 *) file.data)[file.size] = 0; // Null terminate.
+	fclose(disk);
+
+	return file;
+}
+
+#define PI 3.141592653f
+
+float32 t;
+uint32 tone_hz = 441;
+uint32 spec_freq = 44100;
+
+#include <stdlib.h>
+
+void plt_audio_callback(void *userdata, uint8 *_stream, int32 _length)
+{
+	float32 *stream = (float32 *)_stream;
+	int32 length = _length / 4;
+
+	while (0 < length)
+	{
+		float32 sample = sin(t * 2.0f * PI * tone_hz) * 28000;
+		t += 1.0f / spec_freq;/// (float32) (spec_freq / tone_hz);
+		*(stream++) = sample;
+		*(stream++) = sample;
+		length -= 2;
+	}
+}
+
+void free_file(OSFile file)
+{
+	if (file.data)
+	{
+		FREE(file.data);
+		file.data = 0;
+	}
 }
 
 #ifdef asdas //__DEBUG 
@@ -113,10 +169,18 @@ int CALLBACK WinMain(
 )
 #endif
 {
-	world.plt.print = DEBUG_LOG_;
 	world.plt.malloc = malloc_;
 	world.plt.free = free_;
 	world.plt.realloc = realloc_;
+
+	world.plt.print = win_printf;
+	world.plt.log = debug_log_;
+
+	world.plt.read_file = read_entire_file;
+	world.plt.free_file = free_file;
+	world.plt.last_write = get_file_edit_time;
+
+	world.__mem = (MemoryAllocation *)(void *)__mem;
 
 	if (load_libbear() == false)
 	{
@@ -131,6 +195,9 @@ int CALLBACK WinMain(
 		return(-1);
 	}
 
+	//
+	// Display stuff.
+	// 
 	SDL_Window *window = SDL_CreateWindow(
 			"Space Bears",
 			SDL_WINDOWPOS_UNDEFINED,
@@ -148,7 +215,6 @@ int CALLBACK WinMain(
 	SDL_GL_SetSwapInterval(1);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-	//SDL_GLContext glcontext = // Do I need this?
 	SDL_GL_CreateContext(window);
 
 	if (gladLoadGL() == 0)
@@ -158,13 +224,25 @@ int CALLBACK WinMain(
 		return(-1);
 	}
 
-	world.gl.clear = glClear;
-	world.gl.clear_color = glClearColor;
-	world.gl.begin = glBegin;
-	world.gl.end = glEnd;
-	world.gl.color3f = glColor3f;
-	world.gl.vertex2f = glVertex2f;
+	// 
+	//	Audio Stuff.
+	//
+	
+	SDL_AudioSpec audio_spec = {};
+	audio_spec.callback = plt_audio_callback;
+	audio_spec.freq = spec_freq; // Is this dumb? Is 44100 better?
+	audio_spec.format = AUDIO_F32; // Maybe too high rez?
+	audio_spec.channels = 2; // This needs to be changeable.
+	audio_spec.samples = 4096; // Ideally we want this as small as possible.
+	if (SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0) == 0)
+	{
+		DEBUG_LOG("Unable to load audio.");
+		SDL_Quit();
+		return(-1);
+	}
 
+	SDL_PauseAudio(0);
+	
 	DEBUG_LOG("Window launch!");
 
 	bool running = true;
@@ -194,6 +272,7 @@ int CALLBACK WinMain(
 
 		SDL_GL_SwapWindow(window);
 	}
+	SDL_CloseAudio();
 	SDL_Quit();
 
 	return(1);

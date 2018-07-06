@@ -17,7 +17,8 @@ template <typename T>
 Array<T> create_array(uint64 limit)
 {
 	Array<T> arr;
-	arr.data = MALLOC(T, limit);
+	arr.data = MALLOC2(T, limit);
+	//arr.data = GET_MACRO(T, limit, MALLOC2, MALLOC1) (T, limit);
 	arr.limit = limit;
 	arr.size = 0;
 	return arr;

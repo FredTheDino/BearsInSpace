@@ -1,5 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
+#define STBI_NO_LINEAR
 // TODO: This has some stdlib stuff. Like assert and malloc.
 #include "stb_image.h"
 
