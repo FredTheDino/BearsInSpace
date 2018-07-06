@@ -48,15 +48,6 @@ struct World
 	MemoryAllocation *__mem;
 };
 
-typedef void (*UpdateFunc)(World *, float32);
-typedef void (*DrawFunc)(World *);
-
-extern "C"
-void update(World *world, float32 delta);
-
-extern "C"
-void draw(World *world);
-
 // A way to crash so we can bug track.
 #define HALT_AND_CATCH_FIRE() ((int *)(void *)0)[0] = 1
 

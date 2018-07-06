@@ -9,8 +9,12 @@ int win_printf(const char *format, ...);
 #include "glad.c"
 
 // Group this up?
-UpdateFunc game_update;
-DrawFunc game_draw;
+
+typedef void (*StepFunc)(World *, float32);
+typedef void (*SoundFunc)(float32 *, int32);
+
+StepFunc game_step;
+SoundFunc game_sound;
 
 // This is ugly... I know.
 MemoryAllocation __mem[1024];
@@ -78,15 +82,15 @@ bool load_libbear()
 		DEBUG_LOG("Failed to load libgame.so!");
 		return false;
 	}
-	UpdateFunc update = (UpdateFunc) GetProcAddress(handle, "update");
-	if (!update)
+	StepFunc step = (StepFunc) GetProcAddress(handle, "step");
+	if (!step)
 	{
 		win_printf("[DL-ERROR] %d\n", GetLastError());
 		DEBUG_LOG("Failed to load game_update!");
 		return false;
 	}
-	DrawFunc draw = (DrawFunc) GetProcAddress(handle, "draw");
-	if (!draw)
+	SoundFunc sound = (SoundFunc) GetProcAddress(handle, "sound");
+	if (!sound)
 	{
 		win_printf("[DL-ERROR] %d\n", GetLastError());
 		DEBUG_LOG("Failed to load game_draw!");
@@ -95,8 +99,8 @@ bool load_libbear()
 
 	DEBUG_LOG("Reload!");
 	last_access_time = last;
-	game_update = update;
-	game_draw = draw;
+	game_step = step;
+	game_sound = sound;
 	return true;
 }
 
@@ -126,29 +130,6 @@ OSFile read_entire_file(const char *path)
 	return file;
 }
 
-#define PI 3.141592653f
-
-float32 t;
-uint32 tone_hz = 441;
-uint32 spec_freq = 44100;
-
-#include <stdlib.h>
-
-void plt_audio_callback(void *userdata, uint8 *_stream, int32 _length)
-{
-	float32 *stream = (float32 *)_stream;
-	int32 length = _length / 4;
-
-	while (0 < length)
-	{
-		float32 sample = sin(t * 2.0f * PI * tone_hz) * 28000;
-		t += 1.0f / spec_freq;/// (float32) (spec_freq / tone_hz);
-		*(stream++) = sample;
-		*(stream++) = sample;
-		length -= 2;
-	}
-}
-
 void free_file(OSFile file)
 {
 	if (file.data)
@@ -156,6 +137,18 @@ void free_file(OSFile file)
 		FREE(file.data);
 		file.data = 0;
 	}
+}
+
+uint8 *audio_pos;
+uint32 audio_length;
+
+float32 t = 0;
+uint32 tone_hz = 442;
+uint32 spec_freq = 44100;
+
+void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
+{
+	game_sound((float32 *) stream, length / (sizeof(float32) / sizeof(uint8)));
 }
 
 #ifdef asdas //__DEBUG 
@@ -228,20 +221,35 @@ int CALLBACK WinMain(
 	//	Audio Stuff.
 	//
 	
+#if 0
+	uint32 wav_length;
+	uint8 *wav_buffer;
+
+	if (SDL_LoadWAV("res/sine.wav", NULL, &wav_buffer, &wav_length) == 0)
+	{
+		DEBUG_LOG("Unable to load WAV file.");
+		SDL_Quit();
+		return(-1);
+	}
+#endif
+
 	SDL_AudioSpec audio_spec = {};
 	audio_spec.callback = plt_audio_callback;
-	audio_spec.freq = spec_freq; // Is this dumb? Is 44100 better?
+	audio_spec.freq = spec_freq;//spec_freq; // Is this dumb? Is 44100 better?
 	audio_spec.format = AUDIO_F32; // Maybe too high rez?
 	audio_spec.channels = 2; // This needs to be changeable.
 	audio_spec.samples = 4096; // Ideally we want this as small as possible.
-	if (SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0) == 0)
+	audio_spec.samples = 2048; // Ideally we want this as small as possible.
+	//audio_spec.callback = plt_audio_callback;
+	auto audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
+	if (audio_device == 0)
 	{
-		DEBUG_LOG("Unable to load audio.");
+		DEBUG_LOG("Unable to open audio device");
 		SDL_Quit();
 		return(-1);
 	}
 
-	SDL_PauseAudio(0);
+	SDL_PauseAudioDevice(audio_device, 0);
 	
 	DEBUG_LOG("Window launch!");
 
@@ -260,6 +268,9 @@ int CALLBACK WinMain(
 			if (event.type == SDL_KEYDOWN)
 			{
 				world.input.jump = true;
+				tone_hz = tone_hz * 1.1f;
+				if (tone_hz > 500)
+					tone_hz = 128;
 			}
 			if (event.type == SDL_KEYUP)
 			{
@@ -267,8 +278,7 @@ int CALLBACK WinMain(
 			}
 		}
 		
-		game_update(&world, 0.1f);
-		game_draw(&world);
+		game_step(&world, 0.1f);
 
 		SDL_GL_SwapWindow(window);
 	}

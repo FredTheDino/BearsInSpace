@@ -19,9 +19,9 @@
 // since windows dosn't allow it when not running a console 
 // application.
 
-void update(World *_world, float32 delta)
+
+void update(float32 delta)
 {
-	world = _world;
 
 	if (should_run_tests)
 	{
@@ -29,7 +29,7 @@ void update(World *_world, float32 delta)
 	}
 }
 
-void draw(World *world)
+void draw()
 {
 	// Initialize GLAD if necessary
 	if (!GL_LOADED)
@@ -51,4 +51,33 @@ void draw(World *world)
 	glVertex2f(0.5f, -0.5f);
 	glEnd();
 }
+
+extern "C"
+void step(World *_world, float32 delta)
+{
+	world = _world;
+	update(delta);
+	draw();
+}
+
+#define PI 3.1419f
+
+uint32 spec_freq = 44100;
+float32 t = 0;
+
+extern "C"
+void sound(float32 *buffer, int32 num_samples)
+{
+	while (num_samples)
+	{
+		float32 sample = sin(t * 2 * 442 * PI);
+		t += 1.0f / spec_freq;
+		float32 left_panning = sin(t * 2 * PI * 0.1f) * 0.5f;
+		//win_printf("---- %.2f\n", left_panning);
+		*buffer++ = sample * left_panning;
+		*buffer++ = sample * (1.0f - left_panning);
+		num_samples -= 2;
+	}
+}
+
 
