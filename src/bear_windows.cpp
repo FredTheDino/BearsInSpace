@@ -238,11 +238,9 @@ int CALLBACK WinMain(
 	audio_spec.freq = spec_freq;//spec_freq; // Is this dumb? Is 44100 better?
 	audio_spec.format = AUDIO_F32; // Maybe too high rez?
 	audio_spec.channels = 2; // This needs to be changeable.
-	audio_spec.samples = 4096; // Ideally we want this as small as possible.
 	audio_spec.samples = 2048; // Ideally we want this as small as possible.
-	//audio_spec.callback = plt_audio_callback;
 	auto audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
-	if (audio_device == 0)
+	if (!audio_device)
 	{
 		DEBUG_LOG("Unable to open audio device");
 		SDL_Quit();

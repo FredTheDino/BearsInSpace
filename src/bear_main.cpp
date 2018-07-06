@@ -71,9 +71,9 @@ void sound(float32 *buffer, int32 num_samples)
 	while (num_samples)
 	{
 		float32 sample = sin(t * 2 * 442 * PI);
+		sample = 0.0f; // This is so it doesn't get annoying.
 		t += 1.0f / spec_freq;
 		float32 left_panning = sin(t * 2 * PI * 0.1f) * 0.5f;
-		//win_printf("---- %.2f\n", left_panning);
 		*buffer++ = sample * left_panning;
 		*buffer++ = sample * (1.0f - left_panning);
 		num_samples -= 2;
