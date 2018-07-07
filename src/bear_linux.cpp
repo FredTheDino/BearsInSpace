@@ -191,7 +191,7 @@ int main(int varc, char *varv[])
 	SDL_AudioSpec audio_spec = {};
 	audio_spec.callback = plt_audio_callback;
 	audio_spec.freq = spec_freq; // Is this dumb? Is 44100 better?
-	audio_spec.format = AUDIO_F32; // Maybe too high rez?
+	audio_spec.format = AUDIO_S16; // Maybe too high rez?
 	audio_spec.channels = 2; // This needs to be changeable.
 	audio_spec.samples = 2048; // Ideally we want this as small as possible.
 	auto audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);

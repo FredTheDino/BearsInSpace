@@ -11,6 +11,7 @@
 #include "glad.c"
 
 #include "bear_test.cpp"
+#include "bear_audio.cpp"
 
 // This file is included in each platform specific file. 
 // This file should _NOT HAVE ANY_ platform specific code.
@@ -20,12 +21,17 @@
 // application.
 
 
+
 void update(float32 delta)
 {
 
 	if (should_run_tests)
 	{
 		run_tests();
+
+		// TEMP!
+		AudioID id = load_sound("res/sample.wav");
+		//play_sound(id);
 	}
 }
 
@@ -71,7 +77,7 @@ void sound(float32 *buffer, int32 num_samples)
 	while (num_samples)
 	{
 		float32 sample = sin(t * 2 * 442 * PI);
-		sample = 0.0f; // This is so it doesn't get annoying.
+		//sample = 0.0f; // This is so it doesn't get annoying.
 		t += 1.0f / spec_freq;
 		float32 left_panning = sin(t * 2 * PI * 0.1f) * 0.5f;
 		*buffer++ = sample * left_panning;

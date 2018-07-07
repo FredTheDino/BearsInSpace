@@ -139,13 +139,6 @@ void free_file(OSFile file)
 	}
 }
 
-uint8 *audio_pos;
-uint32 audio_length;
-
-float32 t = 0;
-uint32 tone_hz = 442;
-uint32 spec_freq = 44100;
-
 void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
 {
 	game_sound((float32 *) stream, length / (sizeof(float32) / sizeof(uint8)));
