@@ -4,6 +4,7 @@
 #include "glad.h"
 
 #include "bear_types.h"
+#include "bear_audio.h"
 
 struct OSFile
 {
@@ -42,6 +43,9 @@ struct World
 
 	// Platform functions.
 	PLT plt;
+
+	// Audio, so the world can feel the beets.
+	Audio audio;
 
 	// TODO: Remove in reloase
 	uint32 __mem_length = 0;

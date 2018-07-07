@@ -30,7 +30,7 @@ void update(float32 delta)
 		run_tests();
 
 		// TEMP!
-		AudioID id = load_sound("res/sample.wav");
+		AudioID id = load_sound(&world->audio, "res/sample.wav");
 		//play_sound(id);
 	}
 }
@@ -68,7 +68,7 @@ void step(World *_world, float32 delta)
 
 #define PI 3.1419f
 
-uint32 spec_freq = 44100;
+//uint32 spec_freq = 44100;
 float32 t = 0;
 
 extern "C"

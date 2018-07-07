@@ -1,8 +1,8 @@
 #include "bear_audio.h"
 
 // Unknown if needed.
-AudioID load_sound(const char *path); // NOTE(Ed): Assumes WAV
-AudioID play_sound(AudioID buffer_id, float32 volume, float32 pitch);
+//AudioID load_sound(const char *path); // NOTE(Ed): Assumes WAV
+//AudioID play_sound(AudioID buffer_id, float32 volume, float32 pitch) { return {0, 0}; }
 
 struct WAVHeader
 {
@@ -34,6 +34,29 @@ void copy(uint8 *to, uint8 *from, uint32 length)
 		*to++ = *from++;
 }
 
+AudioID add_buffer(Audio *audio, AudioBuffer buffer)
+{
+	AudioID id;
+	id.uid = audio->uid_counter++;
+	if (audio->uid_counter < 0) audio->uid_counter = 0;
+	
+	if (audio->free_buffer < 0)
+	{
+		// We need to append
+		id.pos = audio->max_buffer++;
+	}
+	else
+	{
+		// We need to swap shit
+		id.pos = -audio->free_buffer;
+		audio->free_buffer = -audio->buffers[id.pos].pos;
+	}
+
+	buffer.id = id;
+	audio->buffers[id.pos] = buffer;
+	return id;
+}
+
 AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 {
 	OSFile file = world->plt.read_file(path);
@@ -41,15 +64,15 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 	WAVHeader *header = (WAVHeader *) ptr;
 	ptr += sizeof(WAVHeader);
 
-	ASSERT(header->riff[0] == 'r');
-	ASSERT(header->riff[1] == 'i');
-	ASSERT(header->riff[2] == 'f');
-	ASSERT(header->riff[3] == 'f');
+	ASSERT(header->riff[0] == 'R');
+	ASSERT(header->riff[1] == 'I');
+	ASSERT(header->riff[2] == 'F');
+	ASSERT(header->riff[3] == 'F');
 
-	ASSERT(header->wave[0] == 'w');
-	ASSERT(header->wave[1] == 'a');
-	ASSERT(header->wave[2] == 'v');
-	ASSERT(header->wave[3] == 'e');
+	ASSERT(header->wave[0] == 'W');
+	ASSERT(header->wave[1] == 'A');
+	ASSERT(header->wave[2] == 'V');
+	ASSERT(header->wave[3] == 'E');
 
 	ASSERT(header->fmt[0] == 'f');
 	ASSERT(header->fmt[1] == 'm');
@@ -78,24 +101,34 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 	{
 		uint16 length = buffer.length * buffer.channels;
 		int8 *to = MALLOC2(int8, length);
-		int8 *from = ptr;
-		while (length--)
-			*to++ = *from++;
+		int8 *from = (int8 *) ptr;
+		for (uint16 i = 0; i < length; i++)
+			to[i] = from[i];
+		buffer.data8 = to;
 	}
 	else if (buffer.bitdepth == 16)
 	{
 		uint16 length = buffer.length * buffer.channels;
 		int16 *to = MALLOC2(int16, length);
-		int16 *from = ptr;
-		while (length--)
-			*to++ = *from++;
+		int16 *from = (int16 *) ptr;
+		for (uint16 i = 0; i < length; i++)
+			to[i] = from[i];
+		buffer.data16 = to;
+	}
+	else if (buffer.bitdepth == 32)
+	{
+		uint16 length = buffer.length * buffer.channels;
+		int32 *to = MALLOC2(int32, length);
+		int32 *from = (int32 *) ptr;
+		for (uint16 i = 0; i < length; i++)
+			to[i] = from[i];
+		buffer.data32 = to;
 	}
 	else
 	{
 		ASSERT(!"Unsupported bitdepth!");
 	}
 
-	world->plt.free_file(file);
-	return {0, 0};
+	return add_buffer(sound, buffer);
 }
 

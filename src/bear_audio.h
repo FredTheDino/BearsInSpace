@@ -1,11 +1,10 @@
 #pragma once
 typedef int16 SND;
 
-const uint32 spec_freq = 44100; // The frequency we output.
+const uint32 spec_freq = 44100; // Move this.
 
 // TODO(Ed): I need a floor and ceil function.
-// TODO(Ed): Ambience might be nice.
-// TODO(Ed): We need to support OGG files for all those HUGE music files.
+// TODO(Ed): We need to support OGG files for all those HUGE music files, eventually.
 
 #define BEAR_MAX_AUDIO_BUFFERS 512
 #define BEAR_MAX_AUDIO_SOURCES 64
@@ -23,6 +22,7 @@ struct AudioID
 
 struct AudioBuffer
 {
+	AudioID id;
 
 	uint8 channels;
 	uint8 bitdepth;
@@ -39,11 +39,10 @@ struct AudioBuffer
 
 struct AudioSource
 {
-	AudioID source_id;
+	AudioID id;
 	AudioID buffer_id;
 	int64 current_sample;
 
-	// For both music and sound fx.
 	float32 pitch; // How does this work?
 	float32 volume; // We do some fading.
 	// float32 curr_volume;
@@ -52,10 +51,14 @@ struct AudioSource
 
 struct Audio
 {
-	uint32 num_buffers;
-	int32 last_free_buffer;
+	int16 uid_counter = 0;
+
+	int32 free_buffer;
+	uint32 max_buffer;
 	AudioBuffer buffers[BEAR_MAX_AUDIO_BUFFERS];
-	int32 last_free_source;
+
+	int32 free_source;
+	uint32 max_source;
 	AudioSource sources[BEAR_MAX_AUDIO_SOURCES];
 };
 

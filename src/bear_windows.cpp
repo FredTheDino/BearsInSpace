@@ -259,9 +259,6 @@ int CALLBACK WinMain(
 			if (event.type == SDL_KEYDOWN)
 			{
 				world.input.jump = true;
-				tone_hz = tone_hz * 1.1f;
-				if (tone_hz > 500)
-					tone_hz = 128;
 			}
 			if (event.type == SDL_KEYUP)
 			{
