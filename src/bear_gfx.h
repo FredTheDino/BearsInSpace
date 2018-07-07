@@ -1,4 +1,4 @@
 #pragma once
 
 #include "bear_array.h"
-#include "bear_renderer.h"
+#include "gfx/bear_renderer.h"

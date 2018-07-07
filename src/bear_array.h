@@ -1,5 +1,16 @@
 #pragma once
 
+#include <initializer_list>
+
+// Forwarding
+template <typename T>
+struct Array;
+template <typename T>
+Array<T> create_array(uint64);
+template <typename T>
+void append(Array<T> *, T);
+
+// Definition
 template <typename T>
 struct Array
 {
@@ -11,17 +22,23 @@ struct Array
 	{
 		return get(*this, index);
 	}
+	
+	Array<T>();
+	
+	Array<T>(std::initializer_list<T> list)
+	{
+		*this = create_array<T>((uint64) list.size());
+		for (auto e : list)
+			append(this, e);
+	}
 };
 
+// Functions
 template <typename T>
 Array<T> create_array(uint64 limit)
 {
 	Array<T> arr;
-	#ifdef BEAR_GAME
-	arr.data = (T*) (world->plt.malloc(__FILE__, __LINE__, sizeof(T) * limit));
-	#else
-	arr.data = (T*) (world.plt.malloc(__FILE__, __LINE__, sizeof(T) * limit));
-	#endif
+	arr.data = MALLOC2(T, limit);
 	arr.limit = limit;
 	arr.size = 0;
 	return arr;
@@ -54,7 +71,10 @@ template <typename T>
 void relimit(Array<T> *arr, uint64 limit)
 {
 	if (arr->limit >= limit)
+	{
+		arr->size = limit;
 		return;
+	}
 	
 	arr->data = (T *) REALLOC(arr->data, limit * sizeof(T));
 	

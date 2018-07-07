@@ -12,13 +12,13 @@
 
 // Custom Math functions.
 template <typename T>
-T min(T a, T b)
+T minimum(T a, T b)
 {
 	return (a < b) ? a : b;
 }
 
 template <typename T>
-T max(T a, T b)
+T maximum(T a, T b)
 {
 	return (a > b) ? a : b;
 }

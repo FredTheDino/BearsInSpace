@@ -1,6 +1,6 @@
 @echo off
 
-set C_FLAGS=-FC -I../inc -DWINDOWS=1 
+set C_FLAGS=-FC -I../inc -DWINDOWS=1  /std:c++14
 set D_FLAGS=-Zi -MT -Od -D__DEBUG
 set R_FLAGS=-MD -O2 
 set C_LINK_FLAGS=/link /LIBPATH:..\lib\win64 SDL2.lib SDL2main.lib 
@@ -22,7 +22,7 @@ if %IS_RELEASE% == "yes" (
 	cl %C_FLAGS% %R_FLAGS% -Fegame.exe  ..\src\bear_windows.cpp %C_LINK_FLAGS% %R_LINK_FLAGS%
 ) else (
 	del *.pdb
-	cl %C_FLAGS% %D_FLAGS% /LD -Felibbear.dll ..\src\bear_main.cpp /link /PDB:handmade_%RANDOM%.pdb /EXPORT:update /EXPORT:draw -incremental:no
+	cl %C_FLAGS% %D_FLAGS% /LD -Felibbear.dll ..\src\bear_main.cpp /link /PDB:handmade_%RANDOM%.pdb /EXPORT:step /EXPORT:sound -incremental:no
 	cl %C_FLAGS% %D_FLAGS% -Fegame.exe ..\src\bear_windows.cpp %C_LINK_FLAGS%
 )
 

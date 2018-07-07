@@ -1,9 +1,9 @@
 # -nostdinc
 #  -Werror
 make:
-	g++ -ggdb -Wall -std=c++11 -O0 -D__DEBUG=1 -DLINUX -fPIC src/bear_main.cpp -shared -o bin/libbear_.so 
+	g++ -ggdb -Wall -Wno-unused-function -std=c++14 -O0 -D__DEBUG=1 -DLINUX -fPIC src/bear_main.cpp -shared -o bin/libbear_.so 
 	mv bin/libbear_.so bin/libbear.so
-	g++ -ggdb -Wall -std=c++11 -O0 -D__DEBUG=1 -DLINUX src/bear_linux.cpp -o bin/game -Iinc -L./lib/linux -lSDL2 -lSDL2main -ldl -lpthread
+	g++ -ggdb -Wall -std=c++14 -O0 -D__DEBUG=1 -DLINUX src/bear_linux.cpp -o bin/game -Iinc -L./lib/linux -lSDL2 -lSDL2main -ldl -lpthread
 
 run: make
 	./bin/game

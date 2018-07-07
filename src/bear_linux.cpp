@@ -4,13 +4,15 @@
 #include <unistd.h>
 
 #include "bear_main.h"
-#include "bear_memory.h"
 #include "glad.c"
 
-UpdateFunc game_update;
-DrawFunc game_draw;
+typedef void (*StepFunc)(World *, float32);
+typedef void (*SoundFunc)(float32 *, int32);
 
-int32 last_edit;
+StepFunc game_step;
+SoundFunc game_sound;
+
+int32 last_edit = -1;
 void *handle;
 
 MemoryAllocation __mem[1024];
@@ -64,7 +66,6 @@ void free_file(OSFile file)
 
 bool load_libgame()
 {
-	// Check if it has rebuilt, assume it has
 	const char *path = "./bin/libbear.so";
 
 	int32 new_last_edit = get_file_edit_time(path);
@@ -82,7 +83,7 @@ bool load_libgame()
 	}
 
 	dlerror();
-	dlsym(temp_handle, "update");
+	dlsym(temp_handle, "step");
 	auto error_code = dlerror();
 	if (error_code)
 	{
@@ -96,25 +97,38 @@ bool load_libgame()
 	}
 	handle = dlopen(path, RTLD_NOW);
 
-	UpdateFunc new_game_update = (UpdateFunc) dlsym(handle, "update");
-	DrawFunc   new_game_draw   = (DrawFunc)   dlsym(handle, "draw");
+	StepFunc  new_game_step		= (StepFunc)  dlsym(handle, "step");
+	SoundFunc new_game_sound	= (SoundFunc) dlsym(handle, "sound");
 
-	if (!new_game_draw)
+	if (!new_game_step)
 	{
 		return false;
-		DEBUG_LOG("Failed to load draw");
+		DEBUG_LOG("Failed to load step function.");
 	}
-	game_draw = new_game_draw;
-	if (!new_game_update)
+	game_step = new_game_step;
+	if (!new_game_sound)
 	{
 		return false;
-		DEBUG_LOG("Failed to load update");
+		DEBUG_LOG("Failed to load sound function.");
 	}
-	game_update = new_game_update;
+	game_sound = new_game_sound;
 
 	DEBUG_LOG("Reload!");
 	last_edit = new_last_edit;
 	return true;
+}
+
+#define PI 3.141592653f
+
+float32 t;
+uint32 tone_hz = 441;
+uint32 spec_freq = 44100;
+
+#include <stdlib.h>
+
+void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
+{
+	game_sound((float32 *) stream, length / (sizeof(float32) / sizeof(uint8)));
 }
 
 int main(int varc, char *varv[])
@@ -123,7 +137,7 @@ int main(int varc, char *varv[])
 	world.plt.free = free_;
 	world.plt.realloc = realloc_;
 
-	world.plt.log = DEBUG_LOG_;
+	world.plt.log = debug_log_;
 	world.plt.print = printf;
 
 	world.plt.read_file = read_entire_file;
@@ -134,6 +148,9 @@ int main(int varc, char *varv[])
 
 	if (!load_libgame())
 	{
+
+		DEBUG_LOG("Failed to load libgame.so");
+		SDL_Quit();
 		return(-1);
 	}
 
@@ -156,8 +173,8 @@ int main(int varc, char *varv[])
 	SDL_RaiseWindow(window);
 	
 	// TODO: Use OpenGL 3.3, or newer. This is just to get hello triangle.
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetSwapInterval(1);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -170,6 +187,22 @@ int main(int varc, char *varv[])
 		SDL_Quit();
 		return(-1);
 	}
+
+	SDL_AudioSpec audio_spec = {};
+	audio_spec.callback = plt_audio_callback;
+	audio_spec.freq = spec_freq; // Is this dumb? Is 44100 better?
+	audio_spec.format = AUDIO_F32; // Maybe too high rez?
+	audio_spec.channels = 2; // This needs to be changeable.
+	audio_spec.samples = 2048; // Ideally we want this as small as possible.
+	auto audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
+	if (!audio_device)
+	{
+		DEBUG_LOG("Unable to load audio.");
+		SDL_Quit();
+		return(-1);
+	}
+
+	SDL_PauseAudioDevice(audio_device, 0);
 
 	DEBUG_LOG("Linux launch!");
 	
@@ -195,11 +228,11 @@ int main(int varc, char *varv[])
 			}
 		}
 		
-		game_update(&world, 0.1f);
-		game_draw(&world);
+		game_step(&world, 0.1f);
 
 		SDL_GL_SwapWindow(window);
 	}
+	SDL_CloseAudio();
 	SDL_Quit();
 
 	//TODO: Make this a function so each platform layer can call it.
