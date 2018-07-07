@@ -36,14 +36,6 @@ void update(float32 delta)
 
 void draw()
 {
-	// Initialize GLAD if necessary
-	if (!GL_LOADED)
-	{
-		gladLoadGL();
-		Mesh mesh = load_mesh("res/monkey.obj");
-		free_mesh(mesh);
-	}
-
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -55,6 +47,14 @@ void step(World *_world, float32 delta)
 {
 	world = _world;
 
+	// Initialize GLAD if necessary
+	if (!GL_LOADED)
+	{
+		gladLoadGL();
+		Mesh mesh = load_mesh("res/monkey.obj");
+		free_mesh(mesh);
+	}
+	
 	// Enter first state
 	if (!valid_state(world->state))
 		world->next_state = test_state;

@@ -173,8 +173,8 @@ int main(int varc, char *varv[])
 	SDL_RaiseWindow(window);
 	
 	// TODO: Use OpenGL 3.3, or newer. This is just to get hello triangle.
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 	SDL_GL_SetSwapInterval(1);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -231,6 +231,9 @@ int main(int varc, char *varv[])
 		game_step(&world, 0.1f);
 
 		SDL_GL_SwapWindow(window);
+
+		if (!running)
+			world.state.exit();
 	}
 	SDL_CloseAudio();
 	SDL_Quit();

@@ -23,7 +23,7 @@ struct Array
 		return get(*this, index);
 	}
 	
-	Array<T>();
+	Array<T>() {};
 	
 	Array<T>(std::initializer_list<T> list)
 	{
