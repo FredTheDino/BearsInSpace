@@ -55,12 +55,8 @@ void relimit(Array<T> *arr, uint64 limit)
 {
 	if (arr->limit >= limit)
 		return;
-
-	#ifdef BEAR_GAME
+	
 	arr->data = (T *) REALLOC(arr->data, limit * sizeof(T));
-	#else
-	arr->data = (T *) realloc(arr->data, limit * sizeof(T));
-	#endif
 	
 	arr->limit = limit;
 	if (arr->size > arr->limit)
@@ -120,11 +116,7 @@ void delete_array(Array<T> *arr)
 {
 	if (arr->data)
 	{
-		#ifdef BEAR_GAME
 		FREE(arr->data);
-		#else
-		free(arr->data);
-		#endif
 		arr->data = 0;
 	}
 }

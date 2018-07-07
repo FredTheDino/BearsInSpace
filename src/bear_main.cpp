@@ -10,6 +10,8 @@
 #include "bear_obj_loader.cpp"
 #include "glad.c"
 
+#include "bear_gfx.h"
+
 #include "bear_test.cpp"
 
 // This file is included in each platform specific file. 
@@ -48,7 +50,5 @@ void draw(World *world)
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	GFX::draw(*world->renderable);
 }
 
