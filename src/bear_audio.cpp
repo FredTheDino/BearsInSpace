@@ -1,9 +1,5 @@
 #include "bear_audio.h"
 
-// Unknown if needed.
-//AudioID load_sound(const char *path); // NOTE(Ed): Assumes WAV
-//AudioID play_sound(AudioID buffer_id, float32 volume, float32 pitch) { return {0, 0}; }
-
 struct WAVHeader
 {
 	char  riff[4];
@@ -28,28 +24,55 @@ struct WAVChunk
 	int32 size;
 };
 
-void copy(uint8 *to, uint8 *from, uint32 length)
+AudioID play_sound(Audio *audio, AudioID buffer_id, float32 volume, float32 pitch) 
+{ 
+	AudioSource source { buffer_id, buffer_id, 0, volume, pitch };
+
+	AudioID id;
+	id.uid = audio->uid_counter++;
+	if (audio->uid_counter < 0) audio->uid_counter = 1;
+	
+	if (audio->free_source < 0)
+	{
+		// We need to swap shit
+		id.pos = -audio->free_source;
+		audio->free_source = -audio->sources[id.pos].id.uid;
+	}
+	else
+	{
+		// We need to append
+		id.pos = audio->max_source++;
+	}
+
+	source.id = id;
+	audio->sources[id.pos] = source;
+	return id;
+}
+
+AudioBuffer get_buffer(Audio *audio, AudioID id)
 {
-	while (length--)
-		*to++ = *from++;
+	AudioBuffer buffer = audio->buffers[id.pos];
+	if (id == buffer.id)
+		return buffer;
+	return {};
 }
 
 AudioID add_buffer(Audio *audio, AudioBuffer buffer)
 {
 	AudioID id;
 	id.uid = audio->uid_counter++;
-	if (audio->uid_counter < 0) audio->uid_counter = 0;
+	if (audio->uid_counter < 0) audio->uid_counter = 1;
 	
 	if (audio->free_buffer < 0)
 	{
-		// We need to append
-		id.pos = audio->max_buffer++;
+		// We need to swap shit
+		id.pos = -audio->free_buffer;
+		audio->free_buffer = -audio->buffers[id.pos].id.uid;
 	}
 	else
 	{
-		// We need to swap shit
-		id.pos = -audio->free_buffer;
-		audio->free_buffer = -audio->buffers[id.pos].pos;
+		// We need to append
+		id.pos = audio->max_buffer++;
 	}
 
 	buffer.id = id;
@@ -95,7 +118,7 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 	buffer.channels = header->channels;
 	buffer.bitdepth = header->bitdepth;
 	buffer.sample_rate = header->sample_rate;
-	buffer.length = chunk->size / (header->channels * header->bitdepth / 8); // Num samples
+	buffer.length = chunk->size / (header->bitdepth / 8); // Num samples
 
 	if (buffer.bitdepth == 8)
 	{
@@ -117,9 +140,9 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 	}
 	else if (buffer.bitdepth == 32)
 	{
-		uint16 length = buffer.length * buffer.channels;
-		int32 *to = MALLOC2(int32, length);
-		int32 *from = (int32 *) ptr;
+		uint16 length = chunk->size / (buffer.bitdepth / 8);
+		float32 *to = MALLOC2(float32, length);
+		float32 *from = (float32 *) ptr;
 		for (uint16 i = 0; i < length; i++)
 			to[i] = from[i];
 		buffer.data32 = to;
@@ -129,6 +152,6 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 		ASSERT(!"Unsupported bitdepth!");
 	}
 
-	return add_buffer(sound, buffer);
+	return add_buffer(audio, buffer);
 }
 

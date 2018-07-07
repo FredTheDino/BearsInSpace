@@ -33,7 +33,7 @@ struct AudioBuffer
 		void *data;
 		int8 *data8;
 		int16 *data16;
-		int32 *data32;
+		float32 *data32;
 	};
 };
 
@@ -43,7 +43,7 @@ struct AudioSource
 	AudioID buffer_id;
 	int64 current_sample;
 
-	float32 pitch; // How does this work?
+	float32 pitch;
 	float32 volume; // We do some fading.
 	// float32 curr_volume;
 	// bool loop;
@@ -51,14 +51,14 @@ struct AudioSource
 
 struct Audio
 {
-	int16 uid_counter = 0;
+	int16 uid_counter = 1;
 
-	int32 free_buffer;
-	uint32 max_buffer;
+	int32 free_buffer = 0;
+	uint32 max_buffer = 0;
 	AudioBuffer buffers[BEAR_MAX_AUDIO_BUFFERS];
 
-	int32 free_source;
-	uint32 max_source;
+	int32 free_source = 0;
+	uint32 max_source = 0;
 	AudioSource sources[BEAR_MAX_AUDIO_SOURCES];
 };
 
