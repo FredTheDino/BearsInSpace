@@ -231,10 +231,8 @@ int main(int varc, char *varv[])
 		game_step(&world, 0.1f);
 
 		SDL_GL_SwapWindow(window);
-
-		if (!running)
-			world.state.exit();
 	}
+	world.state.exit();
 	SDL_CloseAudio();
 	SDL_Quit();
 
