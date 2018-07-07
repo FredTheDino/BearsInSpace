@@ -279,6 +279,9 @@ int CALLBACK WinMain(
 		game_step(&world, 0.1f);
 
 		SDL_GL_SwapWindow(window);
+
+		if (!running)
+			world.state.exit();
 	}
 	SDL_CloseAudio();
 	SDL_Quit();
