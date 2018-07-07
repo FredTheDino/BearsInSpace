@@ -35,10 +35,10 @@ struct MemoryAllocation
 
 struct GameState
 {
-	void (*enter)() = nullptr;
-	void (*update)(float32) = nullptr;
-	void (*draw)() = nullptr;
-	void (*exit)() = nullptr;
+	void (*enter)();
+	void (*update)(float32);
+	void (*draw)();
+	void (*exit)();
 };
 
 inline bool valid_state(GameState state)

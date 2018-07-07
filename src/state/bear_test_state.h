@@ -17,18 +17,18 @@ namespace GSTEST
 		};
 
 		for (int i = 0; i < 6; i++)
-			printf("%d: %f\n", i, data[i]);
+			PRINT("%d: %f\n", i, data[i]);
 		
 		vertex_buffer = GFX::create_vertex_buffer(data);
 		
 		delete_array(&data);
 		
 		// Vertex array
-		Array<GFX::VertexAttribute> attributes = { { vertex_buffer, 0, 2, GL_FLOAT } };
+		Array<GFX::VertexAttribute> attributes = { {vertex_buffer, 0, 2, GL_FLOAT} };
 		vertex_array = GFX::create_vertex_array(attributes);
 		delete_array(&attributes);
 
-		printf("Has indices: %d\n", (int) vertex_array.has_indices);
+		PRINT("Has indices: %d\n", (int) vertex_array.has_indices);
 
 		// Renderable
 		renderable.vertex_array = vertex_array;

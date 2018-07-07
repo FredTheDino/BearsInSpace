@@ -11,15 +11,15 @@ namespace GFX
 		uint32       location;
 		uint32       size;
 		uint32       type;
-		bool         normalized = false;
-		int32        stride = 0;
-		const void  *offset = NULL;
+		bool         normalized;
+		int32        stride;
+		const void  *offset;
 	};
 
 	struct VertexArray
 	{
-		uint32 id = 0;
-		bool has_indices = false;
+		uint32 id;
+		bool has_indices;
 	};
 
 	VertexArray create_vertex_array(Array<VertexAttribute> attribs, IndexBuffer index_buffer={})
