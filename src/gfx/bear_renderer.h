@@ -1,7 +1,7 @@
 #pragma once
 
 #include "bear_vertex_array.h"
-//#include "shaderprogram.h"
+#include "bear_shader_program.h"
 //#include "transform.h"
 //#include "texture.h"
 
@@ -19,7 +19,7 @@ namespace GFX
 	struct Renderable
 	{
 		VertexArray          vertex_array;
-		//ShaderProgram       *program;
+		ShaderProgram        program;
 		uint32               num_vertices;
 		//Texture             *texture;
 		Array<MatrixProfile> matrix_profiles;
@@ -28,9 +28,9 @@ namespace GFX
 	void draw(Renderable r, uint32 mode=GL_TRIANGLES,
 			  bool use_global_matrix_profiles=true)
 	{
-		/*r.program->bind();
+		bind(r.program);
 
-		if (use_global_matrix_profiles)
+		/*if (use_global_matrix_profiles)
 			for (uint64 i = 0; i < size(matrix_profiles); i++)
 				r.program->sendM4(mp.first.c_str(), mp.second->matrix());
 

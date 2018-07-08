@@ -33,33 +33,12 @@ struct MemoryAllocation
 	void *ptr;
 };
 
-struct GameState
-{
-	void (*enter)() = nullptr;
-	void (*update)(float32) = nullptr;
-	void (*draw)() = nullptr;
-	void (*exit)() = nullptr;
-};
-
-inline bool valid_state(GameState state)
-{
-	return state.enter  != nullptr
-		&& state.update != nullptr
-		&& state.draw   != nullptr
-		&& state.exit   != nullptr;
-}
-
 struct World
 {
 	struct Input
 	{
 		bool jump;
 	} input;
-
-	// Current game state
-	GameState state;
-	// If valid, the current state will be changed before next frame
-	GameState next_state;
 	
 	// Platform functions.
 	PLT plt;

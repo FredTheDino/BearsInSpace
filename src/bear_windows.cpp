@@ -280,7 +280,6 @@ int CALLBACK WinMain(
 
 		SDL_GL_SwapWindow(window);
 	}
-	world.state.exit();
 	SDL_CloseAudio();
 	SDL_Quit();
 

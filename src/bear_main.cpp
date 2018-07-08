@@ -11,7 +11,6 @@
 #include "glad.c"
 
 #include "bear_gfx.h"
-#include "bear_states.h"
 
 #include "bear_test.cpp"
 
@@ -22,6 +21,10 @@
 // since windows dosn't allow it when not running a console 
 // application.
 
+GFX::Renderable renderable;
+GFX::VertexBuffer vertex_buffer;
+GFX::VertexArray vertex_array;
+GFX::ShaderProgram program;
 
 void update(float32 delta)
 {
@@ -31,7 +34,7 @@ void update(float32 delta)
 		run_tests();
 	}
 
-	world->state.update(delta);
+	
 }
 
 void draw()
@@ -39,7 +42,7 @@ void draw()
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	world->state.draw();
+	GFX::draw(renderable);
 }
 
 extern "C"
@@ -53,25 +56,35 @@ void step(World *_world, float32 delta)
 		gladLoadGL();
 		Mesh mesh = load_mesh("res/monkey.obj");
 		free_mesh(mesh);
-	}
-	
-	// Enter first state
-	if (!valid_state(world->state))
-		world->next_state = test_state;
 
-	// Enter new state
-	if (valid_state(world->next_state))
-	{
-		// Call exit function on old state
-		if (valid_state(world->state))
-			world->state.exit();
+		// Shader program
+		Array<GFX::ShaderInfo> shader_info = {
+			{ GL_VERTEX_SHADER, "src/shader/simple.vert" },
+			{ GL_FRAGMENT_SHADER, "src/shader/simple.frag" }
+		};
 
-		// Set next state as current
-		world->state = world->next_state;
-		world->next_state = {};
+		program = GFX::create_shader_program(shader_info);
+		delete_array(&shader_info);
+		
+		// Vertex buffer
+		Array<float32> data = {
+			.0f, .5f,
+			.5f, -.5f,
+			-.5f, -.5f
+		};
+		
+		vertex_buffer = GFX::create_vertex_buffer(data);
+		delete_array(&data);
+		
+		// Vertex array
+		Array<GFX::VertexAttribute> attributes = { { vertex_buffer, 0, 2, GL_FLOAT } };
+		vertex_array = GFX::create_vertex_array(attributes);
+		delete_array(&attributes);
 
-		// Call enter function on new state
-		world->state.enter();
+		// Renderable
+		renderable.vertex_array = vertex_array;
+		renderable.num_vertices = 3;
+		renderable.program = program;
 	}
 	
 	update(delta);
