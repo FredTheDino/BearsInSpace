@@ -233,16 +233,6 @@ int main(int varc, char *varv[])
 	SDL_CloseAudio();
 	SDL_Quit();
 
-	//TODO: Make this a function so each platform layer can call it.
-	// Memory check
-	if (world.__mem_length != 0)
-	{
-		for (uint8 i = 0; i < world.__mem_length; i++)
-		{
-			MemoryAllocation alloc = world.__mem[i];
-			printf("[MEM] Not freed (%s:%d)", alloc.file, alloc.line);
-		}
-	}
-
+	check_for_leaks();
 	return 0;
 }

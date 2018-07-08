@@ -15,6 +15,7 @@ typedef void (*SoundFunc)(int16 *, int32);
 
 StepFunc game_step;
 SoundFunc game_sound;
+bool lock_sound = false;
 
 // This is ugly... I know.
 MemoryAllocation __mem[1024];
@@ -99,8 +100,14 @@ bool load_libbear()
 
 	DEBUG_LOG("Reload!");
 	last_access_time = last;
+
 	game_step = step;
+
+	while (lock_sound);
+	lock_sound = true;
 	game_sound = sound;
+	lock_sound = false;
+
 	return true;
 }
 
@@ -141,7 +148,11 @@ void free_file(OSFile file)
 
 void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
 {
+	while (lock_sound);
+	lock_sound = true;
 	game_sound((int16 *) stream, length / 2);
+
+	lock_sound = false;
 }
 
 #ifdef asdas //__DEBUG 
@@ -170,6 +181,7 @@ int CALLBACK WinMain(
 	world.audio = {};
 	world.audio.buffers = MALLOC2(AudioBuffer, BEAR_MAX_AUDIO_BUFFERS);
 	world.audio.sources = MALLOC2(AudioSource, BEAR_MAX_AUDIO_SOURCES);
+
 
 	if (load_libbear() == false)
 	{
@@ -234,7 +246,7 @@ int CALLBACK WinMain(
 	audio_spec.freq = spec_freq;//spec_freq; // Is this dumb? Is 44100 better?
 	audio_spec.format = AUDIO_S16; // Maybe too high rez?
 	audio_spec.channels = 2; // This needs to be changeable.
-	audio_spec.samples = 2048; // Ideally we want this as small as possible.
+	audio_spec.samples = 1024; // Ideally we want this as small as possible.
 	auto audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
 	if (!audio_device)
 	{
@@ -276,8 +288,10 @@ int CALLBACK WinMain(
 	SDL_CloseAudio();
 	SDL_Quit();
 
-	return(1);
+	FREE(world.audio.sources);
+	FREE(world.audio.buffers);
+
+	check_for_leaks();
 	return 0;
-	//return(bear_main());
 }
 

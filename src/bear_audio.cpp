@@ -26,27 +26,44 @@ struct WAVChunk
 
 AudioID play_sound(Audio *audio, AudioID buffer_id, float32 volume, float32 pitch) 
 { 
-	AudioSource source { buffer_id, buffer_id, 0, volume, pitch };
+ 	AudioSource source { buffer_id, buffer_id, 0, volume, pitch };
 
 	AudioID id;
 	id.uid = audio->uid_counter++;
-	if (audio->uid_counter < 0) audio->uid_counter = 1;
+	if (audio->uid_counter < 0) audio->uid_counter = 0;
 	
 	if (audio->free_source < 0)
 	{
-		// We need to swap shit
-		id.pos = -audio->free_source;
-		audio->free_source = -audio->sources[id.pos].id.uid;
+		id.pos = -audio->free_source - 1;
+		audio->free_source = audio->sources[id.pos].id.pos;
 	}
 	else
 	{
-		// We need to append
-		id.pos = audio->max_source++;
+		id.pos = audio->free_source++;
 	}
 
+	audio->max_source = maximum(audio->max_source, (int32) id.pos);
 	source.id = id;
 	audio->sources[id.pos] = source;
 	return id;
+}
+
+void stop_audio(Audio *audio, AudioID id)
+{
+	AudioSource source = audio->sources[id.pos];
+	if (source.id != id) return;
+	
+	uint32 pos = id.pos;
+	id.pos = audio->free_source;
+	id.uid = -1;
+	audio->free_source = -pos - 1;
+	audio->sources[pos].id = id;
+
+	if (pos == audio->max_source)
+	{
+		while (audio->sources[audio->max_source].id.uid < 0 && 0 <= audio->max_source)
+			audio->max_source--;
+	}
 }
 
 AudioBuffer get_buffer(Audio *audio, AudioID id)
@@ -121,7 +138,7 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 	buffer.channels = header->channels;
 	buffer.bitdepth = header->bitdepth;
 	buffer.sample_rate = header->sample_rate;
-	buffer.length = chunk->size / (header->channels * header->bitdepth / 8); // Num samples
+	buffer.length = chunk->size / (header->bitdepth / 8); // Num samples
 
 	uint32 length = chunk->size;
 	buffer.data8 = MALLOC2(int8, length);
@@ -129,6 +146,8 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 	int8 *from = (int8 *) ptr;
 	while (length--)
 		*to++ = *from++;
+
+	world->plt.free_file(file);
 
 	return add_buffer(audio, buffer);
 }

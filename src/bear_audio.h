@@ -12,11 +12,16 @@ const uint32 spec_freq = 44100; // Move this.
 struct AudioID
 {
 	int16 uid;
-	uint16 pos;
+	int16 pos;
 
 	bool operator== (AudioID other)
 	{
 		return uid == other.uid && pos == other.pos;
+	}
+
+	bool operator!= (AudioID other)
+	{
+		return !(*this == other);
 	}
 };
 
@@ -41,26 +46,27 @@ struct AudioSource
 {
 	AudioID id;
 	AudioID buffer_id;
-	int64 current_sample;
+	float32 current_sample;
 
-	float32 pitch;
 	float32 volume; // We do some fading.
+	float32 pitch;
+	Vec3f position;
 	// float32 curr_volume;
 	// bool loop;
 };
 
 struct Audio
 {
-	int16 uid_counter = 1;
+	Vec3f left;
+	Vec3f position;
+	int16 uid_counter = 0;
 
 	int32 free_buffer = 0;
-	uint32 max_buffer = 0;
+	int32 max_buffer = -1;
 	AudioBuffer *buffers;
 
 	int32 free_source = 0;
-	uint32 max_source = 0;
+	int32 max_source = -1;
 	AudioSource *sources;
 };
-
-
 

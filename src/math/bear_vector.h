@@ -180,6 +180,11 @@ Vec3f cross(Vec3f a, Vec3f b)
 	};
 }
 
+float32 length_cubed(Vec3f a)
+{
+	return a.x * a.x * a.x + a.y * a.y * a.y + a.z * a.z * a.z;
+}
+
 float32 length_squared(Vec3f a)
 {
 	return a.x * a.x + a.y * a.y + a.z * a.z;

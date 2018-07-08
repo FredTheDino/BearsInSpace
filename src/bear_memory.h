@@ -66,3 +66,16 @@ void *realloc_(const char *file_path, uint32 line, void *ptr, uint64 size)
 
 	return new_ptr;
 }
+
+void check_for_leaks()
+{
+	if (world.__mem_length != 0)
+	{
+		for (uint8 i = 0; i < world.__mem_length; i++)
+		{
+			MemoryAllocation alloc = world.__mem[i];
+			world.plt.print("[MEM] Not freed (%s:%d)\n", alloc.file, alloc.line);
+		}
+	}
+}
+
