@@ -25,6 +25,8 @@ GFX::Renderable renderable;
 GFX::VertexBuffer vertex_buffer;
 GFX::VertexArray vertex_array;
 GFX::ShaderProgram program;
+Transform transform = create_transform();
+Camera camera;
 
 void update(float32 delta)
 {
@@ -42,6 +44,8 @@ void draw()
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	printf("%f\n", transform.pos.x);
+	
 	GFX::draw(renderable);
 }
 
@@ -85,6 +89,13 @@ void step(World *_world, float32 delta)
 		renderable.vertex_array = vertex_array;
 		renderable.num_vertices = 3;
 		renderable.program = program;
+		
+		// Matrices
+		renderable.matrix_profiles = create_array<GFX::MatrixProfile>(1);
+		GFX::MatrixProfile transform_profile = {};
+		transform_profile.uniform_name = "m_model";
+		transform_profile.transform = &transform;
+		append(&renderable.matrix_profiles, transform_profile);
 	}
 	
 	update(delta);

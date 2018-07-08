@@ -30,7 +30,6 @@ T lerp(T a, T b, float32 l)
 }
 
 #include "bear_vector.h"
-#include "bear_matrix.h"
 #include "bear_quaternion.h"
-
-
+#include "bear_matrix.h"
+#include "bear_transform.h"

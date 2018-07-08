@@ -84,32 +84,6 @@ Q lerp(Q q1, Q q2, float32 lerp)
 	return q1 * lerp + (q2 * (1.0f - lerp));
 }
 
-Mat4 toMat4(Q q)
-{
-	return
-	{
-		1.0f - 2.0f * q.y * q.y - 2 * q.z * q.z, 
-		2.0f * q.x * q.y - 2.0f * q.z * q.w, 
-		2.0f * q.x * q.z + 2.0f * q.y * q.w,
-		0.0f,
-
-		2.0f * q.x * q.y + 2.0f * q.z * q.w, 
-		1.0f - 2.0f * q.x * q.x - 2 * q.z * q.z, 
-		2.0f * q.y * q.z - 2.0f * q.x * q.w,
-		0.0f,
-
-		2.0f * q.x * q.z - 2.0f * q.y * q.w, 
-		2.0f * q.y * q.z + 2.0f * q.x * q.w,
-		1.0f - 2.0f * q.x * q.x - 2 * q.y * q.y, 
-		0.0f,
-
-		0.0f,
-		0.0f,
-		0.0f,
-		1.0f,
-	};
-};
-
 Q toQ(float32 pitch, float32 roll, float32 yaw)
 {
 	float32 cy = cos(yaw   * 0.5);
@@ -127,4 +101,3 @@ Q toQ(float32 pitch, float32 roll, float32 yaw)
 		cy * cr * cp + sy * sr * sp
 	};
 }
-

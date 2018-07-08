@@ -1,6 +1,6 @@
 #pragma once
 
-struct Mat4
+struct Mat4f
 {
 	union 
 	{
@@ -16,9 +16,9 @@ struct Mat4
 		float32 __[16];
 	};
 
-	Mat4 operator* (Mat4 m)
+	Mat4f operator* (Mat4f m)
 	{
-		Mat4 out;
+		Mat4f out;
 		for (uint8 row = 0; row < 4; row++)
 		{
 			for (uint8 col = 0; col < 4; col++)
@@ -43,7 +43,7 @@ struct Mat4
 		};
 	}
 
-	bool operator== (Mat4 m)
+	bool operator== (Mat4f m)
 	{
 		for (uint8 i = 0; i < 16; i++)
 		{
@@ -54,7 +54,12 @@ struct Mat4
 	}
 };
 
-Mat4 create_identity()
+float32 *data_ptr(Mat4f &m)
+{
+	return &m.__[0];
+}
+
+Mat4f create_identity()
 {
 	return
 	{
@@ -65,7 +70,65 @@ Mat4 create_identity()
 	};
 }
 
-Mat4 zero_transform(Mat4 m)
+Mat4f translate(Mat4f m, Vec3f v)
+{
+	m._03 += v.x;
+	m._13 += v.y;
+	m._23 += v.z;
+
+	return m;
+}
+
+Mat4f scale(Mat4f m, Vec3f v)
+{
+	m._00 *= v.x;
+	m._11 *= v.y;
+	m._22 *= v.z;
+
+	return m;
+}
+
+Mat4f scale(Mat4f m, float32 scalar)
+{
+	m._00 *= scalar;
+	m._11 *= scalar;
+	m._22 *= scalar;
+
+	return m;
+}
+
+Mat4f toMat4f(Q q)
+{
+	return
+	{
+		1.0f - 2.0f * q.y * q.y - 2 * q.z * q.z, 
+		2.0f * q.x * q.y - 2.0f * q.z * q.w, 
+		2.0f * q.x * q.z + 2.0f * q.y * q.w,
+		0.0f,
+
+		2.0f * q.x * q.y + 2.0f * q.z * q.w, 
+		1.0f - 2.0f * q.x * q.x - 2 * q.z * q.z, 
+		2.0f * q.y * q.z - 2.0f * q.x * q.w,
+		0.0f,
+
+		2.0f * q.x * q.z - 2.0f * q.y * q.w, 
+		2.0f * q.y * q.z + 2.0f * q.x * q.w,
+		1.0f - 2.0f * q.x * q.x - 2 * q.y * q.y, 
+		0.0f,
+
+		0.0f,
+		0.0f,
+		0.0f,
+		1.0f,
+	};
+};
+
+Mat4f rotate(Mat4f m, Quaternion q)
+{
+	return m * toMat4f(q);
+}
+
+Mat4f zero_transform(Mat4f m)
 {
 	m._03 = 0.0f;
 	m._13 = 0.0f;
@@ -75,12 +138,12 @@ Mat4 zero_transform(Mat4 m)
 }
 
 // NOTE: "near", and "far" as variable names cause syntax errors on Windows.
-Mat4 create_projection(float32 fov, float32 aspect_ratio, float32 near_clip, float32 far_clip)
+Mat4f create_projection(float32 fov, float32 aspect_ratio, float32 near_clip, float32 far_clip)
 {
 	float32 w = tan(fov / 2.0f);
 	float32 h = w / aspect_ratio;
 	
-	Mat4 m = {};
+	Mat4f m = {};
 	m._00 = near_clip / w;
 	m._11 = near_clip / h;
 	m._22 = - (far_clip + near_clip) / (far_clip - near_clip);
