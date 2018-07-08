@@ -55,11 +55,12 @@ struct Audio
 
 	int32 free_buffer = 0;
 	uint32 max_buffer = 0;
-	AudioBuffer buffers[BEAR_MAX_AUDIO_BUFFERS];
+	AudioBuffer *buffers;
 
 	int32 free_source = 0;
 	uint32 max_source = 0;
-	AudioSource sources[BEAR_MAX_AUDIO_SOURCES];
+	AudioSource *sources;
 };
+
 
 

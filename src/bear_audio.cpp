@@ -101,6 +101,8 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 	ASSERT(header->fmt[1] == 'm');
 	ASSERT(header->fmt[2] == 't');
 
+	ASSERT(header->format == 1);
+
 	// Just get me the data chunk.
 	WAVChunk *chunk;
 	do 
@@ -113,44 +115,20 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 			chunk->type[1] != 'a' ||
 			chunk->type[2] != 't' ||
 			chunk->type[3] != 'a');
+	ptr -= chunk->size;
 
 	AudioBuffer buffer;
 	buffer.channels = header->channels;
 	buffer.bitdepth = header->bitdepth;
 	buffer.sample_rate = header->sample_rate;
-	buffer.length = chunk->size / (header->bitdepth / 8); // Num samples
+	buffer.length = chunk->size / (header->channels * header->bitdepth / 8); // Num samples
 
-	if (buffer.bitdepth == 8)
-	{
-		uint16 length = buffer.length * buffer.channels;
-		int8 *to = MALLOC2(int8, length);
-		int8 *from = (int8 *) ptr;
-		for (uint16 i = 0; i < length; i++)
-			to[i] = from[i];
-		buffer.data8 = to;
-	}
-	else if (buffer.bitdepth == 16)
-	{
-		uint16 length = buffer.length * buffer.channels;
-		int16 *to = MALLOC2(int16, length);
-		int16 *from = (int16 *) ptr;
-		for (uint16 i = 0; i < length; i++)
-			to[i] = from[i];
-		buffer.data16 = to;
-	}
-	else if (buffer.bitdepth == 32)
-	{
-		uint16 length = chunk->size / (buffer.bitdepth / 8);
-		float32 *to = MALLOC2(float32, length);
-		float32 *from = (float32 *) ptr;
-		for (uint16 i = 0; i < length; i++)
-			to[i] = from[i];
-		buffer.data32 = to;
-	}
-	else
-	{
-		ASSERT(!"Unsupported bitdepth!");
-	}
+	uint32 length = chunk->size;
+	buffer.data8 = MALLOC2(int8, length);
+	int8 *to = buffer.data8;
+	int8 *from = (int8 *) ptr;
+	while (length--)
+		*to++ = *from++;
 
 	return add_buffer(audio, buffer);
 }

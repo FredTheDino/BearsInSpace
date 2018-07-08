@@ -11,7 +11,7 @@ int win_printf(const char *format, ...);
 // Group this up?
 
 typedef void (*StepFunc)(World *, float32);
-typedef void (*SoundFunc)(float32 *, int32);
+typedef void (*SoundFunc)(int16 *, int32);
 
 StepFunc game_step;
 SoundFunc game_sound;
@@ -63,8 +63,8 @@ WINDOWS_FILE_ERROR:
 
 bool load_libbear()
 {
-	const char *path = "libbear.dll";
-	const char *temp_path = "libbear_temp.dll";
+	const char *path = "bin/libbear.dll";
+	const char *temp_path = "bin/libbear_temp.dll";
 	int32 last = get_file_edit_time(path);
 	if (last == last_access_time)
 	{
@@ -141,7 +141,7 @@ void free_file(OSFile file)
 
 void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
 {
-	game_sound((float32 *) stream, length / (sizeof(float32) / sizeof(uint8)));
+	game_sound((int16 *) stream, length / 2);
 }
 
 #ifdef asdas //__DEBUG 
@@ -167,6 +167,9 @@ int CALLBACK WinMain(
 	world.plt.last_write = get_file_edit_time;
 
 	world.__mem = (MemoryAllocation *)(void *)__mem;
+	world.audio = {};
+	world.audio.buffers = MALLOC2(AudioBuffer, BEAR_MAX_AUDIO_BUFFERS);
+	world.audio.sources = MALLOC2(AudioSource, BEAR_MAX_AUDIO_SOURCES);
 
 	if (load_libbear() == false)
 	{
@@ -229,7 +232,7 @@ int CALLBACK WinMain(
 	SDL_AudioSpec audio_spec = {};
 	audio_spec.callback = plt_audio_callback;
 	audio_spec.freq = spec_freq;//spec_freq; // Is this dumb? Is 44100 better?
-	audio_spec.format = AUDIO_F32; // Maybe too high rez?
+	audio_spec.format = AUDIO_S16; // Maybe too high rez?
 	audio_spec.channels = 2; // This needs to be changeable.
 	audio_spec.samples = 2048; // Ideally we want this as small as possible.
 	auto audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
