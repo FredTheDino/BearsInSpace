@@ -51,8 +51,8 @@ struct AudioSource
 	float32 volume; // We do some fading.
 	float32 pitch;
 	Vec3f position;
-	// float32 curr_volume;
-	// bool loop;
+
+	bool loop;
 };
 
 struct Audio

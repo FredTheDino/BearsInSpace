@@ -24,10 +24,8 @@ struct WAVChunk
 	int32 size;
 };
 
-AudioID play_sound(Audio *audio, AudioID buffer_id, float32 volume, float32 pitch) 
-{ 
- 	AudioSource source { buffer_id, buffer_id, 0, volume, pitch };
-
+AudioID add_sound_source(Audio *audio, AudioSource source)
+{
 	AudioID id;
 	id.uid = audio->uid_counter++;
 	if (audio->uid_counter < 0) audio->uid_counter = 0;
@@ -46,6 +44,19 @@ AudioID play_sound(Audio *audio, AudioID buffer_id, float32 volume, float32 pitc
 	source.id = id;
 	audio->sources[id.pos] = source;
 	return id;
+}
+
+AudioID play_sound(Audio *audio, AudioID buffer_id, float32 volume, float32 pitch, Vec3f position={0.0f, 0.0f, 0.0f})
+{ 
+ 	AudioSource source { buffer_id, buffer_id, 0, volume, pitch, position};
+	return add_sound_source(audio, source);
+}
+
+AudioID play_music(Audio *audio, AudioID buffer_id, float32 volume, float32 pitch, bool loop)
+{
+ 	AudioSource source { buffer_id, buffer_id, 0, volume, pitch};
+	source.loop = loop;
+	return add_sound_source(audio, source);
 }
 
 void stop_audio(Audio *audio, AudioID id)
