@@ -59,14 +59,14 @@ struct Audio
 {
 	Vec3f left;
 	Vec3f position;
-	int16 uid_counter = 0;
+	int16 uid_counter;
 
-	int32 free_buffer = 0;
-	int32 max_buffer = -1;
+	int32 free_buffer;
+	int32 max_buffer;
 	AudioBuffer *buffers;
 
-	int32 free_source = 0;
-	int32 max_source = -1;
+	int32 free_source;
+	int32 max_source;
 	AudioSource *sources;
 };
 

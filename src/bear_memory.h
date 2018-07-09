@@ -75,6 +75,7 @@ void check_for_leaks()
 		{
 			MemoryAllocation alloc = world.__mem[i];
 			world.plt.print("[MEM] Not freed (%s:%d)\n", alloc.file, alloc.line);
+			free(alloc.ptr);
 		}
 	}
 }

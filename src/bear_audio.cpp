@@ -82,7 +82,7 @@ AudioBuffer get_buffer(Audio *audio, AudioID id)
 	AudioBuffer buffer = audio->buffers[id.pos];
 	if (id == buffer.id)
 		return buffer;
-	return {};
+	return {-1, -1};
 }
 
 AudioID add_buffer(Audio *audio, AudioBuffer buffer)
@@ -94,7 +94,7 @@ AudioID add_buffer(Audio *audio, AudioBuffer buffer)
 	if (audio->free_buffer < 0)
 	{
 		// We need to swap shit
-		id.pos = -audio->free_buffer;
+		id.pos = -audio->free_buffer - 1;
 		audio->free_buffer = -audio->buffers[id.pos].id.uid;
 	}
 	else
@@ -102,10 +102,32 @@ AudioID add_buffer(Audio *audio, AudioBuffer buffer)
 		// We need to append
 		id.pos = audio->max_buffer++;
 	}
+	ASSERT(id.pos < BEAR_MAX_AUDIO_BUFFERS);
 
 	buffer.id = id;
 	audio->buffers[id.pos] = buffer;
 	return id;
+}
+
+void free_sound(Audio *audio, AudioID id)
+{
+	ASSERT(0 < id.pos && id.pos < BEAR_MAX_AUDIO_BUFFERS);
+	AudioBuffer buffer = audio->buffers[id.pos];
+	if (buffer.id != id) return;
+	
+	uint32 pos = id.pos;
+	id.pos = audio->free_buffer;
+	id.uid = -1;
+	audio->free_buffer = -pos - 1;
+	audio->buffers[pos].id = id;
+
+	FREE(audio->buffers[pos].data);
+
+	if (pos == audio->max_buffer)
+	{
+		while (audio->buffers[audio->max_buffer].id.uid < 0 && 0 <= audio->max_buffer)
+			audio->max_buffer--;
+	}
 }
 
 AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV

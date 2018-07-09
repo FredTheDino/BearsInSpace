@@ -12,6 +12,7 @@
 
 #include "bear_test.cpp"
 #include "bear_audio.cpp"
+#include "bear_entity.h"
 
 // This file is included in each platform specific file. 
 // This file should _NOT HAVE ANY_ platform specific code.
@@ -31,6 +32,7 @@ void update(float32 delta)
 
 	if (should_run_tests)
 	{
+		dumb_stuff();
 		run_tests();
 
 		// TEMP!
@@ -133,16 +135,23 @@ void sound(int16 *out_buffer, int32 num_samples)
 	for (int32 i = 0; i < num_samples; i++)
 		out_buffer[i] = 0;
 
-	num_samples = num_samples / 2;
-
-#if 1
 	if (!world) return;
+
+	// Samples for 1 channel.
+	num_samples *= 0.5f;
+
 	Audio *audio = &world->audio;
 	for (int32 i = 0; i <= audio->max_source; i++)
 	{
 		AudioSource source = audio->sources[i];
 		if (source.id.uid < 0) continue;
 		AudioBuffer buffer = get_buffer(audio, source.buffer_id);
+		if (buffer.id.uid < 0)
+		{
+			// Don't play invalid audio.
+			stop_audio(audio, source.id);
+			continue;
+		}
 		ASSERT(buffer.channels < 3);
 
 		int32 samples_left = (int32) (buffer.length - source.current_sample) / buffer.channels;
@@ -295,21 +304,6 @@ void sound(int16 *out_buffer, int32 num_samples)
 			}
 		}
 	}
-#endif
-
-#if 0
-	static float32 t = 0;
-	while (num_samples)
-	{
-		float32 sample = sin(t * 2 * 442 * PI);
-		//sample = 0.0f; // This is so it doesn't get annoying.
-		t += 1.0f / spec_freq;
-		float32 left_panning = sin(t * 2 * PI * 0.1f) * 0.5f + 0.5f;
-		*out_buffer++ = sample * left_panning;
-		*out_buffer++ = sample * (1.0f - left_panning);
-		num_samples -= 2;
-	}
-#endif
 }
 
 
