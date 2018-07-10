@@ -62,11 +62,11 @@ struct Audio
 	int16 uid_counter;
 
 	int32 free_buffer;
-	int32 max_buffer;
+	int32 max_buffer = -1;
 	AudioBuffer *buffers;
 
 	int32 free_source;
-	int32 max_source;
+	int32 max_source = -1;
 	AudioSource *sources;
 };
 

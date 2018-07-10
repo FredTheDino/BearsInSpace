@@ -26,7 +26,7 @@ struct EntityID
 {
 	int32 pos;
 	int32 uid;
-}
+};
 
 struct BaseComponent
 {
@@ -62,17 +62,36 @@ void init_ecs(ECS *ecs, PLT *plt)
 	const int32 inital_size = 50;
 	ECSEntry *cs = ecs->component_types;
 
-	// Assumes all component IDs are initalized.
+	for (uint32 i = 0; i < NUM_COMPONENTS; i++)
+	{
+		cs[i]->c = NULL;
+	}
+
 #define COMP_ENTRY(ID, type)\
 	cs[ID] = { sizeof(type), inital_size, 0, plt->malloc("ECS_INIT", 0, sizeof(type) * inital_size) };
 
+	// Entries go here. (Order doesn't matter)
 	COMP_ENTRY(C_POSITION, Position);
 	COMP_ENTRY(C_BLARGH, Blargh);
+
+	// Entries end here.
+
+	for (uint32 i = 0; i < NUM_COMPONENTS; i++)
+	{
+		if (cs[i]->c)
+			continue;
+		LOG("ECS", "No Initalization for component type %u. Please check 'init_ecs'\n");
+	}
 };
 
 void destroy_ecs(ECS *ecs, PLT *plt)
 {
-
+	ECSEntry *cs = ecs->component_types;
+	for (uint32 i = 0; i < NUM_COMPONENTS; i++)
+	{
+		if (cs[i]->c)
+			plt->free(cs[i]->c);
+	}
 }
 
 void run_system(SystemType type_id, ECS *ecs, float32 delta)

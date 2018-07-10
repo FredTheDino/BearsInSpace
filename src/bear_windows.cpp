@@ -162,8 +162,7 @@ int CALLBACK WinMain(
   HINSTANCE hInstance,
   HINSTANCE hPrevInstance,
   LPSTR     lpCmdLine,
-  int       nCmdShow
-)
+  int       nCmdShow)
 #endif
 {
 	world.plt.malloc = malloc_;
@@ -182,6 +181,7 @@ int CALLBACK WinMain(
 	world.audio.buffers = MALLOC2(AudioBuffer, BEAR_MAX_AUDIO_BUFFERS);
 	world.audio.sources = MALLOC2(AudioSource, BEAR_MAX_AUDIO_SOURCES);
 
+	init_ecs(&world);
 
 	if (load_libbear() == false)
 	{
@@ -290,6 +290,8 @@ int CALLBACK WinMain(
 
 	FREE(world.audio.sources);
 	FREE(world.audio.buffers);
+
+	destroy_ecs(&world);
 
 	check_for_leaks();
 	return 0;

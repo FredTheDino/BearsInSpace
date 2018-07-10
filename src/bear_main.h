@@ -5,6 +5,7 @@
 
 #include "bear_types.h"
 #include "bear_audio.h"
+#include "bear_ecs.h"
 
 struct OSFile
 {
@@ -45,7 +46,10 @@ struct World
 	// Platform functions.
 	PLT plt;
 
-	// Audio, so the world can feel the beets.
+	// The ECS, all storage in one place.
+	ECS ecs;
+
+	// Audio, so the world can feel the beats.
 	Audio audio;
 
 	// TODO: Remove in reloase
@@ -66,5 +70,7 @@ struct World
 #include "bear_memory.h"
 
 #endif
+
+#include "bear_ecs_init.cpp"
 
 

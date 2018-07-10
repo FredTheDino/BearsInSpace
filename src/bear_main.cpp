@@ -12,7 +12,7 @@
 
 #include "bear_test.cpp"
 #include "bear_audio.cpp"
-#include "bear_entity.h"
+#include "bear_ecs.cpp"
 
 // This file is included in each platform specific file. 
 // This file should _NOT HAVE ANY_ platform specific code.
@@ -20,7 +20,6 @@
 // TODO: This is temporary. We shouldn't rely on printf 
 // since windows dosn't allow it when not running a console 
 // application.
-
 
 AudioID id;
 AudioID stockhousen;
@@ -32,15 +31,18 @@ void update(float32 delta)
 
 	if (should_run_tests)
 	{
-		dumb_stuff();
 		run_tests();
-
-		// TEMP!
-		id = load_sound(&world->audio, "res/smack.wav");
-		stockhousen = load_sound(&world->audio, "res/stockhausen.wav");
-		play_music(&world->audio, stockhousen, 1.0f, 1.0f, true);
 	}
 
+	EntityID entity = add_entity(&world->ecs);
+	remove_entity(&world->ecs, entity);
+
+	run_system(S_HELLO_WORLD, world, delta);
+
+#if 0
+	id = load_sound(&world->audio, "res/smack.wav");
+	stockhousen = load_sound(&world->audio, "res/stockhausen.wav");
+	play_music(&world->audio, stockhousen, 1.0f, 1.0f, true);
 	world->audio.left = {-1.0f, 0.0f, 0.0f};
 	world->audio.position = { (float32) sin(t / 2.0f), 0.0f, 2.0f};
 	t += delta;
@@ -58,6 +60,7 @@ void update(float32 delta)
 	{
 		pressed_jump = false;
 	}
+#endif
 }
 
 void draw()

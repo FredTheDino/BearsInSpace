@@ -1,7 +1,7 @@
 World *world;
 #define DEBUG_LOG(message)  world->plt.log(__FILE__, __LINE__, "DEBUG", message)
 #define ERROR_LOG(message)  world->plt.log(__FILE__, __LINE__, "ERROR", message)
-#define LOG(message)		world->plt.log(__FILE__, __LINE__, "LOG", message)
+#define LOG(type, message)	world->plt.log(__FILE__, __LINE__, type, message)
 
 #define PRINT(...)			world->plt.print(__VA_ARGS__)
 

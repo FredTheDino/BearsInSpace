@@ -26,9 +26,11 @@ struct WAVChunk
 
 AudioID add_sound_source(Audio *audio, AudioSource source)
 {
+	// TODO: This should be refactored into a new data structure. 
+	// Since we have this in 3 places. (Add/Remove Entity, Buffer and Source.
 	AudioID id;
 	id.uid = audio->uid_counter++;
-	if (audio->uid_counter < 0) audio->uid_counter = 0;
+	if (audio->uid_counter < 0) audio->uid_counter = 1;
 	
 	if (audio->free_source < 0)
 	{
@@ -61,6 +63,8 @@ AudioID play_music(Audio *audio, AudioID buffer_id, float32 volume, float32 pitc
 
 void stop_audio(Audio *audio, AudioID id)
 {
+	// TODO: This should be refactored into a new data structure. 
+	// Since we have this in 3 places. (Add/Remove Entity, Buffer and Source.
 	AudioSource source = audio->sources[id.pos];
 	if (source.id != id) return;
 	
@@ -87,6 +91,8 @@ AudioBuffer get_buffer(Audio *audio, AudioID id)
 
 AudioID add_buffer(Audio *audio, AudioBuffer buffer)
 {
+	// TODO: This should be refactored into a new data structure. 
+	// Since we have this in 3 places. (Add/Remove Entity, Buffer and Source.
 	AudioID id;
 	id.uid = audio->uid_counter++;
 	if (audio->uid_counter < 0) audio->uid_counter = 1;
@@ -111,6 +117,8 @@ AudioID add_buffer(Audio *audio, AudioBuffer buffer)
 
 void free_sound(Audio *audio, AudioID id)
 {
+	// TODO: This should be refactored into a new data structure. 
+	// Since we have this in 3 places. (Add/Remove Entity, Buffer and Source.
 	ASSERT(0 < id.pos && id.pos < BEAR_MAX_AUDIO_BUFFERS);
 	AudioBuffer buffer = audio->buffers[id.pos];
 	if (buffer.id != id) return;
