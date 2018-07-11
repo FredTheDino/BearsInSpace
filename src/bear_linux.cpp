@@ -200,6 +200,8 @@ int main(int varc, char *varv[])
 		return(-1);
 	}
 
+	init_ecs(&world);
+
 	SDL_PauseAudioDevice(audio_device, 0);
 
 	DEBUG_LOG("Linux launch!");
@@ -232,6 +234,8 @@ int main(int varc, char *varv[])
 	}
 	SDL_CloseAudio();
 	SDL_Quit();
+
+	destroy_ecs(&world);
 
 	check_for_leaks();
 	return 0;

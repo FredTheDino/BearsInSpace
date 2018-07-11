@@ -68,7 +68,7 @@ void stop_audio(Audio *audio, AudioID id)
 	AudioSource source = audio->sources[id.pos];
 	if (source.id != id) return;
 	
-	uint32 pos = id.pos;
+	int32 pos = id.pos;
 	id.pos = audio->free_source;
 	id.uid = -1;
 	audio->free_source = -pos - 1;
@@ -123,7 +123,7 @@ void free_sound(Audio *audio, AudioID id)
 	AudioBuffer buffer = audio->buffers[id.pos];
 	if (buffer.id != id) return;
 	
-	uint32 pos = id.pos;
+	int32 pos = id.pos;
 	id.pos = audio->free_buffer;
 	id.uid = -1;
 	audio->free_buffer = -pos - 1;

@@ -14,7 +14,7 @@ Entity* get_entity(ECS *ecs, EntityID id)
 inline static
 int8 *get_component(const ECSEntry entry, const int32 index)
 {
-	ASSERT(index < entry.length);
+	ASSERT(index < (const int32) entry.length);
 	return ((int8*) entry.c) + index * entry.component_size;
 }
 
@@ -125,7 +125,7 @@ bool add_component(ECS *ecs, EntityID id, ComponentType type, BaseComponent *com
 
 	int32 component_id = entry.length++;
 	ASSERT(component_id >= 0);
-	ASSERT(component_id < entry.length);
+	ASSERT(component_id < (int32) entry.length);
 	write_component(entry, component_id, component);
 
 	entity->components[type] = component_id;
@@ -193,7 +193,6 @@ void remove_components(ECS *ecs, EntityID id, int32 num_types, ComponentType typ
 	for (int i = 0; i < num_types; i++)
 	{
 		ComponentType type = types[i];
-		int32 offset = entity->components[type];
 		remove_component(ecs, entity, type);
 	}
 }
@@ -252,7 +251,7 @@ void remove_entity(ECS *ecs, EntityID id)
 		remove_component(ecs, entity, (ComponentType) i);
 	}
 	
-	uint32 pos = id.pos;
+	int32 pos = id.pos;
 	id.pos = ecs->free_entity;
 	id.uid = -1;
 	ecs->free_entity = -pos - 1;
