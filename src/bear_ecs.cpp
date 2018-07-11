@@ -2,9 +2,9 @@
 
 Entity* get_entity(ECS *ecs, EntityID id)
 {
-	if ((id.pos < ecs->max_entity) ||
-		(0 <= id.pos) ||
-		(0 <= id.uid)) return NULL;
+	if ((id.pos > ecs->max_entity) ||
+		(0 > id.pos) ||
+		(0 > id.uid)) return NULL;
 	Entity *e = &ecs->entities[id.pos];
 	if (e->id == id)
 		return e;
@@ -12,16 +12,73 @@ Entity* get_entity(ECS *ecs, EntityID id)
 }
 
 inline static
-int8 *get(const ECSEntry entry, const int32 index)
+int8 *get_component(const ECSEntry entry, const int32 index)
 {
-	return ((int8*) entry.c) + index * entry.size;
+	ASSERT(index < entry.length);
+	return ((int8*) entry.c) + index * entry.component_size;
 }
+
+BaseComponent *get_component(ECS *ecs, Entity *entity, ComponentType type)
+{
+	int32 component_id = entity->components[type];
+	if (component_id < 0) return NULL;
+	return (BaseComponent *) get_component(ecs->component_types[type], component_id);
+}
+
+BaseComponent *get_component(ECS *ecs, EntityID id, ComponentType type)
+{
+	Entity *entity = get_entity(ecs, id);
+	if (!entity) return NULL;
+	return get_component(ecs, entity, type);
+}
+
+#define get_smallest_type(ecs, ...) get_fastest_type_list(ecs, sizeof((ComponentType []) {__VA_ARGS__}), {__VA_ARGS__})
+int32 get_smallest_type_list(ECS *ecs, int32 num, ComponentType types[])
+{
+	ECSEntry *entries = ecs->component_types;
+	ComponentType smallest_type = types[0];
+	int32 smallest_length = entries[smallest_type].length;
+	for (int32 i = 1; i < num; i++)
+	{
+		ComponentType type = types[i];
+		int32 length = entries[type].length;
+		if (smallest_length < length)	
+		{
+			smallest_length = length;
+			smallest_type = type;
+		}
+	}
+	return smallest_type;
+}
+
+#define entity_has_components(entity, ...) entity_has_components_list(entity, \
+		sizeof((int32 []) {__VA_ARGS__}), {__VA_ARGS__})
+bool entity_has_components_list(Entity entity, int32 num, ComponentType types[])
+{
+	for (int i = 0; i < num; i++)
+	{
+		if (entity.components[types[i]] < 0)
+			return false;
+	}
+	return true;
+}
+
+#define id_has_components(ecs, id, ...) id_has_components_list(ecs, id, \
+		sizeof((int32 []) {__VA_ARGS__}), {__VA_ARGS__})
+bool id_has_components_list(ECS *ecs, EntityID id, int32 num, ComponentType types[])
+{
+	Entity *entity = get_entity(ecs, id);
+	if (entity)
+		return entity_has_components_list(*entity, num, types);
+	return false;
+}
+
 
 static void write_component(const ECSEntry entry, const int32 to_index, const BaseComponent *comp)
 {
-	int32 size = entry.size;
+	int32 size = entry.component_size;
 	int8 *from = (int8 *) comp;
-	int8 *to   = get(entry, to_index);
+	int8 *to   = get_component(entry, to_index);
 	while (size)
 	{
 		*to++ = *from++;
@@ -31,9 +88,9 @@ static void write_component(const ECSEntry entry, const int32 to_index, const Ba
 
 static void write_component(const ECSEntry entry, const int32 to_index, const int32 from_index)
 {
-	int32 size = entry.size;
-	int8 *from = get(entry, from_index);
-	int8 *to   = get(entry, to_index);
+	int32 size = entry.component_size;
+	int8 *from = get_component(entry, from_index);
+	int8 *to   = get_component(entry, to_index);
 	while (size)
 	{
 		*to++ = *from++;
@@ -45,29 +102,30 @@ bool add_component(ECS *ecs, EntityID id, ComponentType type, BaseComponent *com
 {
 	// NOTE(Ed): This is SUPER risqué. But you should ONLY pass in components. 
 	// All of which have this as a first field. So it should be safe.
-	ASSERT(id.pos < ecs->max_entity);
+	ASSERT(id.pos <= ecs->max_entity);
 	ASSERT(0 <= id.pos);
 	ASSERT(0 <= id.uid);
-	ASSERT(component->type < NUM_COMPONENTS);
-	ASSERT(0 < component->type);
+	ASSERT(type < NUM_COMPONENTS);
+	ASSERT(0 <= type);
 
 	Entity *entity = get_entity(ecs, id);
 	if (!entity) return false;
 
+	component->type = type;
 	component->owner = id;
 
 	ECSEntry entry = ecs->component_types[type];
-	if (entry.max == entry.num || entry.max == 0)
+	if (entry.max_length == entry.length || entry.max_length == 0)
 	{
-		entry.max += 50;
-		void *tmp = REALLOC(entry.c, entry.size * entry.max);
+		entry.max_length += 50;
+		void *tmp = REALLOC(entry.c, entry.component_size * entry.max_length);
 		if (!tmp) return false;
 		entry.c = tmp;
 	}
 
-	int32 component_id = entry.num++;
+	int32 component_id = entry.length++;
 	ASSERT(component_id >= 0);
-	ASSERT(component_id < entry.num);
+	ASSERT(component_id < entry.length);
 	write_component(entry, component_id, component);
 
 	entity->components[type] = component_id;
@@ -75,41 +133,69 @@ bool add_component(ECS *ecs, EntityID id, ComponentType type, BaseComponent *com
 	return true;
 }
 
-// TODO(Ed): Make a varadic arguments version.
-
-#if 0
-template<typename C>
-bool add_component(ECS *ecs, EntityID id, ComponentType type, C c)
+bool add_component(ECS *ecs, EntityID id, BaseComponent *component)
 {
-	c.type = type;
-	return add_component<C>(ecs, id, c);
+	return add_component(ecs, id, component->type, component);
 }
-#endif
 
-bool remove_component(ECS *ecs, EntityID id, int32 component_offset, ComponentType type)
+// NOTE(Ed): Only call this from the macro. The list __HAS TO BE NULL TERMINATED__!
+#define add_components(ecs, id, ...) add_components_(ecs, id, __VA_ARGS__, NULL)
+void add_components_(ECS *ecs, EntityID id, ...)
 {
+	va_list args;
+	va_start(args, id);
+	while (true)
+	{
+		BaseComponent *component = va_arg(args, BaseComponent *);
+		if (!component) break;
+		add_component(ecs, id, component->type, component);
+	}
+	va_end(args);
+}
+
+bool remove_component(ECS *ecs, Entity *entity, ComponentType type)
+{
+	int32 component_offset = entity->components[type];
 	if (component_offset < 0)
 		return false;
 
 	ECSEntry entry = ecs->component_types[type];
-	BaseComponent *component_to_remove = (BaseComponent *) get(entry, component_offset);
-	if (component_to_remove->owner != id) return false;
+	BaseComponent *component_to_remove = (BaseComponent *) get_component(entry, component_offset);
+	if (component_to_remove->owner != entity->id) return false;
 
-	if (component_offset != entry.num)
+	int32 largest_index = entry.length - 1;
+	if (component_offset != largest_index)
 	{
-		write_component(entry, component_offset, entry.max);
-		EntityID owner = ((BaseComponent *) get(entry, component_offset))->owner;
+		write_component(entry, component_offset, largest_index);
+		EntityID owner = ((BaseComponent *) get_component(entry, component_offset))->owner;
 		get_entity(ecs, owner)->components[type] = component_offset;
 	}
-	entry.num--;
+	entry.length--;
+	entity->components[type] = -1;
+	ecs->component_types[type] = entry;
+
 	return true;
+
 }
 
-void remove_component(ECS *ecs, EntityID id, ComponentType type)
+bool remove_component(ECS *ecs, EntityID id, ComponentType type)
 {
 	Entity* entity = get_entity(ecs, id);
 	if (entity)
-		remove_component(ecs, id, entity->components[type], type);
+		return remove_component(ecs, entity, type);
+	return false;
+}
+
+void remove_components(ECS *ecs, EntityID id, int32 num_types, ComponentType types[])
+{
+	Entity *entity = get_entity(ecs, id);
+	if (!entity) return;
+	for (int i = 0; i < num_types; i++)
+	{
+		ComponentType type = types[i];
+		int32 offset = entity->components[type];
+		remove_component(ecs, entity, type);
+	}
 }
 
 EntityID add_entity(ECS *ecs)
@@ -141,7 +227,14 @@ EntityID add_entity(ECS *ecs)
 	}
 
 	ecs->max_entity = maximum(ecs->max_entity, (int32) id.pos);
+
 	Entity entity = {id};
+
+	for (int32 i = 0; i < NUM_COMPONENTS; i++)
+	{
+		entity.components[i] = -1;
+	}
+
 	ecs->entities[id.pos] = entity;
 	return id;
 }
@@ -150,13 +243,13 @@ void remove_entity(ECS *ecs, EntityID id)
 {
 	// TODO: This should be refactored into a new data structure. 
 	// Since we have this in 3 places. (Add/Remove Entity, Buffer and Source.
-	Entity entity = ecs->entities[id.pos];
-	if (!(entity.id == id)) return;
+	Entity *entity = &ecs->entities[id.pos];
+	if (!(entity->id == id)) return;
 	
 	// Remove components
 	for (int32 i = 0; i < NUM_COMPONENTS; i++)
 	{
-		remove_component(ecs, id, entity.components[i], (ComponentType) i);
+		remove_component(ecs, entity, (ComponentType) i);
 	}
 	
 	uint32 pos = id.pos;
@@ -170,5 +263,4 @@ void remove_entity(ECS *ecs, EntityID id)
 		while (ecs->entities[ecs->max_entity].id.uid < 0 && 0 <= ecs->max_entity)
 			ecs->max_entity--;
 	}
-
 }

@@ -35,7 +35,22 @@ void update(float32 delta)
 	}
 
 	EntityID entity = add_entity(&world->ecs);
+	Position comp;
+	comp.type = C_POSITION;
+	comp.position = {1.0f, 2.0f, 3.0f};
+
+	Blargh blarg;
+	blarg.type = C_BLARGH;
+	blarg.a = 32;
+	blarg.b = 11111111;
+
+	add_components(&world->ecs, entity, &comp, &blarg);
+
+	EntityID entity2 = add_entity(&world->ecs);
+	add_component(&world->ecs, entity2, C_BLARGH, (BaseComponent *) &blarg);
+
 	remove_entity(&world->ecs, entity);
+	remove_entity(&world->ecs, entity2);
 
 	run_system(S_HELLO_WORLD, world, delta);
 

@@ -35,6 +35,18 @@ struct EntityID
 	}
 };
 
+#define COMPONENT \
+	union \
+	{\
+		BaseComponent base;\
+		struct \
+		{\
+			int32 pos;\
+			int32 uid;\
+			ComponentType type;\
+		};\
+	};\
+
 struct BaseComponent
 {
 	EntityID owner;
@@ -43,13 +55,13 @@ struct BaseComponent
 
 struct Position
 {
-	BaseComponent base;
+	COMPONENT
 	Vec3f position;
 };
 
 struct Blargh
 {
-	BaseComponent base;
+	COMPONENT
 	int32 b;
 	int32 a;
 };
@@ -62,10 +74,10 @@ struct Entity
 
 struct ECSEntry
 {
-	int32 size; // Size of a component of this type.
+	int32 component_size; // Size of a component of this type.
 
-	uint32 max;
-	uint32 num;
+	uint32 max_length;
+	uint32 length;
 	void *c; 
 };
 
