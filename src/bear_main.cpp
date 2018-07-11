@@ -26,7 +26,7 @@ GFX::VertexBuffer vertex_buffer;
 GFX::VertexArray vertex_array;
 GFX::ShaderProgram program;
 Transform transform = create_transform();
-Camera camera;
+Camera camera = create_camera(create_perspective_projection(M_PI / 2, ASPECT_RATIO, .01f, 100.0f));
 
 void update(float32 delta)
 {
@@ -36,15 +36,16 @@ void update(float32 delta)
 		run_tests();
 	}
 
+	transform.rot *= toQ(0, 0, 0.01f);
 	
+	//camera.transform.pos.x += .001f;
+	//camera.transform.pos.z -= .002f;
 }
 
 void draw()
 {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	printf("%f\n", transform.pos.x);
 	
 	GFX::draw(renderable);
 }
@@ -58,6 +59,10 @@ void step(World *_world, float32 delta)
 	if (!GL_LOADED)
 	{
 		gladLoadGL();
+
+		GFX::init_matrix_profiles();
+		
+		//TODO: REMOVE REST OF THIS IF-STATEMENT
 		Mesh mesh = load_mesh("res/monkey.obj");
 		free_mesh(mesh);
 
@@ -90,12 +95,17 @@ void step(World *_world, float32 delta)
 		renderable.num_vertices = 3;
 		renderable.program = program;
 		
-		// Matrices
+		// Model matrix
 		renderable.matrix_profiles = create_array<GFX::MatrixProfile>(1);
 		GFX::MatrixProfile transform_profile = {};
 		transform_profile.uniform_name = "m_model";
 		transform_profile.transform = &transform;
+		
 		append(&renderable.matrix_profiles, transform_profile);
+
+		// View matrix
+		GFX::add_matrix_profile("m_view", &camera);
+		camera.transform.pos.z = 1;
 	}
 	
 	update(delta);

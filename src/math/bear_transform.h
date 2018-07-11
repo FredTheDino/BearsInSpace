@@ -15,12 +15,17 @@ struct Camera
 
 Transform create_transform()
 {
-	return { {}, {1, 1, 1}, {} };
+	return { { 0, 0, 0 }, { 1, 1, 1 }, { 0, 0, 0, 1 } };
+}
+
+Camera create_camera(Mat4f projection)
+{
+	return { projection, create_transform() };
 }
 
 Mat4f toMat4f(Camera c)
 {
-	return c.projection * translate(rotate(scale(create_identity(), -c.transform.scale), -c.transform.rot), -c.transform.pos);
+	return c.projection * translate(rotate(create_identity(), -c.transform.rot), -c.transform.pos);
 }
 
 Mat4f toMat4f(Transform t)

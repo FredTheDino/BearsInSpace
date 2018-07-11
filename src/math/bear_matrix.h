@@ -18,7 +18,7 @@ struct Mat4f
 
 	Mat4f operator* (Mat4f m)
 	{
-		Mat4f out;
+		Mat4f out = {};
 		for (uint8 row = 0; row < 4; row++)
 		{
 			for (uint8 col = 0; col < 4; col++)
@@ -101,19 +101,19 @@ Mat4f toMat4f(Q q)
 {
 	return
 	{
-		1.0f - 2.0f * q.y * q.y - 2 * q.z * q.z, 
-		2.0f * q.x * q.y - 2.0f * q.z * q.w, 
+		1.0f - 2.0f * q.z * q.z - 2 * q.w * q.w, 
+		2.0f * q.y * q.z - 2.0f * q.x * q.w, 
 		2.0f * q.x * q.z + 2.0f * q.y * q.w,
 		0.0f,
 
-		2.0f * q.x * q.y + 2.0f * q.z * q.w, 
-		1.0f - 2.0f * q.x * q.x - 2 * q.z * q.z, 
-		2.0f * q.y * q.z - 2.0f * q.x * q.w,
+		2.0f * q.y * q.z + 2.0f * q.x * q.w, 
+		1.0f - 2.0f * q.y * q.y - 2 * q.w * q.w, 
+		2.0f * q.z * q.w - 2.0f * q.x * q.y,
 		0.0f,
 
-		2.0f * q.x * q.z - 2.0f * q.y * q.w, 
-		2.0f * q.y * q.z + 2.0f * q.x * q.w,
-		1.0f - 2.0f * q.x * q.x - 2 * q.y * q.y, 
+		2.0f * q.y * q.w - 2.0f * q.x * q.z, 
+		2.0f * q.x * q.y + 2.0f * q.z * q.w,
+		1.0f - 2.0f * q.y * q.y - 2 * q.z * q.z, 
 		0.0f,
 
 		0.0f,
@@ -138,17 +138,16 @@ Mat4f zero_transform(Mat4f m)
 }
 
 // NOTE: "near", and "far" as variable names cause syntax errors on Windows.
-Mat4f create_projection(float32 fov, float32 aspect_ratio, float32 near_clip, float32 far_clip)
+Mat4f create_perspective_projection(float32 fov, float32 aspect_ratio, float32 near_clip, float32 far_clip)
 {
 	float32 w = tan(fov / 2.0f);
-	float32 h = w / aspect_ratio;
 	
 	Mat4f m = {};
-	m._00 = near_clip / w;
-	m._11 = near_clip / h;
+	m._00 = 1.0f / (aspect_ratio * w);
+	m._11 = 1.0f / w;
 	m._22 = - (far_clip + near_clip) / (far_clip - near_clip);
-	m._23 = - 1.0f; // Switch with 32?
-	m._32 = - (2.0f * far_clip * near_clip) / (far_clip - near_clip); // Switch with 23?
+	m._32 = - 1.0f;
+	m._23 = - (2.0f * far_clip * near_clip) / (far_clip - near_clip);
 	return m;
 }
 

@@ -5,6 +5,10 @@
 
 #include "bear_types.h"
 
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+#define ASPECT_RATIO ((float32) WINDOW_WIDTH) / WINDOW_HEIGHT
+
 struct OSFile
 {
 	int32 timestamp;
@@ -12,18 +16,22 @@ struct OSFile
 	void *data;
 };
 
+struct InputBinding;
+
 struct PLT
 {
-	void *(*malloc)	(const char *, uint32, uint64);
+	void *(*malloc)	(string, uint32, uint64);
 	void  (*free)	(void *);
-	void *(*realloc)(const char *, uint32, void *, uint64);
+	void *(*realloc)(string, uint32, void *, uint64);
 
-	void  (*log)	(const char *, int32, const char *, const char *);
-	int   (*print)	(const char *, ...); 
+	void  (*log)	(string, int32, string, string);
+	int   (*print)	(string, ...); 
 
 	OSFile (*read_file)	(const char *);
 	void (*free_file)	(OSFile);
 	int32 (*last_write) (const char *);
+
+	InputBinding (*input_0) (string);
 };
 
 struct MemoryAllocation
@@ -32,6 +40,7 @@ struct MemoryAllocation
 	uint32 line;
 	void *ptr;
 };
+
 
 struct World
 {

@@ -4,6 +4,8 @@
 #include "bear_shader_program.h"
 //#include "texture.h"
 
+#define GLOBAL_MATRIX_PROFILES 16
+
 namespace GFX
 {
 	struct MatrixProfile
@@ -13,8 +15,13 @@ namespace GFX
 		Transform           *transform;
 		Camera              *camera;
 	};
-
+	
 	Array<MatrixProfile> matrix_profiles;
+
+	void init_matrix_profiles()
+	{
+		matrix_profiles = create_array<MatrixProfile>(GLOBAL_MATRIX_PROFILES);
+	}
 
 	void send_profile(ShaderProgram program, MatrixProfile profile)
 	{
@@ -26,27 +33,27 @@ namespace GFX
 			sendM4(program, profile.uniform_name, toMat4f(*profile.camera));
 	}
 
-	void add_profile(string uniform_name, uint8 uniform_length,
-					 Mat4f *m)
+	void add_matrix_profile(string uniform_name, Mat4f *m)
 	{
+		ASSERT(limit(matrix_profiles) > 0);
 		MatrixProfile profile = {};
 		profile.uniform_name = uniform_name;
 		profile.matrix = m;
 		append(&matrix_profiles, profile);
 	}
 
-	void add_profile(string uniform_name, uint8 uniform_length,
-					 Transform *transform)
+	void add_matrix_profile(string uniform_name, Transform *transform)
 	{
+		ASSERT(limit(matrix_profiles) > 0);
 		MatrixProfile profile = {};
 		profile.uniform_name = uniform_name;
 		profile.transform = transform;
 		append(&matrix_profiles, profile);
 	}
 
-	void add_profile(string uniform_name, uint8 uniform_length,
-					 Camera *camera)
+	void add_matrix_profile(string uniform_name, Camera *camera)
 	{
+		ASSERT(limit(matrix_profiles) > 0);
 		MatrixProfile profile = {};
 		profile.uniform_name = uniform_name;
 		profile.camera = camera;

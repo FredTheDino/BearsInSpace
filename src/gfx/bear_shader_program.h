@@ -154,6 +154,6 @@ namespace GFX
 
 	void sendM4(ShaderProgram program, string uniform_name, Mat4f m)
 	{
-		glUniformMatrix4fv(uniform_location(program, uniform_name), 1, GL_FALSE, data_ptr(m));
+		glUniformMatrix4fv(uniform_location(program, uniform_name), 1, GL_TRUE, data_ptr(m));
 	}
 }
