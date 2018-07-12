@@ -161,10 +161,10 @@ Mesh load_mesh(const char *file_name)
 
 void free_mesh(Mesh mesh)
 {
-	free_array(&mesh.positions);
-	free_array(&mesh.normals);
-	free_array(&mesh.uvs);
-	free_array(&mesh.indicies);
+	delete_array(&mesh.positions);
+	delete_array(&mesh.normals);
+	delete_array(&mesh.uvs);
+	delete_array(&mesh.indicies);
 }
 
 

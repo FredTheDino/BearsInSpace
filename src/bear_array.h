@@ -1,5 +1,16 @@
 #pragma once
 
+#include <initializer_list>
+
+// Forwarding
+template <typename T>
+struct Array;
+template <typename T>
+Array<T> create_array(uint64);
+template <typename T>
+void append(Array<T> *, T);
+
+// Definition
 template <typename T>
 struct Array
 {
@@ -9,16 +20,25 @@ struct Array
 
 	T operator[] (uint64 index)
 	{
-		return get(this, index);
+		return get(*this, index);
+	}
+	
+	Array<T>() {};
+	
+	Array<T>(std::initializer_list<T> list)
+	{
+		*this = create_array<T>((uint64) list.size());
+		for (auto e : list)
+			append(this, e);
 	}
 };
 
+// Functions
 template <typename T>
 Array<T> create_array(uint64 limit)
 {
 	Array<T> arr;
 	arr.data = MALLOC2(T, limit);
-	//arr.data = GET_MACRO(T, limit, MALLOC2, MALLOC1) (T, limit);
 	arr.limit = limit;
 	arr.size = 0;
 	return arr;
@@ -57,6 +77,7 @@ void relimit(Array<T> *arr, uint64 limit)
 	}
 	
 	arr->data = (T *) REALLOC(arr->data, limit * sizeof(T));
+	
 	arr->limit = limit;
 	if (arr->size > arr->limit)
 		arr->size = limit;
@@ -72,6 +93,12 @@ template <typename T>
 uint64 limit(Array<T> arr)
 {
 	return arr.limit;
+}
+
+template <typename T>
+T* data_ptr(Array<T> arr)
+{
+	return arr.data;
 }
 
 template <typename T>
@@ -105,7 +132,7 @@ T remove(Array<T> *arr, uint64 index)
 }
 
 template <typename T>
-void free_array(Array<T> *arr)
+void delete_array(Array<T> *arr)
 {
 	if (arr->data)
 	{

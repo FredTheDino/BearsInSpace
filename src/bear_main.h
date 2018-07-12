@@ -41,6 +41,22 @@ struct MemoryAllocation
 	void *ptr;
 };
 
+struct GameState
+{
+	void (*enter)();
+	void (*update)(float32);
+	void (*draw)();
+	void (*exit)();
+};
+
+inline bool is_valid_state(GameState state)
+{
+	bool result = state.enter  != nullptr
+		&& state.update != nullptr
+		&& state.draw   != nullptr
+		&& state.exit   != nullptr;
+	return result;
+}
 
 struct World
 {
@@ -52,6 +68,11 @@ struct World
 	// A clock for timing.
 	CLK clk;
 
+	// Current game state
+	GameState state;
+	// If valid, the current state will be changed before next frame
+	GameState next_state;
+	
 	// Platform functions.
 	PLT plt;
 
@@ -83,5 +104,4 @@ struct World
 #endif
 
 #include "ecs/bear_ecs_init.cpp"
-
 

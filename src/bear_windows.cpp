@@ -216,36 +216,23 @@ int CALLBACK WinMain(
 	SDL_RaiseWindow(window);
 	
 	// TODO: Use OpenGL 3.3, or newer. This is just to get hello triangle.
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
 
 	SDL_GL_SetSwapInterval(0);
 
+	// I don't think this needs OpenGL...
+	/*
 	if (gladLoadGL() == 0)
 	{
 		DEBUG_LOG("Unable to load OpenGL.");
 		SDL_Quit();
 		return(-1);
 	}
-
-	// 
-	//	Audio Stuff.
-	//
-	
-#if 0
-	uint32 wav_length;
-	uint8 *wav_buffer;
-
-	if (SDL_LoadWAV("res/sine.wav", NULL, &wav_buffer, &wav_length) == 0)
-	{
-		DEBUG_LOG("Unable to load WAV file.");
-		SDL_Quit();
-		return(-1);
-	}
-#endif
+	*/
 
 	SDL_AudioSpec audio_spec = {};
 	audio_spec.callback = plt_audio_callback;
@@ -263,7 +250,7 @@ int CALLBACK WinMain(
 
 	SDL_PauseAudioDevice(audio_device, 0);
 	
-	DEBUG_LOG("Window launch!");
+	DEBUG_LOG("Windows launch!");
 
 	world.running = true;
 
@@ -273,7 +260,6 @@ int CALLBACK WinMain(
 	LARGE_INTEGER last_counter;
 	LARGE_INTEGER start;
 	QueryPerformanceCounter(&start);
- 
 	QueryPerformanceCounter(&last_counter);
 	while (world.running)
 	{
@@ -309,8 +295,9 @@ int CALLBACK WinMain(
 		world.clk.delta = (float64) delta_counter / (float64) counter_frequency.QuadPart;
 		world.clk.time = (float64) (counter.QuadPart - start.QuadPart) / (float64) counter_frequency.QuadPart;
 	}
-	SDL_DestroyMutex(game.lock);
+	world.state.exit();
 	SDL_CloseAudio();
+	SDL_DestroyMutex(game.lock);
 	SDL_Quit();
 
 	FREE(world.audio.sources);
