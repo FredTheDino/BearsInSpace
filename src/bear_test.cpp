@@ -1,3 +1,5 @@
+#pragma once
+
 bool should_run_tests = true;
 int passed_tests = 0;
 int total_tests = 0;
@@ -69,7 +71,7 @@ void run_tests()
 	}
 	TEST(arr.size != 0);
 
-	free_array(&arr);
+	delete_array(&arr);
 	TEST(arr.data == 0);
 
 	TEST_HEADER(Vec2);

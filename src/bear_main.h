@@ -4,8 +4,8 @@
 #include "glad.h"
 
 #include "bear_types.h"
-#include "bear_audio.h"
-#include "bear_ecs.h"
+#include "audio/bear_audio.h"
+#include "ecs/bear_ecs.h"
 
 struct OSFile
 {
@@ -28,6 +28,12 @@ struct PLT
 	int32 (*last_write) (const char *);
 };
 
+struct CLK
+{
+	float64 time;
+	float32 delta;
+};
+
 struct MemoryAllocation
 {
 	const char *file;
@@ -35,6 +41,22 @@ struct MemoryAllocation
 	void *ptr;
 };
 
+struct GameState
+{
+	void (*enter)();
+	void (*update)(float32);
+	void (*draw)();
+	void (*exit)();
+};
+
+inline bool is_valid_state(GameState state)
+{
+	bool result = state.enter  != nullptr
+		&& state.update != nullptr
+		&& state.draw   != nullptr
+		&& state.exit   != nullptr;
+	return result;
+}
 
 struct World
 {
@@ -43,6 +65,14 @@ struct World
 		bool jump;
 	} input;
 
+	// A clock for timing.
+	CLK clk;
+
+	// Current game state
+	GameState state;
+	// If valid, the current state will be changed before next frame
+	GameState next_state;
+	
 	// Platform functions.
 	PLT plt;
 
@@ -51,6 +81,8 @@ struct World
 
 	// Audio, so the world can feel the beats.
 	Audio audio;
+
+	bool running;
 
 	// TODO: Remove in reloase
 	uint32 __mem_length = 0;
@@ -71,6 +103,5 @@ struct World
 
 #endif
 
-#include "bear_ecs_init.cpp"
-
+#include "ecs/bear_ecs_init.cpp"
 

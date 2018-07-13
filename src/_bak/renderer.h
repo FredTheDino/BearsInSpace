@@ -11,21 +11,22 @@ namespace Renderer
 {
 	struct MatrixProfile
 	{
-		string        uniform_name;
-		uint8         *uniform_length;
-		Transform     *transform;
+		string               uniform_name;
+		uint8                uniform_length;
+		Transform           *transform;
 	};
 	
 	struct Renderable
 	{
-		VertexArray   *vertex_array;
-		ShaderProgram *program;
-		unsigned int   num_vertices;
-		Texture       *texture;
-		MatrixProfile  matrix_profile;
+		VertexArray         *vertex_array;
+		ShaderProgram       *program;
+		unsigned int         num_vertices;
+		Texture             *texture;
+		Array<MatrixProfile> matrix_profiles;
 	};
 
-	void draw(Renderable r, unsigned int mode=GL_TRIANGLES, bool use_profiles=true)
+	void draw(Renderable r, unsigned int mode=GL_TRIANGLES,
+			  bool use_global_matrix_profiles=true)
 	{
 		r.program->bind();
 
@@ -46,10 +47,16 @@ namespace Renderer
 			glDrawArrays(mode, 0, r.num_vertices);
 	}
 
-	void matrixProfile(std::string uniform, Transform* transform)
+	void add_profile(string uniform_name, uint8 uniform_length,
+					 Transform *transform)
 	{
-		_matrix_profiles.emplace(uniform, transform);
+		append(&matrix_profiles, { uniform_name, uniform_length, transform });
 	}
 
-	std::unordered_map<std::string, Transform*> _matrix_profiles;
+	void remove_profile(string uniform_name, uint8 uniform_length)
+	{
+		uint64 size = size(matrix_profiles);
+	}
+
+	Array<MatrixProfile> matrix_profiles;
 }

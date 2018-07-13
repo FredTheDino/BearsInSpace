@@ -11,7 +11,7 @@ Entity* get_entity(ECS *ecs, EntityID id)
 	return NULL;
 }
 
-inline static
+inline
 int8 *get_component(const ECSEntry entry, const int32 index)
 {
 	ASSERT(index < (const int32) entry.length);
@@ -29,7 +29,7 @@ BaseComponent *get_component(ECS *ecs, EntityID id, ComponentType type)
 {
 	Entity *entity = get_entity(ecs, id);
 	if (!entity) return NULL;
-	return get_component(ecs, entity, type);
+	return (BaseComponent *) get_component(ecs, entity, type);
 }
 
 #define get_smallest_type(ecs, ...) get_fastest_type_list(ecs, sizeof((ComponentType []) {__VA_ARGS__}), {__VA_ARGS__})
@@ -186,15 +186,21 @@ bool remove_component(ECS *ecs, EntityID id, ComponentType type)
 	return false;
 }
 
-void remove_components(ECS *ecs, EntityID id, int32 num_types, ComponentType types[])
+#define remove_components(ecs, id, ...) remove_components_(ecs, id, __VA_ARGS__, NUM_COMPONENTS)
+void remove_components_(ECS *ecs, EntityID id, ...)
 {
 	Entity *entity = get_entity(ecs, id);
 	if (!entity) return;
-	for (int i = 0; i < num_types; i++)
+
+	va_list args;
+	va_start(args, id);
+	while (true)
 	{
-		ComponentType type = types[i];
+		ComponentType type = (ComponentType) va_arg(args, int32);
+		if (type == NUM_COMPONENTS) break;
 		remove_component(ecs, entity, type);
 	}
+	va_end(args);
 }
 
 EntityID add_entity(ECS *ecs)

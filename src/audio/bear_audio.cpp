@@ -1,29 +1,5 @@
 #include "bear_audio.h"
 
-struct WAVHeader
-{
-	char  riff[4];
-	int32 size;
-	char  wave[4];
-
-	// FMT chunk
-	char  fmt[4];
-	int32 fmt_size;
-	int16 format;
-	int16 channels;
-	int32 sample_rate;
-	int32 byte_rate;
-	int16 block_align;
-	int16 bitdepth;
-
-};
-
-struct WAVChunk
-{
-	char  type[4];
-	int32 size;
-};
-
 AudioID add_sound_source(Audio *audio, AudioSource source)
 {
 	// TODO: This should be refactored into a new data structure. 
@@ -115,28 +91,29 @@ AudioID add_buffer(Audio *audio, AudioBuffer buffer)
 	return id;
 }
 
-void free_sound(Audio *audio, AudioID id)
+struct WAVHeader
 {
-	// TODO: This should be refactored into a new data structure. 
-	// Since we have this in 3 places. (Add/Remove Entity, Buffer and Source.
-	ASSERT(0 < id.pos && id.pos < BEAR_MAX_AUDIO_BUFFERS);
-	AudioBuffer buffer = audio->buffers[id.pos];
-	if (buffer.id != id) return;
-	
-	int32 pos = id.pos;
-	id.pos = audio->free_buffer;
-	id.uid = -1;
-	audio->free_buffer = -pos - 1;
-	audio->buffers[pos].id = id;
+	char  riff[4];
+	int32 size;
+	char  wave[4];
 
-	FREE(audio->buffers[pos].data);
+	// FMT chunk
+	char  fmt[4];
+	int32 fmt_size;
+	int16 format;
+	int16 channels;
+	int32 sample_rate;
+	int32 byte_rate;
+	int16 block_align;
+	int16 bitdepth;
 
-	if (pos == audio->max_buffer)
-	{
-		while (audio->buffers[audio->max_buffer].id.uid < 0 && 0 <= audio->max_buffer)
-			audio->max_buffer--;
-	}
-}
+};
+
+struct WAVChunk
+{
+	char  type[4];
+	int32 size;
+};
 
 AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 {
@@ -192,4 +169,28 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 
 	return add_buffer(audio, buffer);
 }
+
+void free_sound(Audio *audio, AudioID id)
+{
+	// TODO: This should be refactored into a new data structure. 
+	// Since we have this in 3 places. (Add/Remove Entity, Buffer and Source.
+	ASSERT(0 < id.pos && id.pos < BEAR_MAX_AUDIO_BUFFERS);
+	AudioBuffer buffer = audio->buffers[id.pos];
+	if (buffer.id != id) return;
+	
+	int32 pos = id.pos;
+	id.pos = audio->free_buffer;
+	id.uid = -1;
+	audio->free_buffer = -pos - 1;
+	audio->buffers[pos].id = id;
+
+	FREE(audio->buffers[pos].data);
+
+	if (pos == audio->max_buffer)
+	{
+		while (audio->buffers[audio->max_buffer].id.uid < 0 && 0 <= audio->max_buffer)
+			audio->max_buffer--;
+	}
+}
+
 
