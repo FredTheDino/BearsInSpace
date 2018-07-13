@@ -11,16 +11,25 @@ int win_printf(const char *format, ...);
 // Group this up?
 
 typedef void (*StepFunc)(World *, float32);
-typedef void (*SoundFunc)(float32 *, int32);
+typedef void (*SoundFunc)(int16 *, int32);
 
-StepFunc game_step;
-SoundFunc game_sound;
+struct GameHandle
+{
+	StepFunc step;
+	SoundFunc sound;
+
+	// So the sound thread doesn't run when we unload.
+	SDL_mutex *lock;
+
+	int32 access_time;
+	HMODULE lib;
+};
+
+static GameHandle game;
 
 // This is ugly... I know.
 MemoryAllocation __mem[1024];
 
-int32 last_access_time = 0;
-HMODULE handle;
 
 int32 win_printf(const char *format, ...)
 {
@@ -61,46 +70,54 @@ WINDOWS_FILE_ERROR:
 	return -1;
 }
 
-bool load_libbear()
+bool load_libbear(GameHandle *handle)
 {
-	const char *path = "libbear.dll";
-	const char *temp_path = "libbear_temp.dll";
-	int32 last = get_file_edit_time(path);
-	if (last == last_access_time)
+	GameHandle game = *handle;
+	const char *path = "bin/libbear.dll";
+	const char *temp_path = "bin/libbear_temp.dll";
+	int32 access_time = get_file_edit_time(path);
+	if (access_time == game.access_time)
 	{
 		return false;
 	}
-	if (handle)
+
+	SDL_LockMutex(game.lock);
+	if (game.lib)
 	{
-		FreeLibrary(handle);
+		FreeLibrary(game.lib);
 	}
 	CopyFile(path, temp_path, false);
-	handle = LoadLibrary(temp_path);
-	if (!handle)
+	game.lib = LoadLibrary(temp_path);
+	if (!game.lib)
 	{
-		win_printf("[DL-ERROR] %d\n", GetLastError());
+		win_printf("[DLL-ERROR] %d\n", GetLastError());
 		DEBUG_LOG("Failed to load libgame.so!");
 		return false;
 	}
-	StepFunc step = (StepFunc) GetProcAddress(handle, "step");
+	StepFunc step = (StepFunc) GetProcAddress(game.lib, "step");
 	if (!step)
 	{
-		win_printf("[DL-ERROR] %d\n", GetLastError());
+		win_printf("[DLL-ERROR] %d\n", GetLastError());
 		DEBUG_LOG("Failed to load game_update!");
 		return false;
 	}
-	SoundFunc sound = (SoundFunc) GetProcAddress(handle, "sound");
+	SoundFunc sound = (SoundFunc) GetProcAddress(game.lib, "sound");
 	if (!sound)
 	{
-		win_printf("[DL-ERROR] %d\n", GetLastError());
+		win_printf("[DLL-ERROR] %d\n", GetLastError());
 		DEBUG_LOG("Failed to load game_draw!");
 		return false;
 	}
 
 	DEBUG_LOG("Reload!");
-	last_access_time = last;
-	game_step = step;
-	game_sound = sound;
+	game.access_time = access_time;
+
+	game.step = step;
+
+	game.sound = sound;
+	SDL_UnlockMutex(game.lock);
+
+	*handle = game;
 	return true;
 }
 
@@ -139,28 +156,18 @@ void free_file(OSFile file)
 	}
 }
 
-uint8 *audio_pos;
-uint32 audio_length;
-
-float32 t = 0;
-uint32 tone_hz = 442;
-uint32 spec_freq = 44100;
-
 void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
 {
-	game_sound((float32 *) stream, length / (sizeof(float32) / sizeof(uint8)));
+	SDL_LockMutex(game.lock);
+	game.sound((int16 *) stream, length / 2);
+	SDL_UnlockMutex(game.lock);
 }
 
-#ifdef asdas //__DEBUG 
-int main(int varc, char *varv[])
-#else
 int CALLBACK WinMain(
   HINSTANCE hInstance,
   HINSTANCE hPrevInstance,
   LPSTR     lpCmdLine,
-  int       nCmdShow
-)
-#endif
+  int       nCmdShow)
 {
 	world.plt.malloc = malloc_;
 	world.plt.free = free_;
@@ -174,14 +181,20 @@ int CALLBACK WinMain(
 	world.plt.last_write = get_file_edit_time;
 
 	world.__mem = (MemoryAllocation *)(void *)__mem;
+	world.audio = {};
+	world.audio.buffers = MALLOC2(AudioBuffer, BEAR_MAX_AUDIO_BUFFERS);
+	world.audio.sources = MALLOC2(AudioSource, BEAR_MAX_AUDIO_SOURCES);
 
-	if (load_libbear() == false)
+	init_ecs(&world);
+
+	game.lock = SDL_CreateMutex();
+	if (load_libbear(&game) == false)
 	{
 		return(-1);
 	}
 	//has_file_changed();
 
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
 	{
 		DEBUG_LOG("Unable to initalize SDL.");
 		SDL_Quit();
@@ -203,42 +216,30 @@ int CALLBACK WinMain(
 	SDL_RaiseWindow(window);
 	
 	// TODO: Use OpenGL 3.3, or newer. This is just to get hello triangle.
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-	SDL_GL_SetSwapInterval(1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
 
+	SDL_GL_SetSwapInterval(0);
+
+	// I don't think this needs OpenGL...
+	/*
 	if (gladLoadGL() == 0)
 	{
 		DEBUG_LOG("Unable to load OpenGL.");
 		SDL_Quit();
 		return(-1);
 	}
-
-	// 
-	//	Audio Stuff.
-	//
-	
-#if 0
-	uint32 wav_length;
-	uint8 *wav_buffer;
-
-	if (SDL_LoadWAV("res/sine.wav", NULL, &wav_buffer, &wav_length) == 0)
-	{
-		DEBUG_LOG("Unable to load WAV file.");
-		SDL_Quit();
-		return(-1);
-	}
-#endif
+	*/
 
 	SDL_AudioSpec audio_spec = {};
 	audio_spec.callback = plt_audio_callback;
 	audio_spec.freq = spec_freq;//spec_freq; // Is this dumb? Is 44100 better?
-	audio_spec.format = AUDIO_F32; // Maybe too high rez?
+	audio_spec.format = AUDIO_S16; // Maybe too high rez?
 	audio_spec.channels = 2; // This needs to be changeable.
-	audio_spec.samples = 2048; // Ideally we want this as small as possible.
+	audio_spec.samples = 1024; // Ideally we want this as small as possible.
 	auto audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
 	if (!audio_device)
 	{
@@ -249,26 +250,33 @@ int CALLBACK WinMain(
 
 	SDL_PauseAudioDevice(audio_device, 0);
 	
-	DEBUG_LOG("Window launch!");
+	DEBUG_LOG("Windows launch!");
 
-	bool running = true;
-	while (running)
+	world.running = true;
+
+	LARGE_INTEGER counter_frequency = counter_frequency;
+	QueryPerformanceFrequency(&counter_frequency);
+	LARGE_INTEGER counter;
+	LARGE_INTEGER last_counter;
+	LARGE_INTEGER start;
+	QueryPerformanceCounter(&start);
+	QueryPerformanceCounter(&last_counter);
+	while (world.running)
 	{
-		load_libbear();
+		
+
+		load_libbear(&game);
 
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT)
 			{
-				running = false;
+				world.running = false;
 			}
 			if (event.type == SDL_KEYDOWN)
 			{
 				world.input.jump = true;
-				tone_hz = tone_hz * 1.1f;
-				if (tone_hz > 500)
-					tone_hz = 128;
 			}
 			if (event.type == SDL_KEYUP)
 			{
@@ -276,16 +284,28 @@ int CALLBACK WinMain(
 			}
 		}
 		
-		game_step(&world, 0.1f);
+		game.step(&world, world.clk.delta);
 
 		SDL_GL_SwapWindow(window);
+		
+		// Timing
+		QueryPerformanceCounter(&counter);
+		int64 delta_counter = counter.QuadPart - last_counter.QuadPart;
+		last_counter = counter;
+		world.clk.delta = (float64) delta_counter / (float64) counter_frequency.QuadPart;
+		world.clk.time = (float64) (counter.QuadPart - start.QuadPart) / (float64) counter_frequency.QuadPart;
 	}
 	world.state.exit();
 	SDL_CloseAudio();
+	SDL_DestroyMutex(game.lock);
 	SDL_Quit();
 
-	return(1);
+	FREE(world.audio.sources);
+	FREE(world.audio.buffers);
+
+	destroy_ecs(&world);
+
+	check_for_leaks();
 	return 0;
-	//return(bear_main());
 }
 

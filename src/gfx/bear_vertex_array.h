@@ -34,6 +34,10 @@ namespace GFX
 			vertex_array.has_indices = true;
 			bind(index_buffer);
 		}
+		else
+		{
+			vertex_array.has_indices = false;
+		}
 
 		for (uint32 i = 0; i < size(attribs); i++)
 		{
