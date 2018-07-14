@@ -1,6 +1,7 @@
 #pragma once
 #include <stdlib.h>
 #include <stdio.h>
+#include <cstring>
 #include "glad.h"
 
 #include "bear_types.h"
@@ -16,7 +17,12 @@ struct OSFile
 	void *data;
 };
 
-struct InputBinding;
+typedef int16 AxisValue;
+
+enum ButtonState
+{
+	UP = 0, DOWN = 1, PRESSED = 2, RELEASED = 4
+};
 
 struct PLT
 {
@@ -25,13 +31,14 @@ struct PLT
 	void *(*realloc)(string, uint32, void *, uint64);
 
 	void  (*log)	(string, int32, string, string);
-	int   (*print)	(string, ...); 
+	int32 (*print)	(string, ...); 
 
-	OSFile (*read_file)	(const char *);
+	OSFile (*read_file)	(string);
 	void (*free_file)	(OSFile);
-	int32 (*last_write) (const char *);
+	int32 (*last_write) (string);
 
-	InputBinding (*input_0) (string);
+	AxisValue (*axis_value) (string);
+	ButtonState (*button_state) (string);
 };
 
 struct MemoryAllocation
@@ -40,7 +47,6 @@ struct MemoryAllocation
 	uint32 line;
 	void *ptr;
 };
-
 
 struct World
 {
@@ -70,3 +76,6 @@ struct World
 #include "bear_memory.h"
 
 #endif
+
+#include "bear_array.h"
+#include "bear_input.h"

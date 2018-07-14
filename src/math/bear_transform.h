@@ -25,7 +25,7 @@ Camera create_camera(Mat4f projection)
 
 Mat4f toMat4f(Camera c)
 {
-	return c.projection * translate(rotate(create_identity(), -c.transform.rot), -c.transform.pos);
+	return c.projection * translate(rotate(scale(create_identity(), -c.transform.scale), -c.transform.rot), -c.transform.pos);
 }
 
 Mat4f toMat4f(Transform t)

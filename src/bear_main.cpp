@@ -4,7 +4,6 @@
 
 #define BEAR_GAME
 #include "bear_main.h"
-#include "bear_array.h"
 #include "math/bear_math.h"
 #include "bear_obj_loader.cpp"
 #include "bear_image_loader.cpp"
@@ -37,9 +36,10 @@ void update(float32 delta)
 	}
 
 	transform.rot *= toQ(0, 0, 0.01f);
-	
-	//camera.transform.pos.x += .001f;
-	//camera.transform.pos.z -= .002f;
+
+	if (world->plt.button_state("jump") == ButtonState::PRESSED)
+	  transform.pos.x += .25f;
+	transform.pos.x += world->plt.axis_value("tilt") * .01f;
 }
 
 void draw()
@@ -54,7 +54,7 @@ extern "C"
 void step(World *_world, float32 delta)
 {
 	world = _world;
-
+	
 	// Initialize GLAD if necessary
 	if (!GL_LOADED)
 	{

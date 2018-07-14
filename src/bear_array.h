@@ -23,7 +23,12 @@ struct Array
 		return get(*this, index);
 	}
 	
-	Array<T>() {};
+	Array<T>()
+	{
+		data = nullptr;
+		limit = 0;
+		size = 0;
+	}
 	
 	Array<T>(std::initializer_list<T> list)
 	{
@@ -106,6 +111,13 @@ T get(Array<T> arr, uint64 index)
 {
 	ASSERT(index >= 0 && index < arr.size);
 	return arr.data[index];
+}
+
+template<typename T>
+T *get_d(Array<T> arr, uint64 index)
+{
+	ASSERT(index >= 0 && index < arr.size);
+	return &arr.data[index];
 }
 
 template <typename T>

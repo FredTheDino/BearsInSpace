@@ -144,6 +144,9 @@ int main(int varc, char *varv[])
 	world.plt.free_file = free_file;
 	world.plt.last_write = get_file_edit_time;
 
+	world.plt.axis_value = axis_value;
+	world.plt.button_state = button_state;
+
 	world.__mem = (MemoryAllocation *)(void *)__mem;
 
 	if (!load_libgame())
@@ -203,14 +206,17 @@ int main(int varc, char *varv[])
 	}
 
 	SDL_PauseAudioDevice(audio_device, 0);
-
+	
+	init_input();
+	
 	DEBUG_LOG("Linux launch!");
 	
 	bool running = true;
 	while (running)
 	{
 		load_libgame();
-		
+
+		update_input();
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -218,13 +224,9 @@ int main(int varc, char *varv[])
 			{
 				running = false;
 			}
-			if (event.type == SDL_KEYDOWN)
+			else
 			{
-				world.input.jump = true;
-			}
-			if (event.type == SDL_KEYUP)
-			{
-				world.input.jump = false;
+				handle_input_event(event);
 			}
 		}
 		
@@ -232,6 +234,9 @@ int main(int varc, char *varv[])
 
 		SDL_GL_SwapWindow(window);
 	}
+
+	destroy_input();
+	
 	SDL_CloseAudio();
 	SDL_Quit();
 

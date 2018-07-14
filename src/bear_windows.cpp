@@ -248,14 +248,17 @@ int CALLBACK WinMain(
 	}
 
 	SDL_PauseAudioDevice(audio_device, 0);
+
+	init_input();
 	
-	DEBUG_LOG("Window launch!");
+	DEBUG_LOG("Windows launch!");
 
 	bool running = true;
 	while (running)
 	{
 		load_libbear();
 
+		update_input();
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -263,16 +266,9 @@ int CALLBACK WinMain(
 			{
 				running = false;
 			}
-			if (event.type == SDL_KEYDOWN)
+			else
 			{
-				world.input.jump = true;
-				tone_hz = tone_hz * 1.1f;
-				if (tone_hz > 500)
-					tone_hz = 128;
-			}
-			if (event.type == SDL_KEYUP)
-			{
-				world.input.jump = false;
+				handle_input_event(false);
 			}
 		}
 		
@@ -280,6 +276,9 @@ int CALLBACK WinMain(
 
 		SDL_GL_SwapWindow(window);
 	}
+
+	destroy_input();
+	
 	SDL_CloseAudio();
 	SDL_Quit();
 
