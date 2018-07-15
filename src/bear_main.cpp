@@ -29,6 +29,9 @@
 // ECS
 #include "ecs/bear_ecs.cpp"
 
+// Physics
+#include "physics/physics.h"
+
 // Tests
 #include "bear_test.cpp"
 
@@ -107,6 +110,8 @@ void step(World *_world, float32 delta)
 		free_mesh(mesh);
 #endif
 	}
+
+	update_physics(NULL, 0.0f);
 
 	// Enter first state
 	if (!is_valid_state(world->state))

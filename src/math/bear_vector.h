@@ -289,7 +289,7 @@ float32 length(Vec4f a)
 	return sqrt(length_squared(a));
 }
 
-Vec4f normalize(Vec4f a)
+Vec4f normalized(Vec4f a)
 {
 	return a / length(a);
 }
