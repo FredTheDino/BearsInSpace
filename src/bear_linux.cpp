@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include <dlfcn.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "bear_main.h"
 #include "glad.c"
@@ -182,7 +183,7 @@ int main(int varc, char *varv[])
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
-	SDL_GL_SetSwapInterval(1);
+	SDL_GL_SetSwapInterval(0);
 
 	if (gladLoadGL() == 0)
 	{
@@ -210,9 +211,21 @@ int main(int varc, char *varv[])
 	SDL_PauseAudioDevice(audio_device, 0);
 
 	DEBUG_LOG("Linux launch!");
+
+#define SPEC_TO_SEC(s) ((s).tv_sec * 1000000000) + (s).tv_nsec
+#define NSEC_TO_SEC (0.000000001f)
+
+	struct timespec _spec;
+	uint64 start_time;
+	uint64 last_time;
+	uint64 current_time;
 	
-	bool running = true;
-	while (running)
+	clock_gettime(CLOCK_MONOTONIC, &_spec);
+	start_time = SPEC_TO_SEC(_spec);
+	last_time = SPEC_TO_SEC(_spec);
+
+	world.running = true;
+	while (world.running)
 	{
 		load_libgame(&game);
 		
@@ -221,7 +234,7 @@ int main(int varc, char *varv[])
 		{
 			if (event.type == SDL_QUIT)
 			{
-				running = false;
+				world.running = false;
 			}
 			if (event.type == SDL_KEYDOWN)
 			{
@@ -233,9 +246,15 @@ int main(int varc, char *varv[])
 			}
 		}
 		
-		game.step(&world, 0.1f);
-
+		game.step(&world, world.clk.delta);
 		SDL_GL_SwapWindow(window);
+
+		// Timing
+		clock_gettime(CLOCK_MONOTONIC, &_spec);
+		current_time = SPEC_TO_SEC(_spec);
+		world.clk.time  = (float64) (current_time - start_time) * NSEC_TO_SEC;
+		world.clk.delta = (float32) (current_time - last_time) * NSEC_TO_SEC;
+		last_time = current_time;
 	}
 	world.state.exit();
 	SDL_CloseAudio();
