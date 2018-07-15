@@ -21,7 +21,7 @@ typedef int16 AxisValue;
 
 enum ButtonState
 {
-	UP = 0, DOWN = 1, PRESSED = 2, RELEASED = 4
+	UP = 1, DOWN = 2, PRESSED = 4, RELEASED = 8
 };
 
 struct PLT

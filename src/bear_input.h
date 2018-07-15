@@ -170,13 +170,15 @@ ButtonState button_state(string name)
 		Button *b = get(buttons, (uint64) i);
 		state_bits |= (uint8) b->state;
 	}
-
-	if (state_bits & ButtonState::RELEASED)
-		return ButtonState::RELEASED;
+	
+	if (state_bits & ButtonState::DOWN ||
+		(state_bits & ButtonState::RELEASED
+		 && state_bits & ButtonState::PRESSED))
+		return ButtonState::DOWN;
 	else if (state_bits & ButtonState::PRESSED)
 		return ButtonState::PRESSED;
-	else if (state_bits & ButtonState::DOWN)
-		return ButtonState::DOWN;
+	else if (state_bits & ButtonState::RELEASED)
+		return ButtonState::RELEASED;
 	else
 		return ButtonState::UP;
 }
@@ -191,7 +193,7 @@ void add_to_map(string name, Button *button)
 	}
 	else
 	{
-		while (strcmp(entry->name, name) != 0 || entry->next == nullptr)
+		while (strcmp(entry->name, name) != 0)
 		{
 			if (entry->next == nullptr)
 			{
@@ -199,6 +201,7 @@ void add_to_map(string name, Button *button)
 				*entry->next = {};
 				entry->next->buttons = {};
 				entry->next->buttons = create_array<Button *>(1);
+				break;
 			}
 			entry = entry->next;
 		}
@@ -276,6 +279,18 @@ void bind_button_mouse(string name, uint8 mouse_button)
 	button.binding.m_button = mouse_button;
 	button.state = ButtonState::UP;
 	
+	add_to_map(name, _write_button_to_array(button));
+}
+
+void bind_button_joystick(string name, uint8 j_device, uint8 j_button)
+{
+	Button button = {};
+
+	button.binding.type = InputType::JOYSTICK;
+	button.binding.j_device = j_device;
+	button.binding.j_button = j_button;
+	button.state = ButtonState::UP;
+
 	add_to_map(name, _write_button_to_array(button));
 }
 
@@ -397,6 +412,21 @@ void handle_mouse_motion_event(SDL_Event event)
 	}
 }
 
+void handle_joy_button_event(SDL_Event event)
+{
+	printf("Device: %d\tButton: %d\n", event.jbutton.which, event.jbutton.button);
+	for (uint8 i = 0; i < size(button_array); i++)
+	{
+		Button *b = get_d(button_array, (uint64) i);
+		if (b->binding.type == InputType::JOYSTICK &&
+			b->binding.j_device == event.jbutton.which &&
+			b->binding.j_button == event.jbutton.button)
+		{
+			b->state = event.jbutton.state == SDL_PRESSED ? ButtonState::PRESSED : ButtonState::RELEASED;
+		}
+	}
+}
+
 void handle_input_event(SDL_Event event)
 {
 	switch (event.type)
@@ -407,6 +437,10 @@ void handle_input_event(SDL_Event event)
 		break;
 	case SDL_MOUSEMOTION:
 		handle_mouse_motion_event(event);
+		break;
+	case SDL_JOYBUTTONUP:
+	case SDL_JOYBUTTONDOWN:
+		handle_joy_button_event(event);
 	}
 }
 
@@ -431,6 +465,51 @@ void update_input()
 	}
 }
 
+Array<SDL_Joystick *> joystick_array;
+
+void close_joysticks()
+{
+
+	int32 num_joysticks = (int32) size(joystick_array);
+	for (int32 i = 0; i < num_joysticks; i++)
+	{
+		SDL_Joystick *joy = get(joystick_array, i);
+		if (SDL_JoystickGetAttached(joy))
+			SDL_JoystickClose(joy);
+	}
+	
+	delete_array(&joystick_array);
+}
+
+void open_joysticks()
+{
+	int32 num_joysticks = SDL_NumJoysticks();
+
+	if (num_joysticks <= 0)
+		return;
+
+	// Close existing joysticks
+	if (size(joystick_array) > 0)
+		close_joysticks();
+
+	joystick_array = create_array<SDL_Joystick *>(num_joysticks);
+	
+	for (int32 i = 0; i < num_joysticks; i++)
+	{
+		SDL_Joystick *joy = SDL_JoystickOpen(i);
+
+		if (!joy)
+		{
+			ERROR_LOG("Failed to open joystick!");
+		}
+		
+		DEBUG_LOG("Found joystick:");
+		DEBUG_LOG(SDL_JoystickName(joy));
+
+		append(&joystick_array, joy);
+	}
+}
+
 void init_input()
 {
 	button_array = create_array<Button>(MAX_BUTTONS);
@@ -443,6 +522,11 @@ void init_input()
 		axis_map[i].axises = {};
 	}
 
+	joystick_array = {};
+	SDL_JoystickEventState(SDL_ENABLE);
+	open_joysticks();
+
+	bind_button_joystick("jump", 0, 0);
 	bind_button_key("jump", SDLK_SPACE);
 	bind_axis_mouse("tilt", true);
 }
@@ -489,6 +573,8 @@ void destroy_input()
 
 	delete_array(&button_array);
 	delete_array(&axis_array);
+
+	close_joysticks();
 }
 
 #endif

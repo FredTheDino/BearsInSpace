@@ -38,7 +38,9 @@ void update(float32 delta)
 	transform.rot *= toQ(0, 0, 0.01f);
 
 	if (world->plt.button_state("jump") == ButtonState::PRESSED)
-	  transform.pos.x += .25f;
+		transform.pos.y += .25f;
+	if (world->plt.button_state("jump") == ButtonState::RELEASED)
+		transform.pos.y -= .25f;
 	transform.pos.x += world->plt.axis_value("tilt") * .01f;
 }
 
