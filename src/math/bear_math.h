@@ -24,6 +24,12 @@ T maximum(T a, T b)
 }
 
 template <typename T>
+T clamp_val(T val, T min, T max)
+{
+	return maximum(minimum(max, val), min);
+}
+
+template <typename T>
 T lerp(T a, T b, float32 l)
 {
 	return a * l + b * (1.0f - l);

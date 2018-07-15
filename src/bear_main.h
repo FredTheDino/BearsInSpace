@@ -17,7 +17,7 @@ struct OSFile
 	void *data;
 };
 
-typedef int16 AxisValue;
+typedef float64 AxisValue;
 
 enum ButtonState
 {

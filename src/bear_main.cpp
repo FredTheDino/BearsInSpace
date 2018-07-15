@@ -41,7 +41,8 @@ void update(float32 delta)
 		transform.pos.y += .25f;
 	if (world->plt.button_state("jump") == ButtonState::RELEASED)
 		transform.pos.y -= .25f;
-	transform.pos.x += world->plt.axis_value("tilt") * .01f;
+	transform.pos.x += world->plt.axis_value("tiltx") * .03f;
+	transform.pos.y -= world->plt.axis_value("tilty") * .03f;
 }
 
 void draw()

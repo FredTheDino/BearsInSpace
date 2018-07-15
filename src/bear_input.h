@@ -3,12 +3,14 @@
 /* Input Type */
 enum InputType
 {
-	KEY, MOUSE, JOYSTICK
+	KEY, MOUSE, CONTROLLER
 };
 
 #define INPUT_MAP_SIZE 256
 #define MAX_AXIS    32
 #define MAX_BUTTONS 32
+#define CONTROLLER_AXIS_THRESHOLD .1
+#define CONTROLLER_AXIS_FACTOR (1.0 / 32767.0)
 
 #ifdef BEAR_GAME
 
@@ -30,11 +32,11 @@ struct Button
 			// Mouse
 			uint8 m_button;
 
-			// Joystick
+			// Controller
 			struct
 			{
-				uint8 j_device;
-				uint8 j_button;
+				SDL_JoystickID c_device;
+				SDL_GameControllerButton c_button;
 			};
 		};
 
@@ -47,13 +49,13 @@ struct Button
 			{
 			case InputType::KEY: return key == o.key;
 			case InputType::MOUSE: return m_button == o.m_button;
-			case InputType::JOYSTICK: return j_device == o.j_device && j_button == o.j_button;
+			case InputType::CONTROLLER: return c_device == o.c_device && c_button == o.c_button;
 			default: return false;
 			}
 		}
 	} binding;
 	ButtonState state;
-	Array<Axis*> axises;
+	Array<Axis *> axises;
 };
 
 struct Axis
@@ -74,11 +76,11 @@ struct Axis
 			// Mouse
 			bool m_x;
 
-			// Joystick
+			// Controller
 			struct
 			{
-				uint8 j_device;
-				uint8 j_axis;
+				SDL_JoystickID c_device;
+				SDL_GameControllerAxis c_axis;
 			};
 		};
 
@@ -91,7 +93,7 @@ struct Axis
 			{
 			case InputType::KEY: return k_positive == o.k_positive && k_negative == o.k_negative;
 			case InputType::MOUSE: return m_x == o.m_x;
-			case InputType::JOYSTICK: return j_device == o.j_device && j_axis == o.j_axis;
+			case InputType::CONTROLLER: return c_device == o.c_device && c_axis == o.c_axis;
 			default: return false;
 			}
 		}
@@ -138,13 +140,14 @@ Array<Axis *> get_axises(string name)
 Array<Button *> get_buttons(string name)
 {
 	ButtonEntry entry = button_map[input_map_hash(name)];
+	
 	while (strcmp(entry.name, name) != 0)
 	{
 		if (entry.next == nullptr)
 			return {};
 		entry = *entry.next;
 	}
-
+	
 	return entry.buttons;
 }
 
@@ -158,7 +161,10 @@ AxisValue axis_value(string name)
 		value += a->value;
 	}
 	
-	return ((AxisValue) ((float32) value) / size(axises));
+	if (abs(value) < CONTROLLER_AXIS_THRESHOLD)
+		return 0;
+	else
+		return clamp_val(value, -1.0, 1.0);
 }
 
 ButtonState button_state(string name)
@@ -201,6 +207,7 @@ void add_to_map(string name, Button *button)
 				*entry->next = {};
 				entry->next->buttons = {};
 				entry->next->buttons = create_array<Button *>(1);
+				entry = entry->next;
 				break;
 			}
 			entry = entry->next;
@@ -220,7 +227,7 @@ void add_to_map(string name, Axis *axis)
 	}
 	else
 	{
-		while (strcmp(entry->name, name) != 0 || entry->next == nullptr)
+		while (strcmp(entry->name, name) != 0)
 		{
 			if (entry->next == nullptr)
 			{
@@ -228,6 +235,8 @@ void add_to_map(string name, Axis *axis)
 				*entry->next = {};
 				entry->next->axises = {};
 				entry->next->axises = create_array<Axis *>(1);
+				entry = entry->next;
+				break;
 			}
 			entry = entry->next;
 		}
@@ -282,13 +291,13 @@ void bind_button_mouse(string name, uint8 mouse_button)
 	add_to_map(name, _write_button_to_array(button));
 }
 
-void bind_button_joystick(string name, uint8 j_device, uint8 j_button)
+void bind_button_controller(string name, SDL_JoystickID c_device, SDL_GameControllerButton c_button)
 {
 	Button button = {};
 
-	button.binding.type = InputType::JOYSTICK;
-	button.binding.j_device = j_device;
-	button.binding.j_button = j_button;
+	button.binding.type = InputType::CONTROLLER;
+	button.binding.c_device = c_device;
+	button.binding.c_button = c_button;
 	button.state = ButtonState::UP;
 
 	add_to_map(name, _write_button_to_array(button));
@@ -357,8 +366,18 @@ void bind_axis_mouse(string name, bool m_x)
 	axis.binding.type = InputType::MOUSE;
 	axis.binding.m_x = m_x;
 
-	Axis *axis_ptr = _write_axis_to_array(axis);
-	add_to_map(name, axis_ptr);
+	add_to_map(name, _write_axis_to_array(axis));
+}
+
+void bind_axis_controller(string name, SDL_JoystickID c_device, SDL_GameControllerAxis c_axis)
+{
+	Axis axis = {};
+
+	axis.binding.type = InputType::CONTROLLER;
+	axis.binding.c_device = c_device;
+	axis.binding.c_axis = c_axis;
+
+	add_to_map(name, _write_axis_to_array(axis));
 }
 
 void handle_keyboard_event(SDL_Event event)
@@ -366,17 +385,17 @@ void handle_keyboard_event(SDL_Event event)
 	if (event.key.repeat)
 		return;
 	
-	Button *b_arr_ptr = data_ptr(button_array);
 	for (uint8 i = 0; i < size(button_array); i++)
 	{
-		if (b_arr_ptr[i].binding.type == InputType::KEY && b_arr_ptr[i].binding.key == event.key.keysym.sym)
+		Button *b = get_d(button_array, i);
+		if (b->binding.type == InputType::KEY && b->binding.key == event.key.keysym.sym)
 		{
-			b_arr_ptr[i].state = event.key.state == SDL_RELEASED ? ButtonState::RELEASED : ButtonState::PRESSED;
-			uint64 num_axises = size(b_arr_ptr[i].axises);
+			b->state = event.key.state == SDL_RELEASED ? ButtonState::RELEASED : ButtonState::PRESSED;
+			uint64 num_axises = size(b->axises);
 			for (uint8 j = 0; j < num_axises; j++)
 			{
-				Axis *a = get(b_arr_ptr[i].axises, j);
-				if (a->binding.k_positive->binding.key == b_arr_ptr[i].binding.key)
+				Axis *a = get(b->axises, j);
+				if (a->binding.k_positive->binding.key == b->binding.key)
 				{
 					if (event.key.state == SDL_PRESSED)
 						a->value += 1;
@@ -391,7 +410,7 @@ void handle_keyboard_event(SDL_Event event)
 						a->value += 1;
 				}
 
-				a->value = maximum(minimum(a->value, (int16) 1), (int16) -1);
+				a->value = maximum(minimum(a->value, -1.0), 1.0);
 			}
 		}
 	}
@@ -412,18 +431,29 @@ void handle_mouse_motion_event(SDL_Event event)
 	}
 }
 
-void handle_joy_button_event(SDL_Event event)
+void handle_controller_button_event(SDL_Event event)
 {
-	printf("Device: %d\tButton: %d\n", event.jbutton.which, event.jbutton.button);
 	for (uint8 i = 0; i < size(button_array); i++)
 	{
 		Button *b = get_d(button_array, (uint64) i);
-		if (b->binding.type == InputType::JOYSTICK &&
-			b->binding.j_device == event.jbutton.which &&
-			b->binding.j_button == event.jbutton.button)
+		if (b->binding.type == InputType::CONTROLLER &&
+			b->binding.c_device == event.cbutton.which &&
+			b->binding.c_button == event.cbutton.button)
 		{
-			b->state = event.jbutton.state == SDL_PRESSED ? ButtonState::PRESSED : ButtonState::RELEASED;
+			b->state = event.cbutton.state == SDL_PRESSED ? ButtonState::PRESSED : ButtonState::RELEASED;
 		}
+	}
+}
+
+void handle_controller_axis_event(SDL_Event event)
+{
+	for (uint8 i = 0; i < size(axis_array); i++)
+	{
+		Axis *a = get_d(axis_array, i);
+		if (a->binding.type == InputType::CONTROLLER &&
+			a->binding.c_device == event.caxis.which &&
+			a->binding.c_axis == event.caxis.axis)
+			a->value = clamp_val(event.caxis.value * CONTROLLER_AXIS_FACTOR, -1.0, 1.0);
 	}
 }
 
@@ -438,9 +468,12 @@ void handle_input_event(SDL_Event event)
 	case SDL_MOUSEMOTION:
 		handle_mouse_motion_event(event);
 		break;
-	case SDL_JOYBUTTONUP:
-	case SDL_JOYBUTTONDOWN:
-		handle_joy_button_event(event);
+	case SDL_CONTROLLERBUTTONUP:
+	case SDL_CONTROLLERBUTTONDOWN:
+		handle_controller_button_event(event);
+		break;
+	case SDL_CONTROLLERAXISMOTION:
+		handle_controller_axis_event(event);
 	}
 }
 
@@ -465,23 +498,23 @@ void update_input()
 	}
 }
 
-Array<SDL_Joystick *> joystick_array;
+Array<SDL_GameController *> controller_array;
 
-void close_joysticks()
+void close_controllers()
 {
 
-	int32 num_joysticks = (int32) size(joystick_array);
-	for (int32 i = 0; i < num_joysticks; i++)
+	int32 num_controllers = (int32) size(controller_array);
+	for (int32 i = 0; i < num_controllers; i++)
 	{
-		SDL_Joystick *joy = get(joystick_array, i);
-		if (SDL_JoystickGetAttached(joy))
-			SDL_JoystickClose(joy);
+		SDL_GameController *c = get(controller_array, i);
+		if (SDL_GameControllerGetAttached(c))
+			SDL_GameControllerClose(c);
 	}
 	
-	delete_array(&joystick_array);
+	delete_array(&controller_array);
 }
 
-void open_joysticks()
+void open_controllers()
 {
 	int32 num_joysticks = SDL_NumJoysticks();
 
@@ -489,24 +522,28 @@ void open_joysticks()
 		return;
 
 	// Close existing joysticks
-	if (size(joystick_array) > 0)
-		close_joysticks();
+	if (size(controller_array) > 0)
+		close_controllers();
 
-	joystick_array = create_array<SDL_Joystick *>(num_joysticks);
+	controller_array = create_array<SDL_GameController *>(num_joysticks);
 	
 	for (int32 i = 0; i < num_joysticks; i++)
 	{
-		SDL_Joystick *joy = SDL_JoystickOpen(i);
+		if (!SDL_IsGameController(i))
+			continue;
+		
+		SDL_GameController *c = SDL_GameControllerOpen(i);
 
-		if (!joy)
+		if (!c)
 		{
-			ERROR_LOG("Failed to open joystick!");
+			ERROR_LOG("Failed to open controller!");
+			continue;
 		}
 		
-		DEBUG_LOG("Found joystick:");
-		DEBUG_LOG(SDL_JoystickName(joy));
+		DEBUG_LOG("Found controller:");
+		DEBUG_LOG(SDL_GameControllerName(c));
 
-		append(&joystick_array, joy);
+		append(&controller_array, c);
 	}
 }
 
@@ -522,13 +559,17 @@ void init_input()
 		axis_map[i].axises = {};
 	}
 
-	joystick_array = {};
-	SDL_JoystickEventState(SDL_ENABLE);
-	open_joysticks();
+	controller_array = {};
+	SDL_GameControllerEventState(SDL_ENABLE);
+	open_controllers();
 
-	bind_button_joystick("jump", 0, 0);
+	bind_button_controller("jump", 0, SDL_CONTROLLER_BUTTON_DPAD_UP);
 	bind_button_key("jump", SDLK_SPACE);
-	bind_axis_mouse("tilt", true);
+	bind_button_key("jej", SDLK_LEFT);
+	bind_axis_controller("tiltx", 0, SDL_CONTROLLER_AXIS_LEFTX);
+	bind_axis_controller("tilty", 0, SDL_CONTROLLER_AXIS_LEFTY);
+	bind_axis_controller("tiltx", 0, SDL_CONTROLLER_AXIS_RIGHTX);
+	bind_axis_controller("tilty", 0, SDL_CONTROLLER_AXIS_RIGHTY);
 }
 
 void destroy_input()
@@ -574,7 +615,7 @@ void destroy_input()
 	delete_array(&button_array);
 	delete_array(&axis_array);
 
-	close_joysticks();
+	close_controllers();
 }
 
 #endif
