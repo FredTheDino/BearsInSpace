@@ -114,7 +114,7 @@ T get(Array<T> arr, uint64 index)
 }
 
 template<typename T>
-T *get_d(Array<T> arr, uint64 index)
+T *get_ptr(Array<T> arr, uint64 index)
 {
 	ASSERT(index >= 0 && index < arr.size);
 	return &arr.data[index];

@@ -126,11 +126,10 @@ namespace GFX
 
 		// Detach all shaders
 		for (uint64 i = 0; i < size(shader_ids); i++)
+		{
 			glDetachShader(program.id, shader_ids[i]);
-
-		// Delete all shaders
-		for (uint64 i = 0; i < size(shader_ids); i++)
 			glDeleteShader(shader_ids[i]);
+		}
 
 		delete_array(&shader_ids);
 

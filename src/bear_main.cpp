@@ -37,12 +37,12 @@ void update(float32 delta)
 
 	transform.rot *= toQ(0, 0, 0.01f);
 
-	if (world->plt.button_state("jump") == ButtonState::PRESSED)
+	if (B_PRESSED("jump"))
 		transform.pos.y += .25f;
-	if (world->plt.button_state("jump") == ButtonState::RELEASED)
+	else if (B_RELEASED("jump"))
 		transform.pos.y -= .25f;
-	transform.pos.x += world->plt.axis_value("tiltx") * .03f;
-	transform.pos.y -= world->plt.axis_value("tilty") * .03f;
+	transform.pos.x += AXIS_VAL("tiltx") * .03f;
+	transform.pos.y -= AXIS_VAL("tilty") * .03f;
 }
 
 void draw()

@@ -9,10 +9,17 @@ enum InputType
 #define INPUT_MAP_SIZE 256
 #define MAX_AXIS    32
 #define MAX_BUTTONS 32
-#define CONTROLLER_AXIS_THRESHOLD .1
+#define CONTROLLER_AXIS_THRESHOLD .2
 #define CONTROLLER_AXIS_FACTOR (1.0 / 32767.0)
 
 #ifdef BEAR_GAME
+
+#define AXIS_VAL(name) world->plt.axis_value(name)
+#define B_STATE(name) world->plt.button_state(name)
+#define B_PRESSED(name) world->plt.button_state(name) == ButtonState::PRESSED
+#define B_RELEASED(name) world->plt.button_state(name) == ButtonState::RELEASED
+#define B_DOWN(name) world->plt.button_state(name) == ButtonState::DOWN
+#define B_UP(name) world->plt.button_state(name) == ButtonState::UP
 
 #else
 
@@ -119,15 +126,26 @@ struct ButtonEntry
 
 Array<Button> button_array;
 
+//TODO: Replace with more efficient alternative
 uint8 input_map_hash(string name)
 {
-	return (uint8) *name;
+	return strlen(name) > 1 ? // 0x61 = ascii value for 'a'
+		(((((uint8) *name) - 0x61) & 0x0F) << 4) | ((((uint8) name[1]) - 0x61) & 0x0F)
+		: (uint8) *name;
 }
 
 Array<Axis *> get_axises(string name)
 {
 	AxisEntry entry = axis_map[input_map_hash(name)];
-	while (strcmp(entry.name, name) != 0)
+
+	if (entry.name == nullptr)
+	{
+		ERROR_LOG("Invalid axis name:");
+		ERROR_LOG(name);
+		return {};
+	}
+	
+	while (strcmp(entry.name, name))
 	{
 		if (entry.next == nullptr)
 			return {};
@@ -140,8 +158,15 @@ Array<Axis *> get_axises(string name)
 Array<Button *> get_buttons(string name)
 {
 	ButtonEntry entry = button_map[input_map_hash(name)];
+
+	if (entry.name == nullptr)
+	{
+		ERROR_LOG("Invalid button name:");
+		ERROR_LOG(name);
+		return {};
+	}
 	
-	while (strcmp(entry.name, name) != 0)
+	while (strcmp(entry.name, name))
 	{
 		if (entry.next == nullptr)
 			return {};
@@ -199,7 +224,7 @@ void add_to_map(string name, Button *button)
 	}
 	else
 	{
-		while (strcmp(entry->name, name) != 0)
+		while (strcmp(entry->name, name))
 		{
 			if (entry->next == nullptr)
 			{
@@ -227,7 +252,7 @@ void add_to_map(string name, Axis *axis)
 	}
 	else
 	{
-		while (strcmp(entry->name, name) != 0)
+		while (strcmp(entry->name, name))
 		{
 			if (entry->next == nullptr)
 			{
@@ -266,7 +291,7 @@ Button *_write_button_to_array(Button button)
 	if (new_button)
 		append(&button_array, button);
 
-	return get_d(button_array, i);
+	return get_ptr(button_array, i);
 }
 
 void bind_button_key(string name, int32 key)
@@ -328,7 +353,7 @@ void bind_axis_key(string name, int32 k_pos, int32 k_neg)
 	axis.binding.k_negative = b_neg;
 	
 	append(&axis_array, axis);
-	Axis *axis_ptr = get_d(axis_array, size(axis_array) - 1);
+	Axis *axis_ptr = get_ptr(axis_array, size(axis_array) - 1);
 	append(&b_pos->axises, axis_ptr);
 	append(&b_neg->axises, axis_ptr);
 	
@@ -356,7 +381,7 @@ Axis *_write_axis_to_array(Axis axis)
 	if (new_axis)
 		append(&axis_array, axis);
 
-	return get_d(axis_array, i);
+	return get_ptr(axis_array, i);
 }
 
 void bind_axis_mouse(string name, bool m_x)
@@ -387,7 +412,7 @@ void handle_keyboard_event(SDL_Event event)
 	
 	for (uint8 i = 0; i < size(button_array); i++)
 	{
-		Button *b = get_d(button_array, i);
+		Button *b = get_ptr(button_array, i);
 		if (b->binding.type == InputType::KEY && b->binding.key == event.key.keysym.sym)
 		{
 			b->state = event.key.state == SDL_RELEASED ? ButtonState::RELEASED : ButtonState::PRESSED;
@@ -420,7 +445,7 @@ void handle_mouse_motion_event(SDL_Event event)
 {
 	for (uint8 i = 0; i < size(axis_array); i++)
 	{
-		Axis *a = get_d(axis_array, (uint64) i);
+		Axis *a = get_ptr(axis_array, (uint64) i);
 		if (a->binding.type == InputType::MOUSE)
 		{
 			if (a->binding.m_x)
@@ -435,7 +460,7 @@ void handle_controller_button_event(SDL_Event event)
 {
 	for (uint8 i = 0; i < size(button_array); i++)
 	{
-		Button *b = get_d(button_array, (uint64) i);
+		Button *b = get_ptr(button_array, (uint64) i);
 		if (b->binding.type == InputType::CONTROLLER &&
 			b->binding.c_device == event.cbutton.which &&
 			b->binding.c_button == event.cbutton.button)
@@ -449,7 +474,7 @@ void handle_controller_axis_event(SDL_Event event)
 {
 	for (uint8 i = 0; i < size(axis_array); i++)
 	{
-		Axis *a = get_d(axis_array, i);
+		Axis *a = get_ptr(axis_array, i);
 		if (a->binding.type == InputType::CONTROLLER &&
 			a->binding.c_device == event.caxis.which &&
 			a->binding.c_axis == event.caxis.axis)
@@ -481,7 +506,7 @@ void update_input()
 {
 	for (uint8 i = 0; i < size(button_array); i++)
 	{
-		Button *b = get_d(button_array, i);
+		Button *b = get_ptr(button_array, i);
 		switch (b->state)
 		{
 		case ButtonState::PRESSED: b->state = ButtonState::DOWN; break;
@@ -492,7 +517,7 @@ void update_input()
 
 	for (uint8 i = 0; i < size(axis_array); i++)
 	{
-		Axis *a = get_d(axis_array, i);
+		Axis *a = get_ptr(axis_array, i);
 		if (a->binding.type == InputType::MOUSE)
 			a->value = 0;
 	}
@@ -576,7 +601,7 @@ void destroy_input()
 {
 	for (uint16 i = 0; i < size(button_array); i++)
 	{
-		Button *b = get_d(button_array, (uint64) i);
+		Button *b = get_ptr(button_array, (uint64) i);
 		if (size(b->axises) > 0)
 				delete_array(&b->axises);
 	}
