@@ -18,6 +18,7 @@ APIENTRYP	inc/SDL2/SDL_opengl.h	144;"	d
 APIENTRYP	inc/SDL2/SDL_opengl_glext.h	50;"	d
 APIENTRYP	inc/glad/glad.h	44;"	d
 APIENTRYP	src/glad.h	44;"	d
+ASPECT_RATIO	src/bear_main.h	13;"	d
 ASSERT	src/bear_main_game.h	8;"	d
 ASSERT	src/bear_main_plt.h	17;"	d
 ASSERT_	src/bear_main_plt.h	/^void inline ASSERT_(const char *file_name, const int line_number, const char *check)$/;"	f
@@ -45,10 +46,11 @@ AUDIO_U16MSB	inc/SDL2/SDL_audio.h	93;"	d
 AUDIO_U16SYS	inc/SDL2/SDL_audio.h	122;"	d
 AUDIO_U16SYS	inc/SDL2/SDL_audio.h	127;"	d
 AUDIO_U8	inc/SDL2/SDL_audio.h	89;"	d
+AXIS_VAL	src/bear_input.h	17;"	d
 Aloss	inc/SDL2/SDL_pixels.h	/^    Uint8 Aloss;$/;"	m	struct:SDL_PixelFormat
 Amask	inc/SDL2/SDL_pixels.h	/^    Uint32 Amask;$/;"	m	struct:SDL_PixelFormat
-Array	src/_bak/bear_array.cpp	/^struct Array$/;"	s	file:
-Array	src/bear_array.h	/^	Array<T>() {};$/;"	f	struct:Array
+Array	_bak/bear_array.cpp	/^struct Array$/;"	s	file:
+Array	src/bear_array.h	/^	Array<T>()$/;"	f	struct:Array
 Array	src/bear_array.h	/^	Array<T>(std::initializer_list<T> list)$/;"	f	struct:Array
 Array	src/bear_array.h	/^struct Array$/;"	s
 Ashift	inc/SDL2/SDL_pixels.h	/^    Uint8 Ashift;$/;"	m	struct:SDL_PixelFormat
@@ -59,13 +61,23 @@ Audio	src/audio/bear_audio.h	/^struct Audio$/;"	s
 AudioBuffer	src/audio/bear_audio.h	/^struct AudioBuffer$/;"	s
 AudioID	src/audio/bear_audio.h	/^struct AudioID$/;"	s
 AudioSource	src/audio/bear_audio.h	/^struct AudioSource$/;"	s
+Axis	src/bear_input.h	/^struct Axis$/;"	s
+AxisEntry	src/bear_input.h	/^struct AxisEntry$/;"	s
+AxisValue	src/bear_main.h	/^typedef float64 AxisValue;$/;"	t
 BAT_OBJ	src/bear_assets.h	/^	BAT_OBJ,$/;"	e	enum:AssetTypes
 BAT_PNG	src/bear_assets.h	/^	BAT_PNG,$/;"	e	enum:AssetTypes
 BAT_WAV	src/bear_assets.h	/^	BAT_WAV,$/;"	e	enum:AssetTypes
 BEAR_GAME	src/bear_main.cpp	6;"	d	file:
 BEAR_MAX_AUDIO_BUFFERS	src/audio/bear_audio.h	9;"	d
 BEAR_MAX_AUDIO_SOURCES	src/audio/bear_audio.h	10;"	d
+B_DOWN	src/bear_input.h	21;"	d
+B_PRESSED	src/bear_input.h	19;"	d
+B_RELEASED	src/bear_input.h	20;"	d
+B_STATE	src/bear_input.h	18;"	d
+B_UP	src/bear_input.h	22;"	d
 BaseComponent	src/ecs/bear_ecs.h	/^struct BaseComponent$/;"	s
+Binding	src/bear_input.h	/^	struct Binding$/;"	s	struct:Axis
+Binding	src/bear_input.h	/^	struct Binding$/;"	s	struct:Button
 BitsPerPixel	inc/SDL2/SDL_pixels.h	/^    Uint8 BitsPerPixel;$/;"	m	struct:SDL_PixelFormat
 Blargh	src/ecs/bear_ecs.h	/^struct Blargh$/;"	s
 Bloss	inc/SDL2/SDL_pixels.h	/^    Uint8 Bloss;$/;"	m	struct:SDL_PixelFormat
@@ -73,12 +85,18 @@ Bmask	inc/SDL2/SDL_pixels.h	/^    Uint32 Bmask;$/;"	m	struct:SDL_PixelFormat
 BodyComponent	src/physics/physics.h	/^struct BodyComponent$/;"	s
 BroadPhaseComponent	src/physics/physics.h	/^struct BroadPhaseComponent$/;"	s
 Bshift	inc/SDL2/SDL_pixels.h	/^    Uint8 Bshift;$/;"	m	struct:SDL_PixelFormat
+Button	src/bear_input.h	/^struct Button$/;"	s
+ButtonEntry	src/bear_input.h	/^struct ButtonEntry$/;"	s
+ButtonState	src/bear_main.h	/^enum ButtonState$/;"	g
 BytesPerPixel	inc/SDL2/SDL_pixels.h	/^    Uint8 BytesPerPixel;$/;"	m	struct:SDL_PixelFormat
 CLK	src/bear_main.h	/^struct CLK$/;"	s
 COMPONENT	src/ecs/bear_ecs.h	38;"	d
 COMPONENT	src/physics/physics.h	/^	COMPONENT;$/;"	m	struct:BodyComponent
 COMPONENT	src/physics/physics.h	/^	COMPONENT;$/;"	m	struct:BroadPhaseComponent
 COMP_ENTRY	src/ecs/bear_ecs_init.cpp	20;"	d	file:
+CONTROLLER	src/bear_input.h	/^	KEY, MOUSE, CONTROLLER$/;"	e	enum:InputType
+CONTROLLER_AXIS_FACTOR	src/bear_input.h	13;"	d
+CONTROLLER_AXIS_THRESHOLD	src/bear_input.h	12;"	d
 CRC32_POLY	inc/SDL2/SDL_test_crc32.h	58;"	d
 CRC32_POLY	inc/SDL2/SDL_test_crc32.h	60;"	d
 C_BLARGH	src/ecs/bear_ecs.h	/^	C_BLARGH,$/;"	e	enum:ComponentType
@@ -87,7 +105,8 @@ C_LINKAGE	inc/SDL2/SDL_main.h	86;"	d
 C_LINKAGE	inc/SDL2/SDL_main.h	88;"	d
 C_LINK_FLAGS	build.bat	/^set C_LINK_FLAGS=\/link \/LIBPATH:..\\lib\\win64 SDL2.lib SDL2main.lib $/;"	v
 C_POSITION	src/ecs/bear_ecs.h	/^	C_POSITION,$/;"	e	enum:ComponentType
-Camera	src/_bak/camera.h	/^  class Camera : public Transform$/;"	c	namespace:SK
+Camera	_bak/camera.h	/^  class Camera : public Transform$/;"	c	namespace:SK
+Camera	src/math/bear_transform.h	/^struct Camera$/;"	s
 ComponentType	src/ecs/bear_ecs.h	/^enum ComponentType$/;"	g
 CrcUint32	inc/SDL2/SDL_test_crc32.h	51;"	d
 CrcUint8	inc/SDL2/SDL_test_crc32.h	54;"	d
@@ -108,6 +127,7 @@ DEFAULT_WINDOW_HEIGHT	inc/SDL2/SDL_test_common.h	39;"	d
 DEFAULT_WINDOW_HEIGHT	inc/SDL2/SDL_test_common.h	42;"	d
 DEFAULT_WINDOW_WIDTH	inc/SDL2/SDL_test_common.h	38;"	d
 DEFAULT_WINDOW_WIDTH	inc/SDL2/SDL_test_common.h	41;"	d
+DOWN	src/bear_main.h	/^	UP = 1, DOWN = 2, PRESSED = 4, RELEASED = 8$/;"	e	enum:ButtonState
 DUMMY_ENUM_VALUE	inc/SDL2/SDL_stdinc.h	/^    DUMMY_ENUM_VALUE$/;"	e	enum:__anon62
 DWORD_PTR	inc/SDL2/SDL_config_windows.h	52;"	d
 DWORD_PTR	inc/SDL2/SDL_config_winrt.h	67;"	d
@@ -673,6 +693,7 @@ ERROR_LOG	src/bear_main_plt.h	4;"	d
 Entity	src/ecs/bear_ecs.h	/^struct Entity$/;"	s
 EntityID	src/ecs/bear_ecs.h	/^struct EntityID$/;"	s
 FAST_BITS	src/stb_image.h	1687;"	d
+FLOAT_EQ_MARGIN	bear_vector_sk.h	7;"	d
 FLOAT_EQ_MARGIN	src/math/bear_vector.h	7;"	d
 FONT_CHARACTER_SIZE	inc/SDL2/SDL_test_font.h	41;"	d
 FREE	src/bear_main_game.h	24;"	d
@@ -680,6 +701,7 @@ FREE	src/bear_main_plt.h	30;"	d
 GET_MACRO	src/bear_main_game.h	20;"	d
 GFX	src/gfx/bear_index_buffer.h	/^namespace GFX$/;"	n
 GFX	src/gfx/bear_renderer.h	/^namespace GFX$/;"	n
+GFX	src/gfx/bear_shader_program.h	/^namespace GFX$/;"	n
 GFX	src/gfx/bear_vertex_array.h	/^namespace GFX$/;"	n
 GFX	src/gfx/bear_vertex_buffer.h	/^namespace GFX$/;"	n
 GLAD_GL_VERSION_1_0	inc/glad/glad.h	/^GLAPI int GLAD_GL_VERSION_1_0;$/;"	v
@@ -765,6 +787,7 @@ GLDEBUGPROCKHR	src/glad.h	/^typedef void (APIENTRY *GLDEBUGPROCKHR)(GLenum sourc
 GLEXT_64_TYPES_DEFINED	inc/SDL2/SDL_opengl_glext.h	1374;"	d
 GLEXT_64_TYPES_DEFINED	inc/glad/glad.h	94;"	d
 GLEXT_64_TYPES_DEFINED	src/glad.h	94;"	d
+GLOBAL_MATRIX_PROFILES	src/gfx/bear_renderer.h	7;"	d
 GLVULKANPROCNV	inc/glad/glad.h	/^typedef void (APIENTRY *GLVULKANPROCNV)(void);$/;"	t
 GLVULKANPROCNV	src/glad.h	/^typedef void (APIENTRY *GLVULKANPROCNV)(void);$/;"	t
 GLVersion	inc/glad/glad.h	/^GLAPI struct gladGLversionStruct GLVersion;$/;"	v	typeref:struct:gladGLversionStruct
@@ -9882,11 +9905,10 @@ GLvoid	src/glad.h	/^typedef void GLvoid;$/;"	t
 GSTEST	src/state/bear_test_state.h	/^namespace GSTEST$/;"	n
 GameHandle	src/bear_linux.cpp	/^struct GameHandle$/;"	s	file:
 GameHandle	src/bear_windows.cpp	/^struct GameHandle$/;"	s	file:
-GameState	src/bear_main.h	/^struct GameState$/;"	s
 Gloss	inc/SDL2/SDL_pixels.h	/^    Uint8 Gloss;$/;"	m	struct:SDL_PixelFormat
 Gmask	inc/SDL2/SDL_pixels.h	/^    Uint32 Gmask;$/;"	m	struct:SDL_PixelFormat
 Gshift	inc/SDL2/SDL_pixels.h	/^    Uint8 Gshift;$/;"	m	struct:SDL_PixelFormat
-HALT_AND_CATCH_FIRE	src/bear_main.h	93;"	d
+HALT_AND_CATCH_FIRE	src/bear_main.h	86;"	d
 HAVE_ABS	inc/SDL2/SDL_config_android.h	62;"	d
 HAVE_ABS	inc/SDL2/SDL_config_iphoneos.h	62;"	d
 HAVE_ABS	inc/SDL2/SDL_config_macosx.h	65;"	d
@@ -10543,18 +10565,21 @@ HAVE__STRREV	inc/SDL2/SDL_config_windows.h	111;"	d
 HAVE__STRREV	inc/SDL2/SDL_config_winrt.h	123;"	d
 HAVE__STRUPR	inc/SDL2/SDL_config_winrt.h	124;"	d
 IDirect3DDevice9	inc/SDL2/SDL_system.h	/^typedef struct IDirect3DDevice9 IDirect3DDevice9;$/;"	t	typeref:struct:IDirect3DDevice9
-IO	src/_bak/io.h	/^  class IO$/;"	c	namespace:SK
+INPUT_MAP_SIZE	src/bear_input.h	9;"	d
+IO	_bak/io.h	/^  class IO$/;"	c	namespace:SK
 IS_RELEASE	build.bat	/^set IS_RELEASE="" $/;"	v
 IS_UWP	src/glad.c	48;"	d	file:
 Image	src/bear_image_loader.cpp	/^struct Image$/;"	s	file:
-IndexBuffer	src/_bak/indexbuffer.cpp	/^IndexBuffer::IndexBuffer(std::vector<unsigned int> data, unsigned int usage)$/;"	f	class:IndexBuffer
-IndexBuffer	src/_bak/indexbuffer.h	/^  class IndexBuffer$/;"	c	namespace:SK
+IndexBuffer	_bak/indexbuffer.cpp	/^IndexBuffer::IndexBuffer(std::vector<unsigned int> data, unsigned int usage)$/;"	f	class:IndexBuffer
+IndexBuffer	_bak/indexbuffer.h	/^  class IndexBuffer$/;"	c	namespace:SK
 IndexBuffer	src/gfx/bear_index_buffer.h	/^	struct IndexBuffer$/;"	s	namespace:GFX
 Input	src/bear_main.h	/^	struct Input$/;"	s	struct:World
-KEY_DOWN	src/_bak/input.h	4;"	d
-KEY_PRESSED	src/_bak/input.h	5;"	d
-KEY_RELEASED	src/_bak/input.h	6;"	d
-KEY_UP	src/_bak/input.h	3;"	d
+InputType	src/bear_input.h	/^enum InputType$/;"	g
+KEY	src/bear_input.h	/^	KEY, MOUSE, CONTROLLER$/;"	e	enum:InputType
+KEY_DOWN	_bak/input.h	4;"	d
+KEY_PRESSED	_bak/input.h	5;"	d
+KEY_RELEASED	_bak/input.h	6;"	d
+KEY_UP	_bak/input.h	3;"	d
 KHRONOS_APIATTRIBUTES	inc/KHR/khrplatform.h	127;"	d
 KHRONOS_APIATTRIBUTES	inc/KHR/khrplatform.h	129;"	d
 KHRONOS_APIATTRIBUTES	inc/SDL2/SDL_egl.h	162;"	d
@@ -10642,7 +10667,7 @@ KMOD_RESERVED	inc/SDL2/SDL_keycode.h	/^    KMOD_RESERVED = 0x8000$/;"	e	enum:__a
 KMOD_RGUI	inc/SDL2/SDL_keycode.h	/^    KMOD_RGUI = 0x0800,$/;"	e	enum:__anon12
 KMOD_RSHIFT	inc/SDL2/SDL_keycode.h	/^    KMOD_RSHIFT = 0x0002,$/;"	e	enum:__anon12
 KMOD_SHIFT	inc/SDL2/SDL_keycode.h	343;"	d
-Key	src/_bak/input.h	/^  class Key$/;"	c	namespace:SK
+Key	_bak/input.h	/^  class Key$/;"	c	namespace:SK
 LACKS_SYS_MMAN_H	inc/SDL2/SDL_config_psp.h	127;"	d
 LOG	src/bear_main_game.h	4;"	d
 LOG	src/bear_main_plt.h	3;"	d
@@ -10655,10 +10680,13 @@ MALLOC1	src/bear_main_plt.h	25;"	d
 MALLOC2	src/bear_main_game.h	15;"	d
 MALLOC2	src/bear_main_plt.h	24;"	d
 MALLOC_GET	src/bear_main_plt.h	27;"	d
+MAX_AXIS	src/bear_input.h	10;"	d
+MAX_BUTTONS	src/bear_input.h	11;"	d
 MD5UINT4	inc/SDL2/SDL_test_md5.h	/^  typedef unsigned long int MD5UINT4;$/;"	t
+MOUSE	src/bear_input.h	/^	KEY, MOUSE, CONTROLLER$/;"	e	enum:InputType
 M_PI	inc/SDL2/SDL_stdinc.h	499;"	d
-Mat4	src/math/bear_matrix.h	/^struct Mat4$/;"	s
-MatrixProfile	src/_bak/renderer.h	/^	struct MatrixProfile$/;"	s	namespace:Renderer
+Mat4f	src/math/bear_matrix.h	/^struct Mat4f$/;"	s
+MatrixProfile	_bak/renderer.h	/^	struct MatrixProfile$/;"	s	namespace:Renderer
 MatrixProfile	src/gfx/bear_renderer.h	/^	struct MatrixProfile$/;"	s	namespace:GFX
 MemoryAllocation	src/bear_main.h	/^struct MemoryAllocation$/;"	s
 Mesh	src/bear_obj_loader.cpp	/^struct Mesh$/;"	s	file:
@@ -10666,7 +10694,7 @@ NOMINMAX	inc/SDL2/SDL_opengl.h	125;"	d
 NOMINMAX	inc/glad/glad.h	35;"	d
 NOMINMAX	src/glad.h	35;"	d
 NO_SDL_VULKAN_TYPEDEFS	inc/SDL2/SDL_vulkan.h	41;"	d
-NSEC_TO_SEC	src/bear_linux.cpp	216;"	d	file:
+NSEC_TO_SEC	src/bear_linux.cpp	221;"	d	file:
 NSWindow	inc/SDL2/SDL_syswm.h	/^typedef struct _NSWindow NSWindow;$/;"	t	typeref:struct:_NSWindow
 NTDDI_WIN10	inc/SDL2/SDL_config_winrt.h	40;"	d
 NTDDI_WINBLUE	inc/SDL2/SDL_config_winrt.h	37;"	d
@@ -14706,6 +14734,7 @@ PFNGLXGETPROCADDRESSPROC_PRIVATE	src/glad.c	/^typedef void* (APIENTRYP PFNGLXGET
 PFNWGLGETPROCADDRESSPROC_PRIVATE	src/glad.c	/^typedef void* (APIENTRYP PFNWGLGETPROCADDRESSPROC_PRIVATE)(const char*);$/;"	t	file:
 PI	src/math/bear_math.h	12;"	d
 PLT	src/bear_main.h	/^struct PLT$/;"	s
+PRESSED	src/bear_main.h	/^	UP = 1, DOWN = 2, PRESSED = 4, RELEASED = 8$/;"	e	enum:ButtonState
 PRINT	src/bear_main_game.h	6;"	d
 Physics	src/physics/physics.h	/^struct Physics$/;"	s
 Position	src/ecs/bear_ecs.h	/^struct Position$/;"	s
@@ -14714,14 +14743,15 @@ Quat	src/math/bear_quaternion.h	/^typedef Q Quat;$/;"	t
 Quaternion	src/math/bear_quaternion.h	/^typedef Q Quaternion;$/;"	t
 REALLOC	src/bear_main_game.h	27;"	d
 REALLOC	src/bear_main_plt.h	32;"	d
+RELEASED	src/bear_main.h	/^	UP = 1, DOWN = 2, PRESSED = 4, RELEASED = 8$/;"	e	enum:ButtonState
 RW_SEEK_CUR	inc/SDL2/SDL_rwops.h	175;"	d
 RW_SEEK_END	inc/SDL2/SDL_rwops.h	176;"	d
 RW_SEEK_SET	inc/SDL2/SDL_rwops.h	174;"	d
 R_FLAGS	build.bat	/^set R_FLAGS=-MD -O2 $/;"	v
 R_LINK_FLAGS	build.bat	/^set R_LINK_FLAGS=\/SUBSYSTEM:windows \/RELEASE $/;"	v
-Renderable	src/_bak/renderer.h	/^	struct Renderable$/;"	s	namespace:Renderer
+Renderable	_bak/renderer.h	/^	struct Renderable$/;"	s	namespace:Renderer
 Renderable	src/gfx/bear_renderer.h	/^	struct Renderable$/;"	s	namespace:GFX
-Renderer	src/_bak/renderer.h	/^namespace Renderer$/;"	n
+Renderer	_bak/renderer.h	/^namespace Renderer$/;"	n
 Rloss	inc/SDL2/SDL_pixels.h	/^    Uint8 Rloss;$/;"	m	struct:SDL_PixelFormat
 Rmask	inc/SDL2/SDL_pixels.h	/^    Uint32 Rmask;$/;"	m	struct:SDL_PixelFormat
 Rshift	inc/SDL2/SDL_pixels.h	/^    Uint8 Rshift;$/;"	m	struct:SDL_PixelFormat
@@ -16552,17 +16582,17 @@ SIZEOF_VOIDP	inc/SDL2/SDL_config_windows.h	75;"	d
 SIZEOF_VOIDP	inc/SDL2/SDL_config_windows.h	77;"	d
 SIZEOF_VOIDP	inc/SDL2/SDL_config_winrt.h	90;"	d
 SIZEOF_VOIDP	inc/SDL2/SDL_config_winrt.h	92;"	d
-SK	src/_bak/camera.h	/^namespace SK$/;"	n
-SK	src/_bak/indexbuffer.h	/^namespace SK$/;"	n
-SK	src/_bak/input.h	/^namespace SK$/;"	n
-SK	src/_bak/io.h	/^namespace SK$/;"	n
-SK	src/_bak/shaderprogram.h	/^namespace SK$/;"	n
-SK	src/_bak/texture.h	/^namespace SK$/;"	n
-SK	src/_bak/transform.h	/^namespace SK$/;"	n
-SK	src/_bak/vertexarray.h	/^namespace SK$/;"	n
-SK	src/_bak/vertexbuffer.h	/^namespace SK$/;"	n
+SK	_bak/camera.h	/^namespace SK$/;"	n
+SK	_bak/indexbuffer.h	/^namespace SK$/;"	n
+SK	_bak/input.h	/^namespace SK$/;"	n
+SK	_bak/io.h	/^namespace SK$/;"	n
+SK	_bak/shaderprogram.h	/^namespace SK$/;"	n
+SK	_bak/texture.h	/^namespace SK$/;"	n
+SK	_bak/transform.h	/^namespace SK$/;"	n
+SK	_bak/vertexarray.h	/^namespace SK$/;"	n
+SK	_bak/vertexbuffer.h	/^namespace SK$/;"	n
 SND	src/audio/bear_audio.h	/^typedef int16 SND;$/;"	t
-SPEC_TO_SEC	src/bear_linux.cpp	215;"	d	file:
+SPEC_TO_SEC	src/bear_linux.cpp	220;"	d	file:
 STBIDEF	src/stb_image.h	330;"	d
 STBIDEF	src/stb_image.h	332;"	d
 STBI_ASSERT	src/stb_image.h	525;"	d
@@ -16587,8 +16617,8 @@ STBI_NO_SIMD	src/stb_image.h	620;"	d
 STBI_NO_TGA	src/stb_image.h	488;"	d
 STBI_NO_ZLIB	src/stb_image.h	505;"	d
 STBI_ONLY_PNG	src/bear_image_loader.cpp	2;"	d	file:
-STBI_ORDER_BGR	src/stb_image.h	/^   STBI_ORDER_BGR$/;"	e	enum:__anon102
-STBI_ORDER_RGB	src/stb_image.h	/^   STBI_ORDER_RGB,$/;"	e	enum:__anon102
+STBI_ORDER_BGR	src/stb_image.h	/^   STBI_ORDER_BGR$/;"	e	enum:__anon108
+STBI_ORDER_RGB	src/stb_image.h	/^   STBI_ORDER_RGB,$/;"	e	enum:__anon108
 STBI_REALLOC	src/stb_image.h	582;"	d
 STBI_REALLOC_SIZED	src/stb_image.h	587;"	d
 STBI_SIMD_ALIGN	src/stb_image.h	650;"	d
@@ -16608,30 +16638,30 @@ STBI__CASE	src/stb_image.h	4428;"	d
 STBI__CASE	src/stb_image.h	4441;"	d
 STBI__COMBO	src/stb_image.h	1537;"	d
 STBI__COMBO	src/stb_image.h	1586;"	d
-STBI__F_avg	src/stb_image.h	/^   STBI__F_avg=3,$/;"	e	enum:__anon113
-STBI__F_avg_first	src/stb_image.h	/^   STBI__F_avg_first,$/;"	e	enum:__anon113
-STBI__F_none	src/stb_image.h	/^   STBI__F_none=0,$/;"	e	enum:__anon113
-STBI__F_paeth	src/stb_image.h	/^   STBI__F_paeth=4,$/;"	e	enum:__anon113
-STBI__F_paeth_first	src/stb_image.h	/^   STBI__F_paeth_first$/;"	e	enum:__anon113
-STBI__F_sub	src/stb_image.h	/^   STBI__F_sub=1,$/;"	e	enum:__anon113
-STBI__F_up	src/stb_image.h	/^   STBI__F_up=2,$/;"	e	enum:__anon113
+STBI__F_avg	src/stb_image.h	/^   STBI__F_avg=3,$/;"	e	enum:__anon119
+STBI__F_avg_first	src/stb_image.h	/^   STBI__F_avg_first,$/;"	e	enum:__anon119
+STBI__F_none	src/stb_image.h	/^   STBI__F_none=0,$/;"	e	enum:__anon119
+STBI__F_paeth	src/stb_image.h	/^   STBI__F_paeth=4,$/;"	e	enum:__anon119
+STBI__F_paeth_first	src/stb_image.h	/^   STBI__F_paeth_first$/;"	e	enum:__anon119
+STBI__F_sub	src/stb_image.h	/^   STBI__F_sub=1,$/;"	e	enum:__anon119
+STBI__F_up	src/stb_image.h	/^   STBI__F_up=2,$/;"	e	enum:__anon119
 STBI__HDR_BUFLEN	src/stb_image.h	6619;"	d
 STBI__IDCT_1D	src/stb_image.h	2167;"	d
 STBI__MARKER_none	src/stb_image.h	2652;"	d
 STBI__PNG_TYPE	src/stb_image.h	4729;"	d
 STBI__RESTART	src/stb_image.h	2669;"	d
-STBI__SCAN_header	src/stb_image.h	/^   STBI__SCAN_header$/;"	e	enum:__anon104
-STBI__SCAN_load	src/stb_image.h	/^   STBI__SCAN_load=0,$/;"	e	enum:__anon104
-STBI__SCAN_type	src/stb_image.h	/^   STBI__SCAN_type,$/;"	e	enum:__anon104
+STBI__SCAN_header	src/stb_image.h	/^   STBI__SCAN_header$/;"	e	enum:__anon110
+STBI__SCAN_load	src/stb_image.h	/^   STBI__SCAN_load=0,$/;"	e	enum:__anon110
+STBI__SCAN_type	src/stb_image.h	/^   STBI__SCAN_type,$/;"	e	enum:__anon110
 STBI__X64_TARGET	src/stb_image.h	592;"	d
 STBI__X86_TARGET	src/stb_image.h	594;"	d
 STBI__ZFAST_BITS	src/stb_image.h	3789;"	d
 STBI__ZFAST_MASK	src/stb_image.h	3790;"	d
-STBI_default	src/stb_image.h	/^   STBI_default = 0, \/\/ only used for desired_channels$/;"	e	enum:__anon99
-STBI_grey	src/stb_image.h	/^   STBI_grey       = 1,$/;"	e	enum:__anon99
-STBI_grey_alpha	src/stb_image.h	/^   STBI_grey_alpha = 2,$/;"	e	enum:__anon99
-STBI_rgb	src/stb_image.h	/^   STBI_rgb        = 3,$/;"	e	enum:__anon99
-STBI_rgb_alpha	src/stb_image.h	/^   STBI_rgb_alpha  = 4$/;"	e	enum:__anon99
+STBI_default	src/stb_image.h	/^   STBI_default = 0, \/\/ only used for desired_channels$/;"	e	enum:__anon105
+STBI_grey	src/stb_image.h	/^   STBI_grey       = 1,$/;"	e	enum:__anon105
+STBI_grey_alpha	src/stb_image.h	/^   STBI_grey_alpha = 2,$/;"	e	enum:__anon105
+STBI_rgb	src/stb_image.h	/^   STBI_rgb        = 3,$/;"	e	enum:__anon105
+STBI_rgb_alpha	src/stb_image.h	/^   STBI_rgb_alpha  = 4$/;"	e	enum:__anon105
 STB_IMAGE_IMPLEMENTATION	src/bear_image_loader.cpp	1;"	d	file:
 STDC_HEADERS	inc/SDL2/SDL_config_android.h	38;"	d
 STDC_HEADERS	inc/SDL2/SDL_config_iphoneos.h	36;"	d
@@ -16643,9 +16673,11 @@ STDC_HEADERS	inc/SDL2/SDL_config_winrt.h	101;"	d
 STDC_HEADERS	inc/SDL2/SDL_config_wiz.h	33;"	d
 SYSTEM_ENTRY	src/ecs/bear_ecs_init.cpp	61;"	d	file:
 S_HELLO_WORLD	src/ecs/bear_ecs.h	/^	S_HELLO_WORLD,$/;"	e	enum:SystemType
-Shader	src/_bak/shaderprogram.h	/^  struct Shader$/;"	s	namespace:SK
-ShaderProgram	src/_bak/shaderprogram.cpp	/^ShaderProgram::ShaderProgram(std::vector<Shader> shaders)$/;"	f	class:ShaderProgram
-ShaderProgram	src/_bak/shaderprogram.h	/^  class ShaderProgram$/;"	c	namespace:SK
+Shader	_bak/shaderprogram.h	/^  struct Shader$/;"	s	namespace:SK
+ShaderInfo	src/gfx/bear_shader_program.h	/^	struct ShaderInfo$/;"	s	namespace:GFX
+ShaderProgram	_bak/shaderprogram.cpp	/^ShaderProgram::ShaderProgram(std::vector<Shader> shaders)$/;"	f	class:ShaderProgram
+ShaderProgram	_bak/shaderprogram.h	/^  class ShaderProgram$/;"	c	namespace:SK
+ShaderProgram	src/gfx/bear_shader_program.h	/^	struct ShaderProgram$/;"	s	namespace:GFX
 Shape	src/physics/physics.h	/^struct Shape$/;"	s
 ShapeID	src/physics/physics.h	/^enum ShapeID$/;"	g
 ShapeModeBinarizeAlpha	inc/SDL2/SDL_shape.h	/^    ShapeModeBinarizeAlpha,$/;"	e	enum:__anon3
@@ -16675,12 +16707,13 @@ TEST_RESULT_SETUP_FAILURE	inc/SDL2/SDL_test_harness.h	61;"	d
 TEST_RESULT_SKIPPED	inc/SDL2/SDL_test_harness.h	60;"	d
 TEST_SKIPPED	inc/SDL2/SDL_test_harness.h	54;"	d
 TEST_STARTED	inc/SDL2/SDL_test_harness.h	52;"	d
-Texture	src/_bak/texture.cpp	/^Texture::Texture(unsigned int w, unsigned int h, int* pixels)$/;"	f	class:Texture
-Texture	src/_bak/texture.h	/^  class Texture$/;"	c	namespace:SK
-Transform	src/_bak/transform.h	/^  class Transform$/;"	c	namespace:SK
-Transform	src/physics/physics.h	/^struct Transform$/;"	s
+Texture	_bak/texture.cpp	/^Texture::Texture(unsigned int w, unsigned int h, int* pixels)$/;"	f	class:Texture
+Texture	_bak/texture.h	/^  class Texture$/;"	c	namespace:SK
+Transform	_bak/transform.h	/^  class Transform$/;"	c	namespace:SK
+Transform	src/math/bear_transform.h	/^struct Transform$/;"	s
 UIViewController	inc/SDL2/SDL_syswm.h	/^typedef struct _UIViewController UIViewController;$/;"	t	typeref:struct:_UIViewController
 UIWindow	inc/SDL2/SDL_syswm.h	/^typedef struct _UIWindow UIWindow;$/;"	t	typeref:struct:_UIWindow
+UP	src/bear_main.h	/^	UP = 1, DOWN = 2, PRESSED = 4, RELEASED = 8$/;"	e	enum:ButtonState
 Uint16	inc/SDL2/SDL_stdinc.h	/^typedef uint16_t Uint16;$/;"	t
 Uint32	inc/SDL2/SDL_stdinc.h	/^typedef uint32_t Uint32;$/;"	t
 Uint64	inc/SDL2/SDL_stdinc.h	/^typedef uint64_t Uint64;$/;"	t
@@ -16693,16 +16726,19 @@ VERBOSE_VIDEO	inc/SDL2/SDL_test_common.h	45;"	d
 VK_DEFINE_HANDLE	inc/SDL2/SDL_vulkan.h	44;"	d
 VK_DEFINE_NON_DISPATCHABLE_HANDLE	inc/SDL2/SDL_vulkan.h	47;"	d
 VK_DEFINE_NON_DISPATCHABLE_HANDLE	inc/SDL2/SDL_vulkan.h	49;"	d
+Vec2f	bear_vector_sk.h	/^struct Vec2f$/;"	s
 Vec2f	src/math/bear_vector.h	/^struct Vec2f$/;"	s
+Vec3f	bear_vector_sk.h	/^struct Vec3f$/;"	s
 Vec3f	src/math/bear_vector.h	/^struct Vec3f$/;"	s
+Vec4f	bear_vector_sk.h	/^struct Vec4f$/;"	s
 Vec4f	src/math/bear_vector.h	/^struct Vec4f$/;"	s
-VertexArray	src/_bak/vertexarray.cpp	/^VertexArray::VertexArray(std::vector<VertexAttribute> attribs, IndexBuffer* indices)$/;"	f	class:VertexArray
-VertexArray	src/_bak/vertexarray.h	/^  class VertexArray$/;"	c	namespace:SK
+VertexArray	_bak/vertexarray.cpp	/^VertexArray::VertexArray(std::vector<VertexAttribute> attribs, IndexBuffer* indices)$/;"	f	class:VertexArray
+VertexArray	_bak/vertexarray.h	/^  class VertexArray$/;"	c	namespace:SK
 VertexArray	src/gfx/bear_vertex_array.h	/^	struct VertexArray$/;"	s	namespace:GFX
-VertexAttribute	src/_bak/vertexarray.h	/^  struct VertexAttribute$/;"	s	namespace:SK
+VertexAttribute	_bak/vertexarray.h	/^  struct VertexAttribute$/;"	s	namespace:SK
 VertexAttribute	src/gfx/bear_vertex_array.h	/^	struct VertexAttribute$/;"	s	namespace:GFX
-VertexBuffer	src/_bak/vertexbuffer.cpp	/^VertexBuffer::VertexBuffer(std::vector<float> data, unsigned int usage)$/;"	f	class:VertexBuffer
-VertexBuffer	src/_bak/vertexbuffer.h	/^  class VertexBuffer$/;"	c	namespace:SK
+VertexBuffer	_bak/vertexbuffer.cpp	/^VertexBuffer::VertexBuffer(std::vector<float> data, unsigned int usage)$/;"	f	class:VertexBuffer
+VertexBuffer	_bak/vertexbuffer.h	/^  class VertexBuffer$/;"	c	namespace:SK
 VertexBuffer	src/gfx/bear_vertex_buffer.h	/^	typedef uint32 VertexBuffer;$/;"	t	namespace:GFX
 WAVChunk	src/audio/bear_audio.cpp	/^struct WAVChunk$/;"	s	file:
 WAVHeader	src/audio/bear_audio.cpp	/^struct WAVHeader$/;"	s	file:
@@ -16715,31 +16751,36 @@ WIN32_LEAN_AND_MEAN	inc/glad/glad.h	32;"	d
 WIN32_LEAN_AND_MEAN	src/glad.h	32;"	d
 WINAPI_FAMILY_WINRT	inc/SDL2/SDL_platform.h	139;"	d
 WINAPI_FAMILY_WINRT	inc/SDL2/SDL_platform.h	141;"	d
+WINDOW_HEIGHT	src/bear_main.h	12;"	d
+WINDOW_WIDTH	src/bear_main.h	11;"	d
 WinMain	src/bear_windows.cpp	/^int CALLBACK WinMain($/;"	f
 WindowShapeMode	inc/SDL2/SDL_shape.h	/^} WindowShapeMode;$/;"	t	typeref:enum:__anon3
 World	src/bear_main.h	/^struct World$/;"	s
-YCbCr_to_RGB_kernel	src/stb_image.h	/^   void (*YCbCr_to_RGB_kernel)(stbi_uc *out, const stbi_uc *y, const stbi_uc *pcb, const stbi_uc *pcr, int count, int step);$/;"	m	struct:__anon106
-_	src/math/bear_matrix.h	/^		float32 _[4][4];$/;"	m	union:Mat4::__anon118
-_	src/math/bear_quaternion.h	/^		float32 _[4];$/;"	m	union:Q::__anon126
-_	src/math/bear_vector.h	/^		float32 _[2];$/;"	m	union:Vec2f::__anon120
-_	src/math/bear_vector.h	/^		float32 _[3];$/;"	m	union:Vec3f::__anon122
-_	src/math/bear_vector.h	/^		float32 _[4];$/;"	m	union:Vec4f::__anon124
-_00	src/math/bear_matrix.h	/^			float32 _00, _01, _02, _03;$/;"	m	struct:Mat4::__anon118::__anon119
-_01	src/math/bear_matrix.h	/^			float32 _00, _01, _02, _03;$/;"	m	struct:Mat4::__anon118::__anon119
-_02	src/math/bear_matrix.h	/^			float32 _00, _01, _02, _03;$/;"	m	struct:Mat4::__anon118::__anon119
-_03	src/math/bear_matrix.h	/^			float32 _00, _01, _02, _03;$/;"	m	struct:Mat4::__anon118::__anon119
-_10	src/math/bear_matrix.h	/^			float32 _10, _11, _12, _13;$/;"	m	struct:Mat4::__anon118::__anon119
-_11	src/math/bear_matrix.h	/^			float32 _10, _11, _12, _13;$/;"	m	struct:Mat4::__anon118::__anon119
-_12	src/math/bear_matrix.h	/^			float32 _10, _11, _12, _13;$/;"	m	struct:Mat4::__anon118::__anon119
-_13	src/math/bear_matrix.h	/^			float32 _10, _11, _12, _13;$/;"	m	struct:Mat4::__anon118::__anon119
-_20	src/math/bear_matrix.h	/^			float32 _20, _21, _22, _23;$/;"	m	struct:Mat4::__anon118::__anon119
-_21	src/math/bear_matrix.h	/^			float32 _20, _21, _22, _23;$/;"	m	struct:Mat4::__anon118::__anon119
-_22	src/math/bear_matrix.h	/^			float32 _20, _21, _22, _23;$/;"	m	struct:Mat4::__anon118::__anon119
-_23	src/math/bear_matrix.h	/^			float32 _20, _21, _22, _23;$/;"	m	struct:Mat4::__anon118::__anon119
-_30	src/math/bear_matrix.h	/^			float32 _30, _31, _32, _33;$/;"	m	struct:Mat4::__anon118::__anon119
-_31	src/math/bear_matrix.h	/^			float32 _30, _31, _32, _33;$/;"	m	struct:Mat4::__anon118::__anon119
-_32	src/math/bear_matrix.h	/^			float32 _30, _31, _32, _33;$/;"	m	struct:Mat4::__anon118::__anon119
-_33	src/math/bear_matrix.h	/^			float32 _30, _31, _32, _33;$/;"	m	struct:Mat4::__anon118::__anon119
+YCbCr_to_RGB_kernel	src/stb_image.h	/^   void (*YCbCr_to_RGB_kernel)(stbi_uc *out, const stbi_uc *y, const stbi_uc *pcb, const stbi_uc *pcr, int count, int step);$/;"	m	struct:__anon112
+_	bear_vector_sk.h	/^		float32 _[2];$/;"	m	union:Vec2f::__anon92
+_	bear_vector_sk.h	/^		float32 _[3];$/;"	m	union:Vec3f::__anon94
+_	bear_vector_sk.h	/^		float32 _[4];$/;"	m	union:Vec4f::__anon96
+_	src/math/bear_matrix.h	/^		float32 _[4][4];$/;"	m	union:Mat4f::__anon129
+_	src/math/bear_quaternion.h	/^		float32 _[4];$/;"	m	union:Q::__anon137
+_	src/math/bear_vector.h	/^		float32 _[2];$/;"	m	union:Vec2f::__anon131
+_	src/math/bear_vector.h	/^		float32 _[3];$/;"	m	union:Vec3f::__anon133
+_	src/math/bear_vector.h	/^		float32 _[4];$/;"	m	union:Vec4f::__anon135
+_00	src/math/bear_matrix.h	/^			float32 _00, _01, _02, _03;$/;"	m	struct:Mat4f::__anon129::__anon130
+_01	src/math/bear_matrix.h	/^			float32 _00, _01, _02, _03;$/;"	m	struct:Mat4f::__anon129::__anon130
+_02	src/math/bear_matrix.h	/^			float32 _00, _01, _02, _03;$/;"	m	struct:Mat4f::__anon129::__anon130
+_03	src/math/bear_matrix.h	/^			float32 _00, _01, _02, _03;$/;"	m	struct:Mat4f::__anon129::__anon130
+_10	src/math/bear_matrix.h	/^			float32 _10, _11, _12, _13;$/;"	m	struct:Mat4f::__anon129::__anon130
+_11	src/math/bear_matrix.h	/^			float32 _10, _11, _12, _13;$/;"	m	struct:Mat4f::__anon129::__anon130
+_12	src/math/bear_matrix.h	/^			float32 _10, _11, _12, _13;$/;"	m	struct:Mat4f::__anon129::__anon130
+_13	src/math/bear_matrix.h	/^			float32 _10, _11, _12, _13;$/;"	m	struct:Mat4f::__anon129::__anon130
+_20	src/math/bear_matrix.h	/^			float32 _20, _21, _22, _23;$/;"	m	struct:Mat4f::__anon129::__anon130
+_21	src/math/bear_matrix.h	/^			float32 _20, _21, _22, _23;$/;"	m	struct:Mat4f::__anon129::__anon130
+_22	src/math/bear_matrix.h	/^			float32 _20, _21, _22, _23;$/;"	m	struct:Mat4f::__anon129::__anon130
+_23	src/math/bear_matrix.h	/^			float32 _20, _21, _22, _23;$/;"	m	struct:Mat4f::__anon129::__anon130
+_30	src/math/bear_matrix.h	/^			float32 _30, _31, _32, _33;$/;"	m	struct:Mat4f::__anon129::__anon130
+_31	src/math/bear_matrix.h	/^			float32 _30, _31, _32, _33;$/;"	m	struct:Mat4f::__anon129::__anon130
+_32	src/math/bear_matrix.h	/^			float32 _30, _31, _32, _33;$/;"	m	struct:Mat4f::__anon129::__anon130
+_33	src/math/bear_matrix.h	/^			float32 _30, _31, _32, _33;$/;"	m	struct:Mat4f::__anon129::__anon130
 _END	build.bat	/^:_END$/;"	l
 _GLAD_IS_SOME_NEW_VERSION	src/glad.c	157;"	d	file:
 _GLfuncptr	inc/GL/gl.h	/^typedef void (*_GLfuncptr)();$/;"	t
@@ -16750,7 +16791,7 @@ _System	inc/SDL2/begin_code.h	86;"	d
 _UINTPTR_T_DEFINED	inc/SDL2/SDL_config_windows.h	48;"	d
 _UINTPTR_T_DEFINED	inc/SDL2/SDL_config_winrt.h	63;"	d
 _USE_MATH_DEFINES	inc/SDL2/SDL_stdinc.h	82;"	d
-__	src/math/bear_matrix.h	/^		float32 __[16];$/;"	m	union:Mat4::__anon118
+__	src/math/bear_matrix.h	/^		float32 __[16];$/;"	m	union:Mat4f::__anon129
 __3dNOW__	inc/SDL2/SDL_cpuinfo.h	45;"	d
 __AIX__	inc/SDL2/SDL_platform.h	32;"	d
 __AIX__	inc/SDL2/SDL_platform.h	33;"	d
@@ -16839,16 +16880,18 @@ __mem	src/bear_windows.cpp	/^MemoryAllocation __mem[1024];$/;"	v
 __mem_length	src/bear_main.h	/^	uint32 __mem_length = 0;$/;"	m	struct:World
 _begin_code_h	inc/SDL2/begin_code.h	34;"	d
 _begin_code_h	inc/SDL2/close_code.h	29;"	d
-_has_indices	src/_bak/vertexarray.h	/^    bool _has_indices = false;$/;"	m	class:SK::VertexArray
-_id	src/_bak/indexbuffer.h	/^    unsigned int _id = 0;$/;"	m	class:SK::IndexBuffer
-_id	src/_bak/shaderprogram.h	/^    unsigned int _id;$/;"	m	class:SK::ShaderProgram
-_id	src/_bak/texture.h	/^    unsigned int _id;$/;"	m	class:SK::Texture
-_id	src/_bak/vertexarray.h	/^    unsigned int _id;$/;"	m	class:SK::VertexArray
-_id	src/_bak/vertexbuffer.h	/^    unsigned int _id = 0;$/;"	m	class:SK::VertexBuffer
-_name_map	src/_bak/input.h	/^    static std::unordered_map<int, std::string> _name_map;$/;"	m	class:SK::Key
-_projection	src/_bak/camera.h	/^    glm::mat4 _projection = glm::mat4(1.0);$/;"	m	class:SK::Camera
-_state_map	src/_bak/input.cpp	/^std::unordered_map<std::string, int> Key::_state_map;$/;"	m	class:Key	file:
-_state_map	src/_bak/input.h	/^    static std::unordered_map<std::string, int> _state_map;$/;"	m	class:SK::Key
+_has_indices	_bak/vertexarray.h	/^    bool _has_indices = false;$/;"	m	class:SK::VertexArray
+_id	_bak/indexbuffer.h	/^    unsigned int _id = 0;$/;"	m	class:SK::IndexBuffer
+_id	_bak/shaderprogram.h	/^    unsigned int _id;$/;"	m	class:SK::ShaderProgram
+_id	_bak/texture.h	/^    unsigned int _id;$/;"	m	class:SK::Texture
+_id	_bak/vertexarray.h	/^    unsigned int _id;$/;"	m	class:SK::VertexArray
+_id	_bak/vertexbuffer.h	/^    unsigned int _id = 0;$/;"	m	class:SK::VertexBuffer
+_name_map	_bak/input.h	/^    static std::unordered_map<int, std::string> _name_map;$/;"	m	class:SK::Key
+_projection	_bak/camera.h	/^    glm::mat4 _projection = glm::mat4(1.0);$/;"	m	class:SK::Camera
+_state_map	_bak/input.cpp	/^std::unordered_map<std::string, int> Key::_state_map;$/;"	m	class:Key	file:
+_state_map	_bak/input.h	/^    static std::unordered_map<std::string, int> _state_map;$/;"	m	class:SK::Key
+_write_axis_to_array	src/bear_input.h	/^Axis *_write_axis_to_array(Axis axis)$/;"	f
+_write_button_to_array	src/bear_input.h	/^Button *_write_button_to_array(Button button)$/;"	f
 a	inc/SDL2/SDL_pixels.h	/^    Uint8 a;$/;"	m	struct:SDL_Color
 a	inc/SDL2/SDL_test_random.h	/^    unsigned int a;$/;"	m	struct:__anon66
 a	src/ecs/bear_ecs.h	/^	int32 a;$/;"	m	struct:Blargh
@@ -16860,14 +16903,18 @@ add_component	src/ecs/bear_ecs.cpp	/^bool add_component(ECS *ecs, EntityID id, C
 add_components	src/ecs/bear_ecs.cpp	142;"	d	file:
 add_components_	src/ecs/bear_ecs.cpp	/^void add_components_(ECS *ecs, EntityID id, ...)$/;"	f
 add_entity	src/ecs/bear_ecs.cpp	/^EntityID add_entity(ECS *ecs)$/;"	f
-add_profile	src/_bak/renderer.h	/^	void add_profile(string uniform_name, uint8 uniform_length,$/;"	f	namespace:Renderer
-add_profile	src/gfx/bear_renderer.h	/^	void add_profile(string uniform_name, uint8 uniform_length\/*,$/;"	f	namespace:GFX
+add_matrix_profile	src/gfx/bear_renderer.h	/^	void add_matrix_profile(string uniform_name, Camera *camera)$/;"	f	namespace:GFX
+add_matrix_profile	src/gfx/bear_renderer.h	/^	void add_matrix_profile(string uniform_name, Mat4f *m)$/;"	f	namespace:GFX
+add_matrix_profile	src/gfx/bear_renderer.h	/^	void add_matrix_profile(string uniform_name, Transform *transform)$/;"	f	namespace:GFX
+add_profile	_bak/renderer.h	/^	void add_profile(string uniform_name, uint8 uniform_length,$/;"	f	namespace:Renderer
 add_sound_source	src/audio/bear_audio.cpp	/^AudioID add_sound_source(Audio *audio, AudioSource source)$/;"	f
+add_to_map	src/bear_input.h	/^void add_to_map(string name, Axis *axis)$/;"	f
+add_to_map	src/bear_input.h	/^void add_to_map(string name, Button *button)$/;"	f
 adevice	inc/SDL2/SDL_events.h	/^    SDL_AudioDeviceEvent adevice;   \/**< Audio device event data *\/$/;"	m	union:SDL_Event
 ah	inc/SDL2/SDL_test_random.h	/^    unsigned int ah;$/;"	m	struct:__anon66
 al	inc/SDL2/SDL_test_random.h	/^    unsigned int al;$/;"	m	struct:__anon66
-all_a	src/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon114
-alloc	src/_bak/bear_array.cpp	/^	uint32 alloc;$/;"	m	struct:Array	file:
+all_a	src/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon120
+alloc	_bak/bear_array.cpp	/^	uint32 alloc;$/;"	m	struct:Array	file:
 alloca	inc/SDL2/SDL_stdinc.h	335;"	d
 alloca	inc/SDL2/SDL_stdinc.h	338;"	d
 allocated_entities	src/ecs/bear_ecs.h	/^	int32 allocated_entities;$/;"	m	struct:ECS
@@ -16875,7 +16922,7 @@ always_ignore	inc/SDL2/SDL_assert.h	/^    int always_ignore;$/;"	m	struct:SDL_As
 android	inc/SDL2/SDL_syswm.h	/^        } android;$/;"	m	union:SDL_SysWMinfo::__anon33	typeref:struct:SDL_SysWMinfo::__anon33::__anon42
 androidio	inc/SDL2/SDL_rwops.h	/^        } androidio;$/;"	m	union:SDL_RWops::__anon70	typeref:struct:SDL_RWops::__anon70::__anon71
 ap	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap);$/;"	v
-app14_color_transform	src/stb_image.h	/^   int            app14_color_transform; \/\/ Adobe APP14 tag$/;"	m	struct:__anon106
+app14_color_transform	src/stb_image.h	/^   int            app14_color_transform; \/\/ Adobe APP14 tag$/;"	m	struct:__anon112
 append	src/bear_array.h	/^void append(Array<T> *arr, T val)$/;"	f
 argv	inc/SDL2/SDL_test_common.h	/^    char **argv;$/;"	m	struct:__anon15
 assert_	src/bear_main_game.h	/^void assert_(const char *file, uint32 line, const char *check)$/;"	f
@@ -16895,35 +16942,50 @@ autoclose	inc/SDL2/SDL_rwops.h	/^            SDL_bool autoclose;$/;"	m	struct:SD
 axis	inc/SDL2/SDL_events.h	/^    Uint8 axis;         \/**< The controller axis (SDL_GameControllerAxis) *\/$/;"	m	struct:SDL_ControllerAxisEvent
 axis	inc/SDL2/SDL_events.h	/^    Uint8 axis;         \/**< The joystick axis index *\/$/;"	m	struct:SDL_JoyAxisEvent
 axis	inc/SDL2/SDL_gamecontroller.h	/^        int axis;$/;"	m	union:SDL_GameControllerButtonBind::__anon81
+axis_array	src/bear_input.h	/^Array<Axis> axis_array;$/;"	v
+axis_map	src/bear_input.h	/^} axis_map[INPUT_MAP_SIZE];$/;"	v	typeref:struct:AxisEntry
+axis_value	src/bear_input.h	/^AxisValue axis_value(string name)$/;"	f
+axis_value	src/bear_main.h	/^	AxisValue (*axis_value) (string);$/;"	m	struct:PLT
+axises	src/bear_input.h	/^	Array<Axis *>  axises;$/;"	m	struct:AxisEntry
+axises	src/bear_input.h	/^	Array<Axis *> axises;$/;"	m	struct:Button
 b	inc/SDL2/SDL_messagebox.h	/^    Uint8 r, g, b;$/;"	m	struct:__anon56
 b	inc/SDL2/SDL_pixels.h	/^    Uint8 b;$/;"	m	struct:SDL_Color
 b	src/ecs/bear_ecs.h	/^	int32 b;$/;"	m	struct:Blargh
-background	src/stb_image.h	/^   stbi_uc *background;          \/\/ The current "background" as far as a gif is concerned$/;"	m	struct:__anon117
+background	src/stb_image.h	/^   stbi_uc *background;          \/\/ The current "background" as far as a gif is concerned$/;"	m	struct:__anon123
 ball	inc/SDL2/SDL_events.h	/^    Uint8 ball;         \/**< The joystick trackball index *\/$/;"	m	struct:SDL_JoyBallEvent
 base	inc/SDL2/SDL_rwops.h	/^            Uint8 *base;$/;"	m	struct:SDL_RWops::__anon70::__anon73
-bgindex	src/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon117
+bgindex	src/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon123
 binarizationCutoff	inc/SDL2/SDL_shape.h	/^    Uint8 binarizationCutoff;$/;"	m	union:__anon4
-bind	src/_bak/indexbuffer.cpp	/^void IndexBuffer::bind()$/;"	f	class:IndexBuffer
-bind	src/_bak/shaderprogram.cpp	/^void ShaderProgram::bind()$/;"	f	class:ShaderProgram
-bind	src/_bak/texture.cpp	/^void Texture::bind(unsigned int index)$/;"	f	class:Texture
-bind	src/_bak/vertexarray.cpp	/^void VertexArray::bind()$/;"	f	class:VertexArray
-bind	src/_bak/vertexbuffer.cpp	/^void VertexBuffer::bind()$/;"	f	class:VertexBuffer
+bind	_bak/indexbuffer.cpp	/^void IndexBuffer::bind()$/;"	f	class:IndexBuffer
+bind	_bak/shaderprogram.cpp	/^void ShaderProgram::bind()$/;"	f	class:ShaderProgram
+bind	_bak/texture.cpp	/^void Texture::bind(unsigned int index)$/;"	f	class:Texture
+bind	_bak/vertexarray.cpp	/^void VertexArray::bind()$/;"	f	class:VertexArray
+bind	_bak/vertexbuffer.cpp	/^void VertexBuffer::bind()$/;"	f	class:VertexBuffer
 bind	src/gfx/bear_index_buffer.h	/^	void bind(IndexBuffer buffer)$/;"	f	namespace:GFX
+bind	src/gfx/bear_shader_program.h	/^	void bind(ShaderProgram program)$/;"	f	namespace:GFX
 bind	src/gfx/bear_vertex_array.h	/^	void bind(VertexArray arr)$/;"	f	namespace:GFX
 bind	src/gfx/bear_vertex_buffer.h	/^	void bind(VertexBuffer buffer)$/;"	f	namespace:GFX
 bindType	inc/SDL2/SDL_gamecontroller.h	/^    SDL_GameControllerBindType bindType;$/;"	m	struct:SDL_GameControllerButtonBind
+bind_axis_controller	src/bear_input.h	/^void bind_axis_controller(string name, SDL_JoystickID c_device, SDL_GameControllerAxis c_axis)$/;"	f
+bind_axis_key	src/bear_input.h	/^void bind_axis_key(string name, int32 k_pos, int32 k_neg)$/;"	f
+bind_axis_mouse	src/bear_input.h	/^void bind_axis_mouse(string name, bool m_x)$/;"	f
+bind_button_controller	src/bear_input.h	/^void bind_button_controller(string name, SDL_JoystickID c_device, SDL_GameControllerButton c_button)$/;"	f
+bind_button_key	src/bear_input.h	/^void bind_button_key(string name, int32 key)$/;"	f
+bind_button_mouse	src/bear_input.h	/^void bind_button_mouse(string name, uint8 mouse_button)$/;"	f
+binding	src/bear_input.h	/^	} binding;$/;"	m	struct:Axis	typeref:struct:Axis::Binding
+binding	src/bear_input.h	/^	} binding;$/;"	m	struct:Button	typeref:struct:Button::Binding
 bitdepth	src/audio/bear_audio.cpp	/^	int16 bitdepth;$/;"	m	struct:WAVHeader	file:
 bitdepth	src/audio/bear_audio.h	/^	uint8 bitdepth;$/;"	m	struct:AudioBuffer
-bits_per_channel	src/stb_image.h	/^   int bits_per_channel;$/;"	m	struct:__anon103
+bits_per_channel	src/stb_image.h	/^   int bits_per_channel;$/;"	m	struct:__anon109
 block_align	src/audio/bear_audio.cpp	/^	int16 block_align;$/;"	m	struct:WAVHeader	file:
 bool	inc/SDL2/SDL_cpuinfo.h	57;"	d
-bpp	src/stb_image.h	/^   int bpp, offset, hsz;$/;"	m	struct:__anon114
+bpp	src/stb_image.h	/^   int bpp, offset, hsz;$/;"	m	struct:__anon120
 buf	inc/SDL2/SDL_audio.h	/^    Uint8 *buf;                 \/**< Buffer to hold entire audio data *\/$/;"	m	struct:SDL_AudioCVT
 buf	inc/SDL2/SDL_test_md5.h	/^    MD5UINT4  buf[4];       \/* scratch buffer *\/$/;"	m	struct:__anon65
 buffer_id	src/audio/bear_audio.h	/^	AudioID buffer_id;$/;"	m	struct:AudioSource
-buffer_start	src/stb_image.h	/^   stbi_uc buffer_start[128];$/;"	m	struct:__anon101
+buffer_start	src/stb_image.h	/^   stbi_uc buffer_start[128];$/;"	m	struct:__anon107
 buffers	src/audio/bear_audio.h	/^	AudioBuffer *buffers;$/;"	m	struct:Audio
-buflen	src/stb_image.h	/^   int buflen;$/;"	m	struct:__anon101
+buflen	src/stb_image.h	/^   int buflen;$/;"	m	struct:__anon107
 button	inc/SDL2/SDL_events.h	/^    SDL_MouseButtonEvent button;    \/**< Mouse button event data *\/$/;"	m	union:SDL_Event
 button	inc/SDL2/SDL_events.h	/^    Uint8 button;       \/**< The controller button (SDL_GameControllerButton) *\/$/;"	m	struct:SDL_ControllerButtonEvent
 button	inc/SDL2/SDL_events.h	/^    Uint8 button;       \/**< The joystick button index *\/$/;"	m	struct:SDL_JoyButtonEvent
@@ -16934,45 +16996,58 @@ button	inc/SDL2/SDL_haptic.h	/^    Uint16 button;          \/**< Button that tri
 button	inc/SDL2/SDL_haptic.h	/^    Uint16 button;          \/**< Button that triggers the effect. *\/$/;"	m	struct:SDL_HapticCustom
 button	inc/SDL2/SDL_haptic.h	/^    Uint16 button;          \/**< Button that triggers the effect. *\/$/;"	m	struct:SDL_HapticRamp
 button	inc/SDL2/SDL_haptic.h	/^    Uint16 button;      \/**< Button that triggers the effect. *\/$/;"	m	struct:SDL_HapticPeriodic
+button_array	src/bear_input.h	/^Array<Button> button_array;$/;"	v
+button_map	src/bear_input.h	/^} button_map[INPUT_MAP_SIZE];$/;"	v	typeref:struct:ButtonEntry
+button_state	src/bear_input.h	/^ButtonState button_state(string name)$/;"	f
+button_state	src/bear_main.h	/^	ButtonState (*button_state) (string);$/;"	m	struct:PLT
 buttonid	inc/SDL2/SDL_messagebox.h	/^    int buttonid;       \/**< User defined button id (value returned via SDL_ShowMessageBox) *\/$/;"	m	struct:__anon55
 buttons	inc/SDL2/SDL_messagebox.h	/^    const SDL_MessageBoxButtonData *buttons;$/;"	m	struct:__anon59
+buttons	src/bear_input.h	/^	Array<Button *> buttons;$/;"	m	struct:ButtonEntry
 byte_rate	src/audio/bear_audio.cpp	/^	int32 byte_rate;$/;"	m	struct:WAVHeader	file:
 bytes_per_pixel	inc/SDL2/SDL_test_images.h	/^  unsigned int bytes_per_pixel; \/* 3:RGB, 4:RGBA *\/$/;"	m	struct:SDLTest_SurfaceImage_s
 c	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC void *SDLCALL SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len);$/;"	v
 c	inc/SDL2/SDL_test_random.h	/^    unsigned int c;$/;"	m	struct:__anon66
 c	src/ecs/bear_ecs.h	/^	void *c; $/;"	m	struct:ECSEntry
+c_axis	src/bear_input.h	/^				SDL_GameControllerAxis c_axis;$/;"	m	struct:Axis::Binding::__anon126::__anon128
+c_button	src/bear_input.h	/^				SDL_GameControllerButton c_button;$/;"	m	struct:Button::Binding::__anon124::__anon125
+c_device	src/bear_input.h	/^				SDL_JoystickID c_device;$/;"	m	struct:Axis::Binding::__anon126::__anon128
+c_device	src/bear_input.h	/^				SDL_JoystickID c_device;$/;"	m	struct:Button::Binding::__anon124::__anon125
 callback	inc/SDL2/SDL_audio.h	/^    SDL_AudioCallback callback; \/**< Callback that feeds the audio device (NULL to use SDL_QueueAudio()). *\/$/;"	m	struct:SDL_AudioSpec
+camera	src/bear_main.cpp	/^Camera camera = create_camera(create_perspective_projection(M_PI \/ 2, ASPECT_RATIO, .01f, 100.0f));$/;"	v
+camera	src/gfx/bear_renderer.h	/^		Camera              *camera;$/;"	m	struct:GFX::MatrixProfile
 caxis	inc/SDL2/SDL_events.h	/^    SDL_ControllerAxisEvent caxis;      \/**< Game Controller axis event data *\/$/;"	m	union:SDL_Event
 cbutton	inc/SDL2/SDL_events.h	/^    SDL_ControllerButtonEvent cbutton;  \/**< Game Controller button event data *\/$/;"	m	union:SDL_Event
 cdevice	inc/SDL2/SDL_events.h	/^    SDL_ControllerDeviceEvent cdevice;  \/**< Game Controller device event data *\/$/;"	m	union:SDL_Event
 center	inc/SDL2/SDL_haptic.h	/^    Sint16 center[3];       \/**< Position of the dead zone. *\/$/;"	m	struct:SDL_HapticCondition
-channel	src/stb_image.h	/^   stbi_uc size,type,channel;$/;"	m	struct:__anon115
-channel_order	src/stb_image.h	/^   int channel_order;$/;"	m	struct:__anon103
+channel	src/stb_image.h	/^   stbi_uc size,type,channel;$/;"	m	struct:__anon121
+channel_order	src/stb_image.h	/^   int channel_order;$/;"	m	struct:__anon109
 channels	inc/SDL2/SDL_audio.h	/^    Uint8 channels;             \/**< Number of channels: 1 mono, 2 stereo *\/$/;"	m	struct:SDL_AudioSpec
 channels	inc/SDL2/SDL_haptic.h	/^    Uint8 channels;         \/**< Axes to use, minimum of one. *\/$/;"	m	struct:SDL_HapticCustom
 channels	src/audio/bear_audio.cpp	/^	int16 channels;$/;"	m	struct:WAVHeader	file:
 channels	src/audio/bear_audio.h	/^	uint8 channels;$/;"	m	struct:AudioBuffer
 channels	src/bear_image_loader.cpp	/^	int32 channels;$/;"	m	struct:Image	file:
 check_for_leaks	src/bear_memory.h	/^void check_for_leaks()$/;"	f
+clamp	src/math/bear_math.h	/^T clamp(T min, T max, T v)$/;"	f
 clicks	inc/SDL2/SDL_events.h	/^    Uint8 clicks;       \/**< 1 for single-click, 2 for double-click, etc. *\/$/;"	m	struct:SDL_MouseButtonEvent
 clip_rect	inc/SDL2/SDL_surface.h	/^    SDL_Rect clip_rect;         \/**< Read-only *\/$/;"	m	struct:SDL_Surface
 clk	src/bear_main.h	/^	CLK clk;$/;"	m	struct:World
 close	inc/SDL2/SDL_rwops.h	/^    int (SDLCALL * close) (struct SDL_RWops * context);$/;"	m	struct:SDL_RWops
+close_controllers	src/bear_input.h	/^void close_controllers()$/;"	f
 close_gl	src/glad.c	/^void close_gl(void) {$/;"	f	file:
 cocoa	inc/SDL2/SDL_syswm.h	/^        } cocoa;$/;"	m	union:SDL_SysWMinfo::__anon33	typeref:struct:SDL_SysWMinfo::__anon33::__anon38
 cocoa	inc/SDL2/SDL_syswm.h	/^        } cocoa;$/;"	m	union:SDL_SysWMmsg::__anon26	typeref:struct:SDL_SysWMmsg::__anon26::__anon30
 code	inc/SDL2/SDL_events.h	/^    Sint32 code;        \/**< User defined event code *\/$/;"	m	struct:SDL_UserEvent
-code	src/stb_image.h	/^   stbi__uint16 code[256];$/;"	m	struct:__anon105
-code_bits	src/stb_image.h	/^   int            code_bits;   \/\/ number of valid bits$/;"	m	struct:__anon106
-code_buffer	src/stb_image.h	/^   stbi__uint32   code_buffer; \/\/ jpeg entropy-coded buffer$/;"	m	struct:__anon106
-code_buffer	src/stb_image.h	/^   stbi__uint32 code_buffer;$/;"	m	struct:__anon110
-codes	src/stb_image.h	/^   stbi__gif_lzw codes[8192];$/;"	m	struct:__anon117
-coeff	src/stb_image.h	/^      short   *coeff;   \/\/ progressive only$/;"	m	struct:__anon106::__anon107
-coeff_h	src/stb_image.h	/^      int      coeff_w, coeff_h; \/\/ number of 8x8 coefficient blocks$/;"	m	struct:__anon106::__anon107
-coeff_w	src/stb_image.h	/^      int      coeff_w, coeff_h; \/\/ number of 8x8 coefficient blocks$/;"	m	struct:__anon106::__anon107
+code	src/stb_image.h	/^   stbi__uint16 code[256];$/;"	m	struct:__anon111
+code_bits	src/stb_image.h	/^   int            code_bits;   \/\/ number of valid bits$/;"	m	struct:__anon112
+code_buffer	src/stb_image.h	/^   stbi__uint32   code_buffer; \/\/ jpeg entropy-coded buffer$/;"	m	struct:__anon112
+code_buffer	src/stb_image.h	/^   stbi__uint32 code_buffer;$/;"	m	struct:__anon116
+codes	src/stb_image.h	/^   stbi__gif_lzw codes[8192];$/;"	m	struct:__anon123
+coeff	src/stb_image.h	/^      short   *coeff;   \/\/ progressive only$/;"	m	struct:__anon112::__anon113
+coeff_h	src/stb_image.h	/^      int      coeff_w, coeff_h; \/\/ number of 8x8 coefficient blocks$/;"	m	struct:__anon112::__anon113
+coeff_w	src/stb_image.h	/^      int      coeff_w, coeff_h; \/\/ number of 8x8 coefficient blocks$/;"	m	struct:__anon112::__anon113
 colorKey	inc/SDL2/SDL_shape.h	/^    SDL_Color colorKey;$/;"	m	union:__anon4
 colorScheme	inc/SDL2/SDL_messagebox.h	/^    const SDL_MessageBoxColorScheme *colorScheme;   \/**< ::SDL_MessageBoxColorScheme, can be NULL to use system settings *\/$/;"	m	struct:__anon59
-color_table	src/stb_image.h	/^   stbi_uc *color_table;$/;"	m	struct:__anon117
+color_table	src/stb_image.h	/^   stbi_uc *color_table;$/;"	m	struct:__anon123
 colorbuffer	inc/SDL2/SDL_syswm.h	/^            GLuint colorbuffer; \/**< The GL view's color Renderbuffer Object. It must be bound when SDL_GL_SwapWindow is called. *\/$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon39
 colors	inc/SDL2/SDL_messagebox.h	/^    SDL_MessageBoxColor colors[SDL_MESSAGEBOX_COLOR_MAX];$/;"	m	struct:__anon58
 colors	inc/SDL2/SDL_pixels.h	/^    SDL_Color *colors;$/;"	m	struct:SDL_Palette
@@ -16985,40 +17060,46 @@ condition	inc/SDL2/SDL_haptic.h	/^    SDL_HapticCondition condition;  \/**< Cond
 conjugate	src/math/bear_quaternion.h	/^Q conjugate(Q q)$/;"	f
 connection	inc/SDL2/SDL_syswm.h	/^            struct MirConnection *connection;  \/**< Mir display server connection *\/$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon41	typeref:struct:SDL_SysWMinfo::__anon33::__anon41::MirConnection
 constant	inc/SDL2/SDL_haptic.h	/^    SDL_HapticConstant constant;    \/**< Constant effect. *\/$/;"	m	union:SDL_HapticEffect
+controller_array	src/bear_input.h	/^Array<SDL_GameController *> controller_array;$/;"	v
 crc32_table	inc/SDL2/SDL_test_crc32.h	/^    CrcUint32    crc32_table[256]; \/* CRC table *\/$/;"	m	struct:__anon22
-create_array	src/_bak/bear_array.cpp	/^Array<T> create_array(uint32 size)$/;"	f
+create_array	_bak/bear_array.cpp	/^Array<T> create_array(uint32 size)$/;"	f
 create_array	src/bear_array.h	/^Array<T> create_array(uint64 limit)$/;"	f
-create_identity	src/math/bear_matrix.h	/^Mat4 create_identity()$/;"	f
+create_camera	src/math/bear_transform.h	/^Camera create_camera(Mat4f projection)$/;"	f
+create_identity	src/math/bear_matrix.h	/^Mat4f create_identity()$/;"	f
 create_index_buffer	src/gfx/bear_index_buffer.h	/^	IndexBuffer create_index_buffer(Array<uint32> data, uint32 usage=GL_STATIC_DRAW)$/;"	f	namespace:GFX
-create_projection	src/math/bear_matrix.h	/^Mat4 create_projection(float32 fov, float32 aspect_ratio, float32 near_clip, float32 far_clip)$/;"	f
+create_perspective_projection	src/math/bear_matrix.h	/^Mat4f create_perspective_projection(float32 fov, float32 aspect_ratio, float32 near_clip, float32 far_clip)$/;"	f
+create_shader_program	src/gfx/bear_shader_program.h	/^	ShaderProgram create_shader_program(Array<ShaderInfo> shader_info)$/;"	f	namespace:GFX
+create_transform	src/math/bear_transform.h	/^Transform create_transform()$/;"	f
 create_vertex_array	src/gfx/bear_vertex_array.h	/^	VertexArray create_vertex_array(Array<VertexAttribute> attribs, IndexBuffer index_buffer={})$/;"	f	namespace:GFX
 create_vertex_buffer	src/gfx/bear_vertex_buffer.h	/^	VertexBuffer create_vertex_buffer(Array<float32> data, uint32 usage=GL_STATIC_DRAW)$/;"	f	namespace:GFX
+cross	bear_vector_sk.h	/^Vec3f cross(Vec3f a, Vec3f b)$/;"	f
 cross	src/math/bear_vector.h	/^Vec3f cross(Vec3f a, Vec3f b)$/;"	f
-cur_x	src/stb_image.h	/^   int cur_x, cur_y;$/;"	m	struct:__anon117
-cur_y	src/stb_image.h	/^   int cur_x, cur_y;$/;"	m	struct:__anon117
+cur_x	src/stb_image.h	/^   int cur_x, cur_y;$/;"	m	struct:__anon123
+cur_y	src/stb_image.h	/^   int cur_x, cur_y;$/;"	m	struct:__anon123
 current_sample	src/audio/bear_audio.h	/^	float32 current_sample;$/;"	m	struct:AudioSource
 custom	inc/SDL2/SDL_haptic.h	/^    SDL_HapticCustom custom;        \/**< Custom effect. *\/$/;"	m	union:SDL_HapticEffect
 dDist	inc/SDL2/SDL_events.h	/^    float dDist;$/;"	m	struct:SDL_MultiGestureEvent
 dTheta	inc/SDL2/SDL_events.h	/^    float dTheta;$/;"	m	struct:SDL_MultiGestureEvent
+data	_bak/bear_array.cpp	/^	T* data;$/;"	m	struct:Array	file:
 data	inc/SDL2/SDL_haptic.h	/^    Uint16 *data;           \/**< Should contain channels*samples items. *\/$/;"	m	struct:SDL_HapticCustom
 data	inc/SDL2/SDL_joystick.h	/^    Uint8 data[16];$/;"	m	struct:__anon76
-data	src/_bak/bear_array.cpp	/^	T* data;$/;"	m	struct:Array	file:
-data	src/audio/bear_audio.h	/^		void *data;$/;"	m	union:AudioBuffer::__anon97
+data	src/audio/bear_audio.h	/^		void *data;$/;"	m	union:AudioBuffer::__anon103
 data	src/bear_array.h	/^	T*     data;	\/\/ pointer to data$/;"	m	struct:Array
 data	src/bear_image_loader.cpp	/^	uint8 *data;$/;"	m	struct:Image	file:
 data	src/bear_main.h	/^	void *data;$/;"	m	struct:OSFile
-data	src/stb_image.h	/^      stbi_uc *data;$/;"	m	struct:__anon106::__anon107
+data	src/stb_image.h	/^      stbi_uc *data;$/;"	m	struct:__anon112::__anon113
 data1	inc/SDL2/SDL_events.h	/^    Sint32 data1;       \/**< event dependent data *\/$/;"	m	struct:SDL_WindowEvent
 data1	inc/SDL2/SDL_events.h	/^    void *data1;        \/**< User defined data pointer *\/$/;"	m	struct:SDL_UserEvent
 data1	inc/SDL2/SDL_rwops.h	/^            void *data1;$/;"	m	struct:SDL_RWops::__anon70::__anon74
-data16	src/audio/bear_audio.h	/^		int16 *data16;$/;"	m	union:AudioBuffer::__anon97
+data16	src/audio/bear_audio.h	/^		int16 *data16;$/;"	m	union:AudioBuffer::__anon103
 data2	inc/SDL2/SDL_events.h	/^    Sint32 data2;       \/**< event dependent data *\/$/;"	m	struct:SDL_WindowEvent
 data2	inc/SDL2/SDL_events.h	/^    void *data2;        \/**< User defined data pointer *\/$/;"	m	struct:SDL_UserEvent
 data2	inc/SDL2/SDL_rwops.h	/^            void *data2;$/;"	m	struct:SDL_RWops::__anon70::__anon74
-data32	src/audio/bear_audio.h	/^		float32 *data32;$/;"	m	union:AudioBuffer::__anon97
-data8	src/audio/bear_audio.h	/^		int8 *data8;$/;"	m	union:AudioBuffer::__anon97
+data32	src/audio/bear_audio.h	/^		float32 *data32;$/;"	m	union:AudioBuffer::__anon103
+data8	src/audio/bear_audio.h	/^		int8 *data8;$/;"	m	union:AudioBuffer::__anon103
 data_ptr	src/bear_array.h	/^T* data_ptr(Array<T> arr)$/;"	f
-dc_pred	src/stb_image.h	/^      int dc_pred;$/;"	m	struct:__anon106::__anon107
+data_ptr	src/math/bear_matrix.h	/^float32 *data_ptr(Mat4f &m)$/;"	f
+dc_pred	src/stb_image.h	/^      int dc_pred;$/;"	m	struct:__anon112::__anon113
 dct_bfly32o	src/stb_image.h	2302;"	d
 dct_bfly32o	src/stb_image.h	2436;"	d
 dct_bfly32o	src/stb_image.h	2488;"	d
@@ -17070,20 +17151,22 @@ delay	inc/SDL2/SDL_haptic.h	/^    Uint16 delay;           \/**< Delay before sta
 delay	inc/SDL2/SDL_haptic.h	/^    Uint16 delay;           \/**< Delay before starting the effect. *\/$/;"	m	struct:SDL_HapticCustom
 delay	inc/SDL2/SDL_haptic.h	/^    Uint16 delay;           \/**< Delay before starting the effect. *\/$/;"	m	struct:SDL_HapticRamp
 delay	inc/SDL2/SDL_haptic.h	/^    Uint16 delay;       \/**< Delay before starting the effect. *\/$/;"	m	struct:SDL_HapticPeriodic
-delay	src/stb_image.h	/^   int delay;$/;"	m	struct:__anon117
-delete_array	src/_bak/bear_array.cpp	/^void delete_array(Array<T> *array)$/;"	f
+delay	src/stb_image.h	/^   int delay;$/;"	m	struct:__anon123
+delete_array	_bak/bear_array.cpp	/^void delete_array(Array<T> *array)$/;"	f
 delete_array	src/bear_array.h	/^void delete_array(Array<T> *arr)$/;"	f
 delete_index_buffer	src/gfx/bear_index_buffer.h	/^	void delete_index_buffer(IndexBuffer buffer)$/;"	f	namespace:GFX
+delete_shader_program	src/gfx/bear_shader_program.h	/^	void delete_shader_program(ShaderProgram program)$/;"	f	namespace:GFX
 delete_vertex_array	src/gfx/bear_vertex_array.h	/^	void delete_vertex_array(VertexArray arr)$/;"	f	namespace:GFX
 delete_vertex_buffer	src/gfx/bear_vertex_buffer.h	/^	void delete_vertex_buffer(VertexBuffer buffer)$/;"	f	namespace:GFX
 delta	src/bear_main.h	/^	float32 delta;$/;"	m	struct:CLK
-delta	src/stb_image.h	/^   int    delta[17];   \/\/ old 'firstsymbol' - old 'firstcode'$/;"	m	struct:__anon105
+delta	src/stb_image.h	/^   int    delta[17];   \/\/ old 'firstsymbol' - old 'firstcode'$/;"	m	struct:__anon111
 depth	inc/SDL2/SDL_test_common.h	/^    int depth;$/;"	m	struct:__anon15
-depth	src/physics/physics.h	/^			float32 width, height, depth;$/;"	m	struct:Shape::__anon92::__anon94
-depth	src/stb_image.h	/^   int depth;$/;"	m	struct:__anon112
-dequant	src/stb_image.h	/^   stbi__uint16 dequant[4][64];$/;"	m	struct:__anon106
+depth	src/physics/physics.h	/^			float32 width, height, depth;$/;"	m	struct:Shape::__anon1::__anon3
+depth	src/stb_image.h	/^   int depth;$/;"	m	struct:__anon118
+dequant	src/stb_image.h	/^   stbi__uint16 dequant[4][64];$/;"	m	struct:__anon112
 description	inc/SDL2/SDL_test_harness.h	/^    char *description;$/;"	m	struct:SDLTest_TestCaseReference
 destroy_ecs	src/ecs/bear_ecs_init.cpp	/^void destroy_ecs(World *world)$/;"	f
+destroy_input	src/bear_input.h	/^void destroy_input()$/;"	f
 dfb	inc/SDL2/SDL_syswm.h	/^            IDirectFB *dfb;             \/**< The directfb main interface *\/$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon37
 dfb	inc/SDL2/SDL_syswm.h	/^        } dfb;$/;"	m	union:SDL_SysWMinfo::__anon33	typeref:struct:SDL_SysWMinfo::__anon33::__anon37
 dfb	inc/SDL2/SDL_syswm.h	/^        } dfb;$/;"	m	union:SDL_SysWMmsg::__anon26	typeref:struct:SDL_SysWMmsg::__anon26::__anon29
@@ -17100,12 +17183,15 @@ display	inc/SDL2/SDL_syswm.h	/^            Display *display;           \/**< The
 display	inc/SDL2/SDL_syswm.h	/^            EGLNativeDisplayType display;$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon43
 display	inc/SDL2/SDL_syswm.h	/^            struct wl_display *display;            \/**< Wayland display *\/$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon40	typeref:struct:SDL_SysWMinfo::__anon33::__anon40::wl_display
 display	inc/SDL2/SDL_test_common.h	/^    int display;$/;"	m	struct:__anon15
+dot	bear_vector_sk.h	/^float32 dot(Vec2f a, Vec2f b)$/;"	f
+dot	bear_vector_sk.h	/^float32 dot(Vec3f a, Vec3f b)$/;"	f
+dot	bear_vector_sk.h	/^float32 dot(Vec4f a, Vec4f b)$/;"	f
 dot	src/math/bear_vector.h	/^float32 dot(Vec2f a, Vec2f b)$/;"	f
 dot	src/math/bear_vector.h	/^float32 dot(Vec3f a, Vec3f b)$/;"	f
 dot	src/math/bear_vector.h	/^float32 dot(Vec4f a, Vec4f b)$/;"	f
-down	src/_bak/input.h	/^    static bool down(std::string name) { return _state_map[name] == KEY_DOWN || pressed(name); }$/;"	f	class:SK::Key
-draw	src/_bak/renderer.h	/^	void draw(Renderable r, unsigned int mode=GL_TRIANGLES,$/;"	f	namespace:Renderer
-draw	src/bear_main.h	/^	void (*draw)();$/;"	m	struct:GameState
+down	_bak/input.h	/^    static bool down(std::string name) { return _state_map[name] == KEY_DOWN || pressed(name); }$/;"	f	class:SK::Key
+draw	_bak/renderer.h	/^	void draw(Renderable r, unsigned int mode=GL_TRIANGLES,$/;"	f	namespace:Renderer
+draw	src/bear_main.cpp	/^void draw()$/;"	f
 draw	src/gfx/bear_renderer.h	/^	void draw(Renderable r, uint32 mode=GL_TRIANGLES,$/;"	f	namespace:GFX
 draw	src/state/bear_test_state.h	/^	void draw()$/;"	f	namespace:GSTEST
 driverdata	inc/SDL2/SDL_video.h	/^    void *driverdata;           \/**< driver-specific data, initialize to 0 *\/$/;"	m	struct:__anon44
@@ -17133,24 +17219,22 @@ eat_int	src/bear_obj_loader.cpp	/^int32 eat_int(char **ptr)$/;"	f
 eat_spaces	src/bear_obj_loader.cpp	/^void eat_spaces(char **ptr)$/;"	f
 ecs	src/bear_main.h	/^	ECS ecs;$/;"	m	struct:World
 edit	inc/SDL2/SDL_events.h	/^    SDL_TextEditingEvent edit;      \/**< Text editing event data *\/$/;"	m	union:SDL_Event
-eflags	src/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon117
+eflags	src/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon123
 enabled	inc/SDL2/SDL_test_harness.h	/^    int enabled;$/;"	m	struct:SDLTest_TestCaseReference
 end	inc/SDL2/SDL_haptic.h	/^    Sint16 end;             \/**< Ending strength level. *\/$/;"	m	struct:SDL_HapticRamp
-end	src/physics/physics.h	/^			Vec3f start, end;$/;"	m	struct:Shape::__anon92::__anon95
-enter	src/bear_main.h	/^	void (*enter)();$/;"	m	struct:GameState
+end	src/physics/physics.h	/^			Vec3f start, end;$/;"	m	struct:Shape::__anon1::__anon4
 enter	src/state/bear_test_state.h	/^	void enter()$/;"	f	namespace:GSTEST
 entities	src/ecs/bear_ecs.h	/^	Entity *entities;$/;"	m	struct:ECS
 entity_has_components	src/ecs/bear_ecs.cpp	54;"	d	file:
 entity_has_components_list	src/ecs/bear_ecs.cpp	/^bool entity_has_components_list(Entity entity, int32 num, ComponentType types[])$/;"	f
-eob_run	src/stb_image.h	/^   int            eob_run;$/;"	m	struct:__anon106
-eof	src/stb_image.h	/^   int      (*eof)   (void *user);                       \/\/ returns nonzero if we are at end of file\/data$/;"	m	struct:__anon100
+eob_run	src/stb_image.h	/^   int            eob_run;$/;"	m	struct:__anon112
+eof	src/stb_image.h	/^   int      (*eof)   (void *user);                       \/\/ returns nonzero if we are at end of file\/data$/;"	m	struct:__anon106
 error	inc/SDL2/SDL_events.h	/^    float error;$/;"	m	struct:SDL_DollarGestureEvent
 event	inc/SDL2/SDL_events.h	/^    Uint8 event;        \/**< ::SDL_WindowEventID *\/$/;"	m	struct:SDL_WindowEvent
 event	inc/SDL2/SDL_syswm.h	/^            DFBEvent event;$/;"	m	struct:SDL_SysWMmsg::__anon26::__anon29
 event	inc/SDL2/SDL_syswm.h	/^            XEvent event;$/;"	m	struct:SDL_SysWMmsg::__anon26::__anon28
-exit	src/bear_main.h	/^	void (*exit)();$/;"	m	struct:GameState
 exit	src/state/bear_test_state.h	/^	void exit()$/;"	f	namespace:GSTEST
-expanded	src/stb_image.h	/^   stbi_uc *idata, *expanded, *out;$/;"	m	struct:__anon112
+expanded	src/stb_image.h	/^   stbi_uc *idata, *expanded, *out;$/;"	m	struct:__anon118
 exts	src/glad.c	/^static const char *exts = NULL;$/;"	v	file:
 exts_i	src/glad.c	/^static const char **exts_i = NULL;$/;"	v	file:
 fade_length	inc/SDL2/SDL_haptic.h	/^    Uint16 fade_length;     \/**< Duration of the fade. *\/$/;"	m	struct:SDL_HapticConstant
@@ -17161,9 +17245,9 @@ fade_level	inc/SDL2/SDL_haptic.h	/^    Uint16 fade_level;      \/**< Level at th
 fade_level	inc/SDL2/SDL_haptic.h	/^    Uint16 fade_level;      \/**< Level at the end of the fade. *\/$/;"	m	struct:SDL_HapticCustom
 fade_level	inc/SDL2/SDL_haptic.h	/^    Uint16 fade_level;      \/**< Level at the end of the fade. *\/$/;"	m	struct:SDL_HapticRamp
 fade_level	inc/SDL2/SDL_haptic.h	/^    Uint16 fade_level;  \/**< Level at the end of the fade. *\/$/;"	m	struct:SDL_HapticPeriodic
-fast	src/stb_image.h	/^   stbi__uint16 fast[1 << STBI__ZFAST_BITS];$/;"	m	struct:__anon109
-fast	src/stb_image.h	/^   stbi_uc  fast[1 << FAST_BITS];$/;"	m	struct:__anon105
-fast_ac	src/stb_image.h	/^   stbi__int16 fast_ac[4][1 << FAST_BITS];$/;"	m	struct:__anon106
+fast	src/stb_image.h	/^   stbi__uint16 fast[1 << STBI__ZFAST_BITS];$/;"	m	struct:__anon115
+fast	src/stb_image.h	/^   stbi_uc  fast[1 << FAST_BITS];$/;"	m	struct:__anon111
+fast_ac	src/stb_image.h	/^   stbi__int16 fast_ac[4][1 << FAST_BITS];$/;"	m	struct:__anon112
 fd	inc/SDL2/SDL_rwops.h	/^            int fd;$/;"	m	struct:SDL_RWops::__anon70::__anon71
 file	inc/SDL2/SDL_events.h	/^    char *file;         \/**< The file name, which should be freed with SDL_free(), is NULL on begin\/complete *\/$/;"	m	struct:SDL_DropEvent
 file	src/bear_main.h	/^	const char *file;$/;"	m	struct:MemoryAllocation
@@ -17174,16 +17258,16 @@ filters	inc/SDL2/SDL_audio.h	/^    SDL_AudioFilter filters[SDL_AUDIOCVT_MAX_FILT
 find_coreGL	src/glad.c	/^static void find_coreGL(void) {$/;"	f	file:
 find_extensionsGL	src/glad.c	/^static int find_extensionsGL(void) {$/;"	f	file:
 fingerId	inc/SDL2/SDL_events.h	/^    SDL_FingerID fingerId;$/;"	m	struct:SDL_TouchFingerEvent
-first	src/stb_image.h	/^   stbi_uc first;$/;"	m	struct:__anon116
+first	src/stb_image.h	/^   stbi_uc first;$/;"	m	struct:__anon122
 first_row_filter	src/stb_image.h	/^static stbi_uc first_row_filter[5] =$/;"	v
-firstcode	src/stb_image.h	/^   stbi__uint16 firstcode[16];$/;"	m	struct:__anon109
-firstsymbol	src/stb_image.h	/^   stbi__uint16 firstsymbol[16];$/;"	m	struct:__anon109
+firstcode	src/stb_image.h	/^   stbi__uint16 firstcode[16];$/;"	m	struct:__anon115
+firstsymbol	src/stb_image.h	/^   stbi__uint16 firstsymbol[16];$/;"	m	struct:__anon115
 flags	inc/SDL2/SDL_messagebox.h	/^    Uint32 flags;                       \/**< ::SDL_MessageBoxFlags *\/$/;"	m	struct:__anon59
 flags	inc/SDL2/SDL_messagebox.h	/^    Uint32 flags;       \/**< ::SDL_MessageBoxButtonFlags *\/$/;"	m	struct:__anon55
 flags	inc/SDL2/SDL_render.h	/^    Uint32 flags;               \/**< Supported ::SDL_RendererFlags *\/$/;"	m	struct:SDL_RendererInfo
 flags	inc/SDL2/SDL_surface.h	/^    Uint32 flags;               \/**< Read-only *\/$/;"	m	struct:SDL_Surface
 flags	inc/SDL2/SDL_test_common.h	/^    Uint32 flags;$/;"	m	struct:__anon15
-flags	src/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon117
+flags	src/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon123
 float32	src/bear_types.h	/^typedef float  float32;$/;"	t
 float64	src/bear_types.h	/^typedef double float64;$/;"	t
 fmt	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ... ) SDL_PRINTF_VARARG_FUNC(3);$/;"	v
@@ -17216,12 +17300,14 @@ g	inc/SDL2/SDL_pixels.h	/^    Uint8 g;$/;"	m	struct:SDL_Color
 game	src/bear_linux.cpp	/^static GameHandle game;$/;"	v	file:
 game	src/bear_windows.cpp	/^static GameHandle game;$/;"	v	file:
 gestureId	inc/SDL2/SDL_events.h	/^    SDL_GestureID gestureId;$/;"	m	struct:SDL_DollarGestureEvent
-get	src/_bak/bear_array.cpp	/^T get(Array<T> *array, uint64 id)$/;"	f
+get	_bak/bear_array.cpp	/^T get(Array<T> *array, uint64 id)$/;"	f
 get	src/bear_array.h	/^T get(Array<T> arr, uint64 index)$/;"	f
-getID	src/_bak/indexbuffer.h	/^    unsigned int getID() { return _id; }$/;"	f	class:SK::IndexBuffer
-getID	src/_bak/vertexarray.h	/^    unsigned int getID() { return _id; }$/;"	f	class:SK::VertexArray
-getID	src/_bak/vertexbuffer.h	/^    unsigned int getID() { return _id; }$/;"	f	class:SK::VertexBuffer
+getID	_bak/indexbuffer.h	/^    unsigned int getID() { return _id; }$/;"	f	class:SK::IndexBuffer
+getID	_bak/vertexarray.h	/^    unsigned int getID() { return _id; }$/;"	f	class:SK::VertexArray
+getID	_bak/vertexbuffer.h	/^    unsigned int getID() { return _id; }$/;"	f	class:SK::VertexBuffer
+get_axises	src/bear_input.h	/^Array<Axis *> get_axises(string name)$/;"	f
 get_buffer	src/audio/bear_audio.cpp	/^AudioBuffer get_buffer(Audio *audio, AudioID id)$/;"	f
+get_buttons	src/bear_input.h	/^Array<Button *> get_buttons(string name)$/;"	f
 get_component	src/ecs/bear_ecs.cpp	/^BaseComponent *get_component(ECS *ecs, Entity *entity, ComponentType type)$/;"	f
 get_component	src/ecs/bear_ecs.cpp	/^BaseComponent *get_component(ECS *ecs, EntityID id, ComponentType type)$/;"	f
 get_component	src/ecs/bear_ecs.cpp	/^int8 *get_component(const ECSEntry entry, const int32 index)$/;"	f
@@ -17230,6 +17316,7 @@ get_exts	src/glad.c	/^static int get_exts(void) {$/;"	f	file:
 get_file_edit_time	src/bear_linux.cpp	/^int32 get_file_edit_time(const char *path)$/;"	f
 get_file_edit_time	src/bear_windows.cpp	/^int32 get_file_edit_time(const char *path)$/;"	f
 get_proc	src/glad.c	/^void* get_proc(const char *namez) {$/;"	f	file:
+get_ptr	src/bear_array.h	/^T *get_ptr(Array<T> arr, uint64 index)$/;"	f
 get_smallest_type	src/ecs/bear_ecs.cpp	35;"	d	file:
 get_smallest_type_list	src/ecs/bear_ecs.cpp	/^int32 get_smallest_type_list(ECS *ecs, int32 num, ComponentType types[])$/;"	f
 glAccum	inc/glad/glad.h	2166;"	d
@@ -20882,30 +20969,35 @@ glad_glWindowPos3sv	src/glad.h	/^GLAPI PFNGLWINDOWPOS3SVPROC glad_glWindowPos3sv
 h	inc/SDL2/SDL_rect.h	/^    int w, h;$/;"	m	struct:SDL_Rect
 h	inc/SDL2/SDL_surface.h	/^    int w, h;                   \/**< Read-only *\/$/;"	m	struct:SDL_Surface
 h	inc/SDL2/SDL_video.h	/^    int h;                      \/**< height, in screen coordinates *\/$/;"	m	struct:__anon44
-h	src/stb_image.h	/^      int h,v;$/;"	m	struct:__anon106::__anon107
-h	src/stb_image.h	/^   int w,h;$/;"	m	struct:__anon117
-h2	src/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon106::__anon107
-ha	src/stb_image.h	/^      int hd,ha;$/;"	m	struct:__anon106::__anon107
-hasIndices	src/_bak/vertexarray.h	/^    bool hasIndices() { return _has_indices; }$/;"	f	class:SK::VertexArray
+h	src/stb_image.h	/^      int h,v;$/;"	m	struct:__anon112::__anon113
+h	src/stb_image.h	/^   int w,h;$/;"	m	struct:__anon123
+h2	src/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon112::__anon113
+ha	src/stb_image.h	/^      int hd,ha;$/;"	m	struct:__anon112::__anon113
+handle_controller_axis_event	src/bear_input.h	/^void handle_controller_axis_event(SDL_Event event)$/;"	f
+handle_controller_button_event	src/bear_input.h	/^void handle_controller_button_event(SDL_Event event)$/;"	f
+handle_input_event	src/bear_input.h	/^void handle_input_event(SDL_Event event)$/;"	f
+handle_keyboard_event	src/bear_input.h	/^void handle_keyboard_event(SDL_Event event)$/;"	f
+handle_mouse_motion_event	src/bear_input.h	/^void handle_mouse_motion_event(SDL_Event event)$/;"	f
+hasIndices	_bak/vertexarray.h	/^    bool hasIndices() { return _has_indices; }$/;"	f	class:SK::VertexArray
 has_ext	src/glad.c	/^static int has_ext(const char *ext) {$/;"	f	file:
 has_indices	src/gfx/bear_vertex_array.h	/^		bool has_indices;$/;"	m	struct:GFX::VertexArray
 hat	inc/SDL2/SDL_events.h	/^    Uint8 hat;          \/**< The joystick hat index *\/$/;"	m	struct:SDL_JoyHatEvent
 hat	inc/SDL2/SDL_gamecontroller.h	/^            int hat;$/;"	m	struct:SDL_GameControllerButtonBind::__anon81::__anon82
 hat	inc/SDL2/SDL_gamecontroller.h	/^        } hat;$/;"	m	union:SDL_GameControllerButtonBind::__anon81	typeref:struct:SDL_GameControllerButtonBind::__anon81::__anon82
 hat_mask	inc/SDL2/SDL_gamecontroller.h	/^            int hat_mask;$/;"	m	struct:SDL_GameControllerButtonBind::__anon81::__anon82
-hd	src/stb_image.h	/^      int hd,ha;$/;"	m	struct:__anon106::__anon107
+hd	src/stb_image.h	/^      int hd,ha;$/;"	m	struct:__anon112::__anon113
 hdc	inc/SDL2/SDL_syswm.h	/^            HDC hdc;                    \/**< The window device context *\/$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon34
 height	inc/SDL2/SDL_test_images.h	/^  int height;$/;"	m	struct:SDLTest_SurfaceImage_s
 height	src/bear_image_loader.cpp	/^	int32 width, height;$/;"	m	struct:Image	file:
-height	src/physics/physics.h	/^			float32 width, height, depth;$/;"	m	struct:Shape::__anon92::__anon94
+height	src/physics/physics.h	/^			float32 width, height, depth;$/;"	m	struct:Shape::__anon1::__anon3
 here	inc/SDL2/SDL_rwops.h	/^            Uint8 *here;$/;"	m	struct:SDL_RWops::__anon70::__anon73
 hidden	inc/SDL2/SDL_rwops.h	/^    } hidden;$/;"	m	struct:SDL_RWops	typeref:union:SDL_RWops::__anon70
 hinstance	inc/SDL2/SDL_syswm.h	/^            HINSTANCE hinstance;        \/**< The instance handle *\/$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon34
-history	src/stb_image.h	/^   stbi_uc *history; $/;"	m	struct:__anon117
-hs	src/stb_image.h	/^   int hs,vs;   \/\/ expansion factor in each axis$/;"	m	struct:__anon108
-hsz	src/stb_image.h	/^   int bpp, offset, hsz;$/;"	m	struct:__anon114
-huff_ac	src/stb_image.h	/^   stbi__huffman huff_ac[4];$/;"	m	struct:__anon106
-huff_dc	src/stb_image.h	/^   stbi__huffman huff_dc[4];$/;"	m	struct:__anon106
+history	src/stb_image.h	/^   stbi_uc *history; $/;"	m	struct:__anon123
+hs	src/stb_image.h	/^   int hs,vs;   \/\/ expansion factor in each axis$/;"	m	struct:__anon114
+hsz	src/stb_image.h	/^   int bpp, offset, hsz;$/;"	m	struct:__anon120
+huff_ac	src/stb_image.h	/^   stbi__huffman huff_ac[4];$/;"	m	struct:__anon112
+huff_dc	src/stb_image.h	/^   stbi__huffman huff_dc[4];$/;"	m	struct:__anon112
 hwnd	inc/SDL2/SDL_syswm.h	/^            HWND hwnd;                  \/**< The window for the message *\/$/;"	m	struct:SDL_SysWMmsg::__anon26::__anon27
 i	inc/SDL2/SDL_test_md5.h	/^    MD5UINT4  i[2];     \/* number of _bits_ handled mod 2^64 *\/$/;"	m	struct:__anon65
 iHeight	inc/SDL2/SDL_egl.h	/^    EGLint iHeight;$/;"	m	struct:EGLClientPixmapHI
@@ -20916,34 +21008,38 @@ id	src/audio/bear_audio.h	/^	AudioID id;$/;"	m	struct:AudioBuffer
 id	src/audio/bear_audio.h	/^	AudioID id;$/;"	m	struct:AudioSource
 id	src/ecs/bear_ecs.h	/^	EntityID id;$/;"	m	struct:Entity
 id	src/gfx/bear_index_buffer.h	/^		uint32 id = 0;$/;"	m	struct:GFX::IndexBuffer
+id	src/gfx/bear_shader_program.h	/^		uint32 id;$/;"	m	struct:GFX::ShaderProgram
 id	src/gfx/bear_vertex_array.h	/^		uint32 id;$/;"	m	struct:GFX::VertexArray
 id	src/physics/physics.h	/^	ShapeID id;$/;"	m	struct:Shape
-id	src/stb_image.h	/^      int id;$/;"	m	struct:__anon106::__anon107
+id	src/stb_image.h	/^      int id;$/;"	m	struct:__anon112::__anon113
 id_has_components	src/ecs/bear_ecs.cpp	66;"	d	file:
 id_has_components_list	src/ecs/bear_ecs.cpp	/^bool id_has_components_list(ECS *ecs, EntityID id, int32 num, ComponentType types[])$/;"	f
-idata	src/stb_image.h	/^   stbi_uc *idata, *expanded, *out;$/;"	m	struct:__anon112
-idct_block_kernel	src/stb_image.h	/^   void (*idct_block_kernel)(stbi_uc *out, int out_stride, short data[64]);$/;"	m	struct:__anon106
-img_buffer	src/stb_image.h	/^   stbi_uc *img_buffer, *img_buffer_end;$/;"	m	struct:__anon101
-img_buffer_end	src/stb_image.h	/^   stbi_uc *img_buffer, *img_buffer_end;$/;"	m	struct:__anon101
-img_buffer_original	src/stb_image.h	/^   stbi_uc *img_buffer_original, *img_buffer_original_end;$/;"	m	struct:__anon101
-img_buffer_original_end	src/stb_image.h	/^   stbi_uc *img_buffer_original, *img_buffer_original_end;$/;"	m	struct:__anon101
-img_comp	src/stb_image.h	/^   } img_comp[4];$/;"	m	struct:__anon106	typeref:struct:__anon106::__anon107
-img_h_max	src/stb_image.h	/^   int img_h_max, img_v_max;$/;"	m	struct:__anon106
-img_mcu_h	src/stb_image.h	/^   int img_mcu_w, img_mcu_h;$/;"	m	struct:__anon106
-img_mcu_w	src/stb_image.h	/^   int img_mcu_w, img_mcu_h;$/;"	m	struct:__anon106
-img_mcu_x	src/stb_image.h	/^   int img_mcu_x, img_mcu_y;$/;"	m	struct:__anon106
-img_mcu_y	src/stb_image.h	/^   int img_mcu_x, img_mcu_y;$/;"	m	struct:__anon106
-img_n	src/stb_image.h	/^   int img_n, img_out_n;$/;"	m	struct:__anon101
-img_out_n	src/stb_image.h	/^   int img_n, img_out_n;$/;"	m	struct:__anon101
-img_v_max	src/stb_image.h	/^   int img_h_max, img_v_max;$/;"	m	struct:__anon106
-img_x	src/stb_image.h	/^   stbi__uint32 img_x, img_y;$/;"	m	struct:__anon101
-img_y	src/stb_image.h	/^   stbi__uint32 img_x, img_y;$/;"	m	struct:__anon101
+idata	src/stb_image.h	/^   stbi_uc *idata, *expanded, *out;$/;"	m	struct:__anon118
+idct_block_kernel	src/stb_image.h	/^   void (*idct_block_kernel)(stbi_uc *out, int out_stride, short data[64]);$/;"	m	struct:__anon112
+img_buffer	src/stb_image.h	/^   stbi_uc *img_buffer, *img_buffer_end;$/;"	m	struct:__anon107
+img_buffer_end	src/stb_image.h	/^   stbi_uc *img_buffer, *img_buffer_end;$/;"	m	struct:__anon107
+img_buffer_original	src/stb_image.h	/^   stbi_uc *img_buffer_original, *img_buffer_original_end;$/;"	m	struct:__anon107
+img_buffer_original_end	src/stb_image.h	/^   stbi_uc *img_buffer_original, *img_buffer_original_end;$/;"	m	struct:__anon107
+img_comp	src/stb_image.h	/^   } img_comp[4];$/;"	m	struct:__anon112	typeref:struct:__anon112::__anon113
+img_h_max	src/stb_image.h	/^   int img_h_max, img_v_max;$/;"	m	struct:__anon112
+img_mcu_h	src/stb_image.h	/^   int img_mcu_w, img_mcu_h;$/;"	m	struct:__anon112
+img_mcu_w	src/stb_image.h	/^   int img_mcu_w, img_mcu_h;$/;"	m	struct:__anon112
+img_mcu_x	src/stb_image.h	/^   int img_mcu_x, img_mcu_y;$/;"	m	struct:__anon112
+img_mcu_y	src/stb_image.h	/^   int img_mcu_x, img_mcu_y;$/;"	m	struct:__anon112
+img_n	src/stb_image.h	/^   int img_n, img_out_n;$/;"	m	struct:__anon107
+img_out_n	src/stb_image.h	/^   int img_n, img_out_n;$/;"	m	struct:__anon107
+img_v_max	src/stb_image.h	/^   int img_h_max, img_v_max;$/;"	m	struct:__anon112
+img_x	src/stb_image.h	/^   stbi__uint32 img_x, img_y;$/;"	m	struct:__anon107
+img_y	src/stb_image.h	/^   stbi__uint32 img_x, img_y;$/;"	m	struct:__anon107
 in	inc/SDL2/SDL_test_md5.h	/^    unsigned char in[64];   \/* input buffer *\/$/;"	m	struct:__anon65
 indicies	src/bear_obj_loader.cpp	/^	Array<int32> indicies;$/;"	m	struct:Mesh	file:
 info	inc/SDL2/SDL_syswm.h	/^    } info;$/;"	m	struct:SDL_SysWMinfo	typeref:union:SDL_SysWMinfo::__anon33
 init_ecs	src/ecs/bear_ecs_init.cpp	/^void init_ecs(World *world)$/;"	f
+init_input	src/bear_input.h	/^void init_input()$/;"	f
+init_matrix_profiles	src/gfx/bear_renderer.h	/^	void init_matrix_profiles()$/;"	f	namespace:GFX
 input	src/bear_main.h	/^	} input;$/;"	m	struct:World	typeref:struct:World::Input
 inputStreamRef	inc/SDL2/SDL_rwops.h	/^            void *inputStreamRef;$/;"	m	struct:SDL_RWops::__anon70::__anon71
+input_map_hash	src/bear_input.h	/^uint8 input_map_hash(string name)$/;"	f
 int16	src/bear_types.h	/^typedef short		int16;$/;"	t
 int16_t	inc/SDL2/SDL_config_minimal.h	/^typedef signed short int16_t;$/;"	t
 int16_t	inc/SDL2/SDL_config_windows.h	/^typedef signed __int16 int16_t;$/;"	t
@@ -20988,18 +21084,20 @@ interval	inc/SDL2/SDL_haptic.h	/^    Uint16 interval;        \/**< How soon it c
 interval	inc/SDL2/SDL_haptic.h	/^    Uint16 interval;        \/**< How soon it can be triggered again after button. *\/$/;"	m	struct:SDL_HapticCustom
 interval	inc/SDL2/SDL_haptic.h	/^    Uint16 interval;        \/**< How soon it can be triggered again after button. *\/$/;"	m	struct:SDL_HapticRamp
 interval	inc/SDL2/SDL_haptic.h	/^    Uint16 interval;    \/**< How soon it can be triggered again after button. *\/$/;"	m	struct:SDL_HapticPeriodic
-io	src/stb_image.h	/^   stbi_io_callbacks io;$/;"	m	struct:__anon101
-io_user_data	src/stb_image.h	/^   void *io_user_data;$/;"	m	struct:__anon101
-is_valid_state	src/bear_main.h	/^inline bool is_valid_state(GameState state)$/;"	f
+io	src/stb_image.h	/^   stbi_io_callbacks io;$/;"	m	struct:__anon107
+io_user_data	src/stb_image.h	/^   void *io_user_data;$/;"	m	struct:__anon107
 iscapture	inc/SDL2/SDL_events.h	/^    Uint8 iscapture;    \/**< zero if an output device, non-zero if a capture device. *\/$/;"	m	struct:SDL_AudioDeviceEvent
 jaxis	inc/SDL2/SDL_events.h	/^    SDL_JoyAxisEvent jaxis;         \/**< Joystick axis event data *\/$/;"	m	union:SDL_Event
 jball	inc/SDL2/SDL_events.h	/^    SDL_JoyBallEvent jball;         \/**< Joystick ball event data *\/$/;"	m	union:SDL_Event
 jbutton	inc/SDL2/SDL_events.h	/^    SDL_JoyButtonEvent jbutton;     \/**< Joystick button event data *\/$/;"	m	union:SDL_Event
 jdevice	inc/SDL2/SDL_events.h	/^    SDL_JoyDeviceEvent jdevice;     \/**< Joystick device change event data *\/$/;"	m	union:SDL_Event
-jfif	src/stb_image.h	/^   int            jfif;$/;"	m	struct:__anon106
+jfif	src/stb_image.h	/^   int            jfif;$/;"	m	struct:__anon112
 jhat	inc/SDL2/SDL_events.h	/^    SDL_JoyHatEvent jhat;           \/**< Joystick hat event data *\/$/;"	m	union:SDL_Event
 jump	src/bear_main.h	/^		bool jump;$/;"	m	struct:World::Input
+k_negative	src/bear_input.h	/^				Button *k_negative;$/;"	m	struct:Axis::Binding::__anon126::__anon127
+k_positive	src/bear_input.h	/^				Button *k_positive;$/;"	m	struct:Axis::Binding::__anon126::__anon127
 key	inc/SDL2/SDL_events.h	/^    SDL_KeyboardEvent key;          \/**< Keyboard event data *\/$/;"	m	union:SDL_Event
+key	src/bear_input.h	/^			int32 key;$/;"	m	union:Button::Binding::__anon124
 keysym	inc/SDL2/SDL_events.h	/^    SDL_Keysym keysym;  \/**< The key that was pressed or released *\/$/;"	m	struct:SDL_KeyboardEvent
 khronos_boolean_enum_t	inc/KHR/khrplatform.h	/^} khronos_boolean_enum_t;$/;"	t	typeref:enum:__anon91
 khronos_boolean_enum_t	inc/SDL2/SDL_egl.h	/^} khronos_boolean_enum_t;$/;"	t	typeref:enum:__anon24
@@ -21093,7 +21191,7 @@ khronos_utime_nanoseconds_t	inc/SDL2/SDL_egl.h	/^typedef khronos_uint64_t       
 khronos_utime_nanoseconds_t	inc/SDL2/SDL_opengles2_khrplatform.h	/^typedef khronos_uint64_t       khronos_utime_nanoseconds_t;$/;"	t
 lParam	inc/SDL2/SDL_syswm.h	/^            LPARAM lParam;              \/**< LONG message parameter *\/$/;"	m	struct:SDL_SysWMmsg::__anon26::__anon27
 large_magnitude	inc/SDL2/SDL_haptic.h	/^    Uint16 large_magnitude; \/**< Control of the large controller motor. *\/$/;"	m	struct:SDL_HapticLeftRight
-last_write	src/bear_main.h	/^	int32 (*last_write) (const char *);$/;"	m	struct:PLT
+last_write	src/bear_main.h	/^	int32 (*last_write) (string);$/;"	m	struct:PLT
 left	src/audio/bear_audio.h	/^	Vec3f left;$/;"	m	struct:Audio
 left_coeff	inc/SDL2/SDL_haptic.h	/^    Sint16 left_coeff[3];   \/**< How fast to increase the force towards the negative side. *\/$/;"	m	struct:SDL_HapticCondition
 left_sat	inc/SDL2/SDL_haptic.h	/^    Uint16 left_sat[3];     \/**< Level when joystick is to the negative side; max 0xFFFF. *\/$/;"	m	struct:SDL_HapticCondition
@@ -21105,6 +21203,9 @@ len	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC void *SDLCALL SDL_memset(SDL_OUT_BYT
 len_cvt	inc/SDL2/SDL_audio.h	/^    int len_cvt;                \/**< Length of converted audio buffer *\/$/;"	m	struct:SDL_AudioCVT
 len_mult	inc/SDL2/SDL_audio.h	/^    int len_mult;               \/**< buffer must be len*len_mult big *\/$/;"	m	struct:SDL_AudioCVT
 len_ratio	inc/SDL2/SDL_audio.h	/^    double len_ratio;           \/**< Given len, final size is len*len_ratio *\/$/;"	m	struct:SDL_AudioCVT
+length	bear_vector_sk.h	/^float32 length(Vec2f a)$/;"	f
+length	bear_vector_sk.h	/^float32 length(Vec3f a)$/;"	f
+length	bear_vector_sk.h	/^float32 length(Vec4f a)$/;"	f
 length	inc/SDL2/SDL_events.h	/^    Sint32 length;                              \/**< The length of selected editing text *\/$/;"	m	struct:SDL_TextEditingEvent
 length	inc/SDL2/SDL_haptic.h	/^    Uint32 length;          \/**< Duration of the effect. *\/$/;"	m	struct:SDL_HapticCondition
 length	inc/SDL2/SDL_haptic.h	/^    Uint32 length;          \/**< Duration of the effect. *\/$/;"	m	struct:SDL_HapticConstant
@@ -21119,8 +21220,11 @@ length	src/math/bear_vector.h	/^float32 length(Vec2f a)$/;"	f
 length	src/math/bear_vector.h	/^float32 length(Vec3f a)$/;"	f
 length	src/math/bear_vector.h	/^float32 length(Vec4f a)$/;"	f
 length	src/physics/physics.h	/^	float32 length;$/;"	m	struct:SupportResult
-length	src/stb_image.h	/^   stbi__uint32 length;$/;"	m	struct:__anon111
+length	src/stb_image.h	/^   stbi__uint32 length;$/;"	m	struct:__anon117
 length_cubed	src/math/bear_vector.h	/^float32 length_cubed(Vec3f a)$/;"	f
+length_squared	bear_vector_sk.h	/^float32 length_squared(Vec2f a)$/;"	f
+length_squared	bear_vector_sk.h	/^float32 length_squared(Vec3f a)$/;"	f
+length_squared	bear_vector_sk.h	/^float32 length_squared(Vec4f a)$/;"	f
 length_squared	src/math/bear_quaternion.h	/^float32 length_squared(Q q)$/;"	f
 length_squared	src/math/bear_vector.h	/^float32 length_squared(Vec2f a)$/;"	f
 length_squared	src/math/bear_vector.h	/^float32 length_squared(Vec3f a)$/;"	f
@@ -21128,7 +21232,7 @@ length_squared	src/math/bear_vector.h	/^float32 length_squared(Vec4f a)$/;"	f
 lerp	src/math/bear_math.h	/^T lerp(T a, T b, float32 l)$/;"	f
 lerp	src/math/bear_quaternion.h	/^Q lerp(Q q1, Q q2, float32 lerp)$/;"	f
 level	inc/SDL2/SDL_haptic.h	/^    Sint16 level;           \/**< Strength of the constant effect. *\/$/;"	m	struct:SDL_HapticConstant
-lflags	src/stb_image.h	/^   int lflags;$/;"	m	struct:__anon117
+lflags	src/stb_image.h	/^   int lflags;$/;"	m	struct:__anon123
 lib	src/bear_linux.cpp	/^	void *lib;$/;"	m	struct:GameHandle	file:
 lib	src/bear_windows.cpp	/^	HMODULE lib;$/;"	m	struct:GameHandle	file:
 libGL	src/glad.c	/^static HMODULE libGL;$/;"	v	file:
@@ -21136,10 +21240,10 @@ libGL	src/glad.c	/^static void* libGL;$/;"	v	file:
 limit	src/bear_array.h	/^	uint64 limit;	\/\/ number of elements allocated for$/;"	m	struct:Array
 limit	src/bear_array.h	/^uint64 limit(Array<T> arr)$/;"	f
 line	src/bear_main.h	/^	uint32 line;$/;"	m	struct:MemoryAllocation
-line0	src/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon108
-line1	src/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon108
-line_size	src/stb_image.h	/^   int line_size;$/;"	m	struct:__anon117
-linebuf	src/stb_image.h	/^      stbi_uc *linebuf;$/;"	m	struct:__anon106::__anon107
+line0	src/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon114
+line1	src/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon114
+line_size	src/stb_image.h	/^   int line_size;$/;"	m	struct:__anon123
+linebuf	src/stb_image.h	/^      stbi_uc *linebuf;$/;"	m	struct:__anon112::__anon113
 linenum	inc/SDL2/SDL_assert.h	/^    int linenum;$/;"	m	struct:SDL_AssertData
 load_GL_VERSION_1_0	src/glad.c	/^static void load_GL_VERSION_1_0(GLADloadproc load) {$/;"	f	file:
 load_GL_VERSION_1_1	src/glad.c	/^static void load_GL_VERSION_1_1(GLADloadproc load) {$/;"	f	file:
@@ -21160,19 +21264,21 @@ load_libgame	src/bear_linux.cpp	/^bool load_libgame(GameHandle *handle)$/;"	f
 load_mesh	src/bear_obj_loader.cpp	/^Mesh load_mesh(OSFile file)$/;"	f
 load_mesh	src/bear_obj_loader.cpp	/^Mesh load_mesh(const char *file_name)$/;"	f
 load_sound	src/audio/bear_audio.cpp	/^AudioID load_sound(Audio *audio, const char *path) \/\/ NOTE(Ed): Assumes WAV$/;"	f
-location	src/_bak/shaderprogram.cpp	/^int ShaderProgram::location(const char* name)$/;"	f	class:ShaderProgram
-location	src/_bak/vertexarray.h	/^    unsigned int location;$/;"	m	struct:SK::VertexAttribute
+location	_bak/shaderprogram.cpp	/^int ShaderProgram::location(const char* name)$/;"	f	class:ShaderProgram
+location	_bak/vertexarray.h	/^    unsigned int location;$/;"	m	struct:SK::VertexAttribute
 location	src/gfx/bear_vertex_array.h	/^		uint32       location;$/;"	m	struct:GFX::VertexAttribute
 lock	src/bear_linux.cpp	/^	SDL_mutex *lock;$/;"	m	struct:GameHandle	file:
 lock	src/bear_windows.cpp	/^	SDL_mutex *lock;$/;"	m	struct:GameHandle	file:
 lock_data	inc/SDL2/SDL_surface.h	/^    void *lock_data;            \/**< Read-only *\/$/;"	m	struct:SDL_Surface
 locked	inc/SDL2/SDL_surface.h	/^    int locked;                 \/**< Read-only *\/$/;"	m	struct:SDL_Surface
-log	src/bear_main.h	/^	void  (*log)	(const char *, int32, const char *, const char *);$/;"	m	struct:PLT
+log	src/bear_main.h	/^	void  (*log)	(string, int32, string, string);$/;"	m	struct:PLT
 logical_h	inc/SDL2/SDL_test_common.h	/^    int logical_h;$/;"	m	struct:__anon15
 logical_w	inc/SDL2/SDL_test_common.h	/^    int logical_w;$/;"	m	struct:__anon15
 loop	src/audio/bear_audio.h	/^	bool loop;$/;"	m	struct:AudioSource
-lpal	src/stb_image.h	/^   stbi_uc lpal[256][4];$/;"	m	struct:__anon117
-ma	src/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon114
+lpal	src/stb_image.h	/^   stbi_uc lpal[256][4];$/;"	m	struct:__anon123
+m_button	src/bear_input.h	/^			uint8 m_button;$/;"	m	union:Button::Binding::__anon124
+m_x	src/bear_input.h	/^			bool m_x;$/;"	m	union:Axis::Binding::__anon126
+ma	src/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon120
 magnitude	inc/SDL2/SDL_haptic.h	/^    Sint16 magnitude;   \/**< Peak value; if negative, equivalent to 180 degrees extra phase shift. *\/$/;"	m	struct:SDL_HapticPeriodic
 main	inc/SDL2/SDL_main.h	111;"	d
 main	src/bear_linux.cpp	/^int main(int varc, char *varv[])$/;"	f
@@ -21180,14 +21286,15 @@ major	inc/SDL2/SDL_version.h	/^    Uint8 major;        \/**< major version *\/$/
 major	inc/glad/glad.h	/^    int major;$/;"	m	struct:gladGLversionStruct
 major	src/glad.h	/^    int major;$/;"	m	struct:gladGLversionStruct
 make_sphere	src/physics/physics.h	/^Shape make_sphere(float32 radius)$/;"	f
-malloc	src/bear_main.h	/^	void *(*malloc)	(const char *, uint32, uint64);$/;"	m	struct:PLT
+malloc	src/bear_main.h	/^	void *(*malloc)	(string, uint32, uint64);$/;"	m	struct:PLT
 malloc_	src/bear_memory.h	/^void *malloc_(const char *file_path, uint32 line, uint64 size)$/;"	f
 map	inc/SDL2/SDL_surface.h	/^    struct SDL_BlitMap *map;    \/**< Private *\/$/;"	m	struct:SDL_Surface	typeref:struct:SDL_Surface::SDL_BlitMap
-marker	src/stb_image.h	/^   unsigned char  marker;      \/\/ marker seen while filling entropy buffer$/;"	m	struct:__anon106
-matrix	src/_bak/camera.h	/^    glm::mat4 matrix()$/;"	f	class:SK::Camera
-matrix	src/_bak/transform.cpp	/^glm::mat4 Transform::matrix()$/;"	f	class:Transform
-matrix_profiles	src/_bak/renderer.h	/^		Array<MatrixProfile> matrix_profiles;$/;"	m	struct:Renderer::Renderable
-matrix_profiles	src/_bak/renderer.h	/^	Array<MatrixProfile> matrix_profiles;$/;"	m	namespace:Renderer
+marker	src/stb_image.h	/^   unsigned char  marker;      \/\/ marker seen while filling entropy buffer$/;"	m	struct:__anon112
+matrix	_bak/camera.h	/^    glm::mat4 matrix()$/;"	f	class:SK::Camera
+matrix	_bak/transform.cpp	/^glm::mat4 Transform::matrix()$/;"	f	class:Transform
+matrix	src/gfx/bear_renderer.h	/^		Mat4f               *matrix;$/;"	m	struct:GFX::MatrixProfile
+matrix_profiles	_bak/renderer.h	/^		Array<MatrixProfile> matrix_profiles;$/;"	m	struct:Renderer::Renderable
+matrix_profiles	_bak/renderer.h	/^	Array<MatrixProfile> matrix_profiles;$/;"	m	namespace:Renderer
 matrix_profiles	src/gfx/bear_renderer.h	/^		Array<MatrixProfile> matrix_profiles;$/;"	m	struct:GFX::Renderable
 matrix_profiles	src/gfx/bear_renderer.h	/^	Array<MatrixProfile> matrix_profiles;$/;"	m	namespace:GFX
 max	src/physics/physics.h	/^	float32 max;$/;"	m	struct:BroadPhaseComponent
@@ -21199,10 +21306,10 @@ max_loaded_minor	src/glad.c	/^static int max_loaded_minor;$/;"	v	file:
 max_source	src/audio/bear_audio.h	/^	int32 max_source = -1;$/;"	m	struct:Audio
 max_texture_height	inc/SDL2/SDL_render.h	/^    int max_texture_height;     \/**< The maximum texture height *\/$/;"	m	struct:SDL_RendererInfo
 max_texture_width	inc/SDL2/SDL_render.h	/^    int max_texture_width;      \/**< The maximum texture width *\/$/;"	m	struct:SDL_RendererInfo
-max_x	src/stb_image.h	/^   int max_x, max_y;$/;"	m	struct:__anon117
-max_y	src/stb_image.h	/^   int max_x, max_y;$/;"	m	struct:__anon117
-maxcode	src/stb_image.h	/^   int maxcode[17];$/;"	m	struct:__anon109
-maxcode	src/stb_image.h	/^   unsigned int maxcode[18];$/;"	m	struct:__anon105
+max_x	src/stb_image.h	/^   int max_x, max_y;$/;"	m	struct:__anon123
+max_y	src/stb_image.h	/^   int max_x, max_y;$/;"	m	struct:__anon123
+maxcode	src/stb_image.h	/^   int maxcode[17];$/;"	m	struct:__anon115
+maxcode	src/stb_image.h	/^   unsigned int maxcode[18];$/;"	m	struct:__anon111
 maximum	src/math/bear_math.h	/^T maximum(T a, T b)$/;"	f
 maxlen	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ... ) SDL_PRINTF_VARARG_FUNC(3);$/;"	v
 maxlen	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap);$/;"	v
@@ -21210,11 +21317,11 @@ maxlen	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC size_t SDLCALL SDL_strlcat(SDL_IN
 maxlen	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);$/;"	v
 maxlen	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC size_t SDLCALL SDL_wcslcat(SDL_INOUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen);$/;"	v
 maxlen	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC size_t SDLCALL SDL_wcslcpy(SDL_OUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen);$/;"	v
-mb	src/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon114
+mb	src/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon120
 mem	inc/SDL2/SDL_rwops.h	/^        } mem;$/;"	m	union:SDL_RWops::__anon70	typeref:struct:SDL_RWops::__anon70::__anon73
-mesh	src/bear_assets.h	/^		Mesh mesh;$/;"	m	union:Asset::__anon98
+mesh	src/bear_assets.h	/^		Mesh mesh;$/;"	m	union:Asset::__anon104
 message	inc/SDL2/SDL_messagebox.h	/^    const char *message;                \/**< UTF-8 message text *\/$/;"	m	struct:__anon59
-mg	src/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon114
+mg	src/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon120
 mgesture	inc/SDL2/SDL_events.h	/^    SDL_MultiGestureEvent mgesture; \/**< Gesture event data *\/$/;"	m	union:SDL_Event
 min	src/physics/physics.h	/^	float32 min;$/;"	m	struct:BroadPhaseComponent
 minimum	src/math/bear_math.h	/^T minimum(T a, T b)$/;"	f
@@ -21228,21 +21335,27 @@ mix_from_two_channel	src/audio/bear_mixer.cpp	/^static T mix_from_two_channel(T 
 mod	inc/SDL2/SDL_keyboard.h	/^    Uint16 mod;                 \/**< current key modifiers *\/$/;"	m	struct:SDL_Keysym
 mode	inc/SDL2/SDL_shape.h	/^    WindowShapeMode mode;$/;"	m	struct:SDL_WindowShapeMode
 motion	inc/SDL2/SDL_events.h	/^    SDL_MouseMotionEvent motion;    \/**< Mouse motion event data *\/$/;"	m	union:SDL_Event
-mr	src/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon114
+mr	src/stb_image.h	/^   unsigned int mr,mg,mb,ma, all_a;$/;"	m	struct:__anon120
 msg	inc/SDL2/SDL_events.h	/^    SDL_SysWMmsg *msg;  \/**< driver dependent data, defined in SDL_syswm.h *\/$/;"	m	struct:SDL_SysWMEvent
 msg	inc/SDL2/SDL_syswm.h	/^            UINT msg;                   \/**< The type of message *\/$/;"	m	struct:SDL_SysWMmsg::__anon26::__anon27
 msg	inc/SDL2/SDL_syswm.h	/^    } msg;$/;"	m	struct:SDL_SysWMmsg	typeref:union:SDL_SysWMmsg::__anon26
 name	inc/SDL2/SDL_render.h	/^    const char *name;           \/**< The name of the renderer *\/$/;"	m	struct:SDL_RendererInfo
 name	inc/SDL2/SDL_test_harness.h	/^    char *name;$/;"	m	struct:SDLTest_TestCaseReference
 name	inc/SDL2/SDL_test_harness.h	/^    char *name;$/;"	m	struct:SDLTest_TestSuiteReference
+name	src/bear_input.h	/^	string         name;$/;"	m	struct:ButtonEntry
+name	src/bear_input.h	/^	string        name;$/;"	m	struct:AxisEntry
 ncolors	inc/SDL2/SDL_pixels.h	/^    int ncolors;$/;"	m	struct:SDL_Palette
 needed	inc/SDL2/SDL_audio.h	/^    int needed;                 \/**< Set to 1 if conversion possible *\/$/;"	m	struct:SDL_AudioCVT
 next	inc/SDL2/SDL_assert.h	/^    const struct SDL_AssertData *next;$/;"	m	struct:SDL_AssertData	typeref:struct:SDL_AssertData::SDL_AssertData
 next	inc/SDL2/SDL_pixels.h	/^    struct SDL_PixelFormat *next;$/;"	m	struct:SDL_PixelFormat	typeref:struct:SDL_PixelFormat::SDL_PixelFormat
-next_state	src/bear_main.h	/^	GameState next_state;$/;"	m	struct:World
-nomore	src/stb_image.h	/^   int            nomore;      \/\/ flag if we saw a marker so must stop$/;"	m	struct:__anon106
+next	src/bear_input.h	/^	AxisEntry    *next;$/;"	m	struct:AxisEntry
+next	src/bear_input.h	/^	ButtonEntry   *next;$/;"	m	struct:ButtonEntry
+nomore	src/stb_image.h	/^   int            nomore;      \/\/ flag if we saw a marker so must stop$/;"	m	struct:__anon112
+normalize	bear_vector_sk.h	/^Vec4f normalize(Vec4f a)$/;"	f
 normalize	src/math/bear_quaternion.h	/^Q normalize(Q q)$/;"	f
-normalized	src/_bak/vertexarray.h	/^    bool normalized    = false;$/;"	m	struct:SK::VertexAttribute
+normalized	_bak/vertexarray.h	/^    bool normalized    = false;$/;"	m	struct:SK::VertexAttribute
+normalized	bear_vector_sk.h	/^Vec2f normalized(Vec2f a)$/;"	f
+normalized	bear_vector_sk.h	/^Vec3f normalized(Vec3f a)$/;"	f
 normalized	src/gfx/bear_vertex_array.h	/^		bool         normalized;$/;"	m	struct:GFX::VertexAttribute
 normalized	src/math/bear_vector.h	/^Vec2f normalized(Vec2f a)$/;"	f
 normalized	src/math/bear_vector.h	/^Vec3f normalized(Vec3f a)$/;"	f
@@ -21250,39 +21363,60 @@ normalized	src/math/bear_vector.h	/^Vec4f normalized(Vec4f a)$/;"	f
 normals	src/bear_obj_loader.cpp	/^	Array<Vec3f> normals;$/;"	m	struct:Mesh	file:
 numFingers	inc/SDL2/SDL_events.h	/^    Uint16 numFingers;$/;"	m	struct:SDL_MultiGestureEvent
 numFingers	inc/SDL2/SDL_events.h	/^    Uint32 numFingers;$/;"	m	struct:SDL_DollarGestureEvent
-num_bits	src/stb_image.h	/^   int num_bits;$/;"	m	struct:__anon110
-num_channels	src/stb_image.h	/^   int num_channels;$/;"	m	struct:__anon103
+num_bits	src/stb_image.h	/^   int num_bits;$/;"	m	struct:__anon116
+num_channels	src/stb_image.h	/^   int num_channels;$/;"	m	struct:__anon109
 num_exts_i	src/glad.c	/^static int num_exts_i = 0;$/;"	v	file:
 num_texture_formats	inc/SDL2/SDL_render.h	/^    Uint32 num_texture_formats; \/**< The number of available texture formats *\/$/;"	m	struct:SDL_RendererInfo
-num_vertices	src/_bak/renderer.h	/^		unsigned int         num_vertices;$/;"	m	struct:Renderer::Renderable
+num_vertices	_bak/renderer.h	/^		unsigned int         num_vertices;$/;"	m	struct:Renderer::Renderable
 num_vertices	src/gfx/bear_renderer.h	/^		uint32               num_vertices;$/;"	m	struct:GFX::Renderable
 num_windows	inc/SDL2/SDL_test_common.h	/^    int num_windows;$/;"	m	struct:__anon15
 numbuttons	inc/SDL2/SDL_messagebox.h	/^    int numbuttons;$/;"	m	struct:__anon59
+offset	_bak/vertexarray.h	/^    const void* offset = NULL;$/;"	m	struct:SK::VertexAttribute
 offset	inc/SDL2/SDL_haptic.h	/^    Sint16 offset;      \/**< Mean value of the wave. *\/$/;"	m	struct:SDL_HapticPeriodic
 offset	inc/SDL2/SDL_rwops.h	/^            long offset;$/;"	m	struct:SDL_RWops::__anon70::__anon71
-offset	src/_bak/vertexarray.h	/^    const void* offset = NULL;$/;"	m	struct:SK::VertexAttribute
 offset	src/gfx/bear_vertex_array.h	/^		const void  *offset;$/;"	m	struct:GFX::VertexAttribute
-offset	src/stb_image.h	/^   int bpp, offset, hsz;$/;"	m	struct:__anon114
+offset	src/stb_image.h	/^   int bpp, offset, hsz;$/;"	m	struct:__anon120
+open_controllers	src/bear_input.h	/^void open_controllers()$/;"	f
 open_gl	src/glad.c	/^int open_gl(void) {$/;"	f	file:
 operator !=	src/audio/bear_audio.h	/^	bool operator!= (AudioID other)$/;"	f	struct:AudioID
 operator !=	src/ecs/bear_ecs.h	/^	bool operator!= (EntityID o)$/;"	f	struct:EntityID
-operator *	src/math/bear_matrix.h	/^	Mat4 operator* (Mat4 m)$/;"	f	struct:Mat4
-operator *	src/math/bear_matrix.h	/^	Vec4f operator* (Vec4f v)$/;"	f	struct:Mat4
+operator *	bear_vector_sk.h	/^	Vec2f operator* (float32 scaler)$/;"	f	struct:Vec2f
+operator *	bear_vector_sk.h	/^	Vec3f operator* (float32 scaler)$/;"	f	struct:Vec3f
+operator *	bear_vector_sk.h	/^	Vec4f operator* (float32 scaler)$/;"	f	struct:Vec4f
+operator *	src/math/bear_matrix.h	/^	Mat4f operator* (Mat4f m)$/;"	f	struct:Mat4f
+operator *	src/math/bear_matrix.h	/^	Vec4f operator* (Vec4f v)$/;"	f	struct:Mat4f
 operator *	src/math/bear_quaternion.h	/^	Q operator* (Q o)$/;"	f	struct:Q
 operator *	src/math/bear_quaternion.h	/^	Q operator* (float32 s)$/;"	f	struct:Q
 operator *	src/math/bear_vector.h	/^	Vec2f operator* (float32 scaler)$/;"	f	struct:Vec2f
 operator *	src/math/bear_vector.h	/^	Vec3f operator* (float32 scaler)$/;"	f	struct:Vec3f
 operator *	src/math/bear_vector.h	/^	Vec4f operator* (float32 scaler)$/;"	f	struct:Vec4f
+operator *=	bear_vector_sk.h	/^	void operator*= (float32 scaler)$/;"	f	struct:Vec2f
+operator *=	bear_vector_sk.h	/^	void operator*= (float32 scaler)$/;"	f	struct:Vec3f
+operator *=	bear_vector_sk.h	/^	void operator*= (float32 scaler)$/;"	f	struct:Vec4f
+operator *=	src/math/bear_quaternion.h	/^	void operator*= (Q o)$/;"	f	struct:Q
 operator *=	src/math/bear_vector.h	/^	void operator*= (float32 scaler)$/;"	f	struct:Vec2f
 operator *=	src/math/bear_vector.h	/^	void operator*= (float32 scaler)$/;"	f	struct:Vec3f
 operator *=	src/math/bear_vector.h	/^	void operator*= (float32 scaler)$/;"	f	struct:Vec4f
+operator +	bear_vector_sk.h	/^	Vec2f operator+ (Vec2f other)$/;"	f	struct:Vec2f
+operator +	bear_vector_sk.h	/^	Vec3f operator+ (Vec3f other)$/;"	f	struct:Vec3f
+operator +	bear_vector_sk.h	/^	Vec4f operator+ (Vec4f other)$/;"	f	struct:Vec4f
 operator +	src/math/bear_quaternion.h	/^	Q operator+ (Q q)$/;"	f	struct:Q
 operator +	src/math/bear_vector.h	/^	Vec2f operator+ (Vec2f other)$/;"	f	struct:Vec2f
 operator +	src/math/bear_vector.h	/^	Vec3f operator+ (Vec3f other)$/;"	f	struct:Vec3f
 operator +	src/math/bear_vector.h	/^	Vec4f operator+ (Vec4f other)$/;"	f	struct:Vec4f
+operator +=	bear_vector_sk.h	/^	void operator+= (Vec2f other)$/;"	f	struct:Vec2f
+operator +=	bear_vector_sk.h	/^	void operator+= (Vec3f other)$/;"	f	struct:Vec3f
+operator +=	bear_vector_sk.h	/^	void operator+= (Vec4f other)$/;"	f	struct:Vec4f
+operator +=	src/math/bear_quaternion.h	/^	void operator+= (Q q)$/;"	f	struct:Q
 operator +=	src/math/bear_vector.h	/^	void operator+= (Vec2f other)$/;"	f	struct:Vec2f
 operator +=	src/math/bear_vector.h	/^	void operator+= (Vec3f other)$/;"	f	struct:Vec3f
 operator +=	src/math/bear_vector.h	/^	void operator+= (Vec4f other)$/;"	f	struct:Vec4f
+operator -	bear_vector_sk.h	/^	Vec2f operator- ()$/;"	f	struct:Vec2f
+operator -	bear_vector_sk.h	/^	Vec2f operator- (Vec2f other)$/;"	f	struct:Vec2f
+operator -	bear_vector_sk.h	/^	Vec3f operator- ()$/;"	f	struct:Vec3f
+operator -	bear_vector_sk.h	/^	Vec3f operator- (Vec3f other)$/;"	f	struct:Vec3f
+operator -	bear_vector_sk.h	/^	Vec4f operator- ()$/;"	f	struct:Vec4f
+operator -	bear_vector_sk.h	/^	Vec4f operator- (Vec4f other)$/;"	f	struct:Vec4f
 operator -	src/math/bear_quaternion.h	/^	Q operator- ()$/;"	f	struct:Q
 operator -	src/math/bear_quaternion.h	/^	Q operator- (Q q)$/;"	f	struct:Q
 operator -	src/math/bear_vector.h	/^	Vec2f operator- ()$/;"	f	struct:Vec2f
@@ -21291,29 +21425,43 @@ operator -	src/math/bear_vector.h	/^	Vec3f operator- ()$/;"	f	struct:Vec3f
 operator -	src/math/bear_vector.h	/^	Vec3f operator- (Vec3f other)$/;"	f	struct:Vec3f
 operator -	src/math/bear_vector.h	/^	Vec4f operator- ()$/;"	f	struct:Vec4f
 operator -	src/math/bear_vector.h	/^	Vec4f operator- (Vec4f other)$/;"	f	struct:Vec4f
+operator -=	bear_vector_sk.h	/^	void operator-= (Vec2f other)$/;"	f	struct:Vec2f
+operator -=	bear_vector_sk.h	/^	void operator-= (Vec3f other)$/;"	f	struct:Vec3f
+operator -=	bear_vector_sk.h	/^	void operator-= (Vec4f other)$/;"	f	struct:Vec4f
+operator -=	src/math/bear_quaternion.h	/^	void operator-= (Q q)$/;"	f	struct:Q
 operator -=	src/math/bear_vector.h	/^	void operator-= (Vec2f other)$/;"	f	struct:Vec2f
 operator -=	src/math/bear_vector.h	/^	void operator-= (Vec3f other)$/;"	f	struct:Vec3f
 operator -=	src/math/bear_vector.h	/^	void operator-= (Vec4f other)$/;"	f	struct:Vec4f
+operator /	bear_vector_sk.h	/^	Vec2f operator\/ (float32 scaler)$/;"	f	struct:Vec2f
+operator /	bear_vector_sk.h	/^	Vec3f operator\/ (float32 scaler)$/;"	f	struct:Vec3f
+operator /	bear_vector_sk.h	/^	Vec4f operator\/ (float32 scaler)$/;"	f	struct:Vec4f
 operator /	src/math/bear_quaternion.h	/^	Q operator\/ (float32 s)$/;"	f	struct:Q
 operator /	src/math/bear_vector.h	/^	Vec2f operator\/ (float32 scaler)$/;"	f	struct:Vec2f
 operator /	src/math/bear_vector.h	/^	Vec3f operator\/ (float32 scaler)$/;"	f	struct:Vec3f
 operator /	src/math/bear_vector.h	/^	Vec4f operator\/ (float32 scaler)$/;"	f	struct:Vec4f
+operator /=	bear_vector_sk.h	/^	void operator\/= (float32 scaler)$/;"	f	struct:Vec2f
+operator /=	bear_vector_sk.h	/^	void operator\/= (float32 scaler)$/;"	f	struct:Vec3f
+operator /=	bear_vector_sk.h	/^	void operator\/= (float32 scaler)$/;"	f	struct:Vec4f
 operator /=	src/math/bear_vector.h	/^	void operator\/= (float32 scaler)$/;"	f	struct:Vec2f
 operator /=	src/math/bear_vector.h	/^	void operator\/= (float32 scaler)$/;"	f	struct:Vec3f
 operator /=	src/math/bear_vector.h	/^	void operator\/= (float32 scaler)$/;"	f	struct:Vec4f
+operator ==	bear_vector_sk.h	/^	bool operator== (Vec2f other)$/;"	f	struct:Vec2f
+operator ==	bear_vector_sk.h	/^	bool operator== (Vec3f other)$/;"	f	struct:Vec3f
+operator ==	bear_vector_sk.h	/^	bool operator== (Vec4f other)$/;"	f	struct:Vec4f
 operator ==	src/audio/bear_audio.h	/^	bool operator== (AudioID other)$/;"	f	struct:AudioID
+operator ==	src/bear_input.h	/^		bool operator== (Binding o)$/;"	f	struct:Axis::Binding
+operator ==	src/bear_input.h	/^		bool operator== (Binding o)$/;"	f	struct:Button::Binding
 operator ==	src/ecs/bear_ecs.h	/^	bool operator== (EntityID o)$/;"	f	struct:EntityID
-operator ==	src/math/bear_matrix.h	/^	bool operator== (Mat4 m)$/;"	f	struct:Mat4
+operator ==	src/math/bear_matrix.h	/^	bool operator== (Mat4f m)$/;"	f	struct:Mat4f
 operator ==	src/math/bear_vector.h	/^	bool operator== (Vec2f other)$/;"	f	struct:Vec2f
 operator ==	src/math/bear_vector.h	/^	bool operator== (Vec3f other)$/;"	f	struct:Vec3f
 operator ==	src/math/bear_vector.h	/^	bool operator== (Vec4f other)$/;"	f	struct:Vec4f
-operator []	src/_bak/bear_array.cpp	/^	T operator[] (uint64 index)$/;"	f	struct:Array
+operator []	_bak/bear_array.cpp	/^	T operator[] (uint64 index)$/;"	f	struct:Array
 operator []	src/bear_array.h	/^	T operator[] (uint64 index)$/;"	f	struct:Array
-order	src/stb_image.h	/^   int scan_n, order[4];$/;"	m	struct:__anon106
-orientation	src/physics/physics.h	/^	Quat  orientation;$/;"	m	struct:Transform
-ortho	src/_bak/camera.h	/^    void ortho(float left, float right, float bottom, float top)$/;"	f	class:SK::Camera
-out	src/stb_image.h	/^   stbi_uc *idata, *expanded, *out;$/;"	m	struct:__anon112
-out	src/stb_image.h	/^   stbi_uc *out;                 \/\/ output buffer (always 4 components)$/;"	m	struct:__anon117
+order	src/stb_image.h	/^   int scan_n, order[4];$/;"	m	struct:__anon112
+ortho	_bak/camera.h	/^    void ortho(float left, float right, float bottom, float top)$/;"	f	class:SK::Camera
+out	src/stb_image.h	/^   stbi_uc *idata, *expanded, *out;$/;"	m	struct:__anon118
+out	src/stb_image.h	/^   stbi_uc *out;                 \/\/ output buffer (always 4 components)$/;"	m	struct:__anon123
 owner	src/ecs/bear_ecs.h	/^	EntityID owner;$/;"	m	struct:BaseComponent
 pData	inc/SDL2/SDL_egl.h	/^    void  *pData;$/;"	m	struct:EGLClientPixmapHI
 padding	inc/SDL2/SDL_audio.h	/^    Uint16 padding;             \/**< Necessary for some compile environments *\/$/;"	m	struct:SDL_AudioSpec
@@ -21346,17 +21494,18 @@ padding3	inc/SDL2/SDL_events.h	/^    Uint8 padding3;$/;"	m	struct:SDL_KeyboardEv
 padding3	inc/SDL2/SDL_events.h	/^    Uint8 padding3;$/;"	m	struct:SDL_WindowEvent
 padding4	inc/SDL2/SDL_events.h	/^    Uint16 padding4;$/;"	m	struct:SDL_ControllerAxisEvent
 padding4	inc/SDL2/SDL_events.h	/^    Uint16 padding4;$/;"	m	struct:SDL_JoyAxisEvent
-pal	src/stb_image.h	/^   stbi_uc  pal[256][4];$/;"	m	struct:__anon117
+pal	src/stb_image.h	/^   stbi_uc  pal[256][4];$/;"	m	struct:__anon123
 palette	inc/SDL2/SDL_pixels.h	/^    SDL_Palette *palette;$/;"	m	struct:SDL_PixelFormat
 parameters	inc/SDL2/SDL_shape.h	/^    SDL_WindowShapeParams parameters;$/;"	m	struct:SDL_WindowShapeMode
-parse	src/stb_image.h	/^   int parse, step;$/;"	m	struct:__anon117
+parse	src/stb_image.h	/^   int parse, step;$/;"	m	struct:__anon123
 passed_tests	src/bear_test.cpp	/^int passed_tests = 0;$/;"	v
 patch	inc/SDL2/SDL_version.h	/^    Uint8 patch;        \/**< update version *\/$/;"	m	struct:SDL_version
-path	src/_bak/shaderprogram.h	/^    const char* path;$/;"	m	struct:SK::Shader
+path	_bak/shaderprogram.h	/^    const char* path;$/;"	m	struct:SK::Shader
+path	src/gfx/bear_shader_program.h	/^		string path;$/;"	m	struct:GFX::ShaderInfo
 period	inc/SDL2/SDL_haptic.h	/^    Uint16 period;          \/**< Sample periods. *\/$/;"	m	struct:SDL_HapticCustom
 period	inc/SDL2/SDL_haptic.h	/^    Uint16 period;      \/**< Period of the wave. *\/$/;"	m	struct:SDL_HapticPeriodic
 periodic	inc/SDL2/SDL_haptic.h	/^    SDL_HapticPeriodic periodic;    \/**< Periodic effect. *\/$/;"	m	union:SDL_HapticEffect
-perspective	src/_bak/camera.h	/^    void perspective(float fov, float aspect_ratio, float z_near, float z_far)$/;"	f	class:SK::Camera
+perspective	_bak/camera.h	/^    void perspective(float fov, float aspect_ratio, float z_near, float z_far)$/;"	f	class:SK::Camera
 pfnSDL_CurrentBeginThread	inc/SDL2/SDL_thread.h	/^typedef int (*pfnSDL_CurrentBeginThread)(void (*func)(void *), void *, unsigned, void * \/*arg*\/);$/;"	t
 pfnSDL_CurrentBeginThread	inc/SDL2/SDL_thread.h	/^typedef uintptr_t(__cdecl * pfnSDL_CurrentBeginThread)$/;"	t
 pfnSDL_CurrentEndThread	inc/SDL2/SDL_thread.h	/^typedef void (*pfnSDL_CurrentEndThread)(void);$/;"	t
@@ -21372,56 +21521,59 @@ play_sound	src/audio/bear_audio.cpp	/^AudioID play_sound(Audio *audio, AudioID b
 plt	src/bear_main.h	/^	PLT plt;$/;"	m	struct:World
 plt_audio_callback	src/bear_linux.cpp	/^void plt_audio_callback(void *userdata, uint8 *stream, int32 length)$/;"	f
 plt_audio_callback	src/bear_windows.cpp	/^void plt_audio_callback(void *userdata, uint8 *stream, int32 length)$/;"	f
-point	src/physics/physics.h	/^			Vec3f point;$/;"	m	struct:Shape::__anon92::__anon96
+point	src/physics/physics.h	/^			Vec3f point;$/;"	m	struct:Shape::__anon1::__anon5
 point	src/physics/physics.h	/^	Vec3f point;$/;"	m	struct:SupportResult
 points	src/physics/physics.h	/^	Array<Vec3f> points;$/;"	m	struct:Shape
 pos	src/audio/bear_audio.h	/^	int16 pos;$/;"	m	struct:AudioID
 pos	src/ecs/bear_ecs.h	/^	int32 pos;$/;"	m	struct:EntityID
+pos	src/math/bear_transform.h	/^	Vec3f pos;$/;"	m	struct:Transform
+position	_bak/transform.h	/^    glm::vec3 position = glm::vec3(0, 0, 0);$/;"	m	class:SK::Transform
 position	inc/SDL2/SDL_rwops.h	/^            long position;$/;"	m	struct:SDL_RWops::__anon70::__anon71
-position	src/_bak/transform.h	/^    glm::vec3 position = glm::vec3(0, 0, 0);$/;"	m	class:SK::Transform
 position	src/audio/bear_audio.h	/^	Vec3f position;$/;"	m	struct:Audio
 position	src/audio/bear_audio.h	/^	Vec3f position;$/;"	m	struct:AudioSource
 position	src/ecs/bear_ecs.h	/^	Vec3f position;$/;"	m	struct:Position
-position	src/physics/physics.h	/^	Vec3f position;$/;"	m	struct:Transform
 positions	src/bear_obj_loader.cpp	/^	Array<Vec3f> positions;$/;"	m	struct:Mesh	file:
 pow	src/bear_obj_loader.cpp	/^float32 pow(float32 n, int32 exp)$/;"	f
-prefix	src/stb_image.h	/^   stbi__int16 prefix;$/;"	m	struct:__anon116
+prefix	src/stb_image.h	/^   stbi__int16 prefix;$/;"	m	struct:__anon122
 prepend	src/bear_array.h	/^void prepend(Array<T> *arr, T val)$/;"	f
-pressed	src/_bak/input.h	/^    static bool pressed(std::string name) { return _state_map[name] == KEY_PRESSED; }$/;"	f	class:SK::Key
+pressed	_bak/input.h	/^    static bool pressed(std::string name) { return _state_map[name] == KEY_PRESSED; }$/;"	f	class:SK::Key
 pressure	inc/SDL2/SDL_events.h	/^    float pressure;     \/**< Normalized in the range 0...1 *\/$/;"	m	struct:SDL_TouchFingerEvent
 pressure	inc/SDL2/SDL_touch.h	/^    float pressure;$/;"	m	struct:SDL_Finger
-print	src/bear_main.h	/^	int   (*print)	(const char *, ...); $/;"	m	struct:PLT
-program	src/_bak/renderer.h	/^		ShaderProgram       *program;$/;"	m	struct:Renderer::Renderable
-progressive	src/stb_image.h	/^   int            progressive;$/;"	m	struct:__anon106
-projection	src/_bak/camera.h	/^    void projection(glm::mat4 projection)$/;"	f	class:SK::Camera
+print	src/bear_main.h	/^	int32 (*print)	(string, ...); $/;"	m	struct:PLT
+program	_bak/renderer.h	/^		ShaderProgram       *program;$/;"	m	struct:Renderer::Renderable
+program	src/bear_main.cpp	/^GFX::ShaderProgram program;$/;"	v
+program	src/gfx/bear_renderer.h	/^		ShaderProgram        program;$/;"	m	struct:GFX::Renderable
+progressive	src/stb_image.h	/^   int            progressive;$/;"	m	struct:__anon112
+projection	_bak/camera.h	/^    void projection(glm::mat4 projection)$/;"	f	class:SK::Camera
+projection	src/math/bear_transform.h	/^	Mat4f projection;$/;"	m	struct:Camera
 ptr	src/bear_main.h	/^	void *ptr;$/;"	m	struct:MemoryAllocation
 quit	inc/SDL2/SDL_events.h	/^    SDL_QuitEvent quit;             \/**< Quit request event data *\/$/;"	m	union:SDL_Event
 r	inc/SDL2/SDL_messagebox.h	/^    Uint8 r, g, b;$/;"	m	struct:__anon56
 r	inc/SDL2/SDL_pixels.h	/^    Uint8 r;$/;"	m	struct:SDL_Color
-radius	src/physics/physics.h	/^			float32 radius;$/;"	m	struct:Shape::__anon92::__anon93
+radius	src/physics/physics.h	/^			float32 radius;$/;"	m	struct:Shape::__anon1::__anon2
 ramp	inc/SDL2/SDL_haptic.h	/^    SDL_HapticRamp ramp;            \/**< Ramp effect. *\/$/;"	m	union:SDL_HapticEffect
 rate_incr	inc/SDL2/SDL_audio.h	/^    double rate_incr;           \/**< Rate conversion increment *\/$/;"	m	struct:SDL_AudioCVT
-ratio	src/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon117
-raw_coeff	src/stb_image.h	/^      void *raw_data, *raw_coeff;$/;"	m	struct:__anon106::__anon107
-raw_data	src/stb_image.h	/^      void *raw_data, *raw_coeff;$/;"	m	struct:__anon106::__anon107
+ratio	src/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon123
+raw_coeff	src/stb_image.h	/^      void *raw_data, *raw_coeff;$/;"	m	struct:__anon112::__anon113
+raw_data	src/stb_image.h	/^      void *raw_data, *raw_coeff;$/;"	m	struct:__anon112::__anon113
+read	_bak/io.h	/^    static std::string read(const char* path)$/;"	f	class:SK::IO
 read	inc/SDL2/SDL_rwops.h	/^    size_t (SDLCALL * read) (struct SDL_RWops * context, void *ptr,$/;"	m	struct:SDL_RWops
-read	src/_bak/io.h	/^    static std::string read(const char* path)$/;"	f	class:SK::IO
-read	src/stb_image.h	/^   int      (*read)  (void *user,char *data,int size);   \/\/ fill 'data' with 'size' bytes.  return number of bytes actually read$/;"	m	struct:__anon100
+read	src/stb_image.h	/^   int      (*read)  (void *user,char *data,int size);   \/\/ fill 'data' with 'size' bytes.  return number of bytes actually read$/;"	m	struct:__anon106
 readMethod	inc/SDL2/SDL_rwops.h	/^            void *readMethod;$/;"	m	struct:SDL_RWops::__anon70::__anon71
 read_entire_file	src/bear_linux.cpp	/^OSFile read_entire_file(const char *path)$/;"	f
 read_entire_file	src/bear_windows.cpp	/^OSFile read_entire_file(const char *path)$/;"	f
-read_file	src/bear_main.h	/^	OSFile (*read_file)	(const char *);$/;"	m	struct:PLT
-read_from_callbacks	src/stb_image.h	/^   int read_from_callbacks;$/;"	m	struct:__anon101
+read_file	src/bear_main.h	/^	OSFile (*read_file)	(string);$/;"	m	struct:PLT
+read_from_callbacks	src/stb_image.h	/^   int read_from_callbacks;$/;"	m	struct:__anon107
 readableByteChannelRef	inc/SDL2/SDL_rwops.h	/^            void *readableByteChannelRef;$/;"	m	struct:SDL_RWops::__anon70::__anon71
-realloc	src/bear_main.h	/^	void *(*realloc)(const char *, uint32, void *, uint64);$/;"	m	struct:PLT
+realloc	src/bear_main.h	/^	void *(*realloc)(string, uint32, void *, uint64);$/;"	m	struct:PLT
 realloc_	src/bear_memory.h	/^void *realloc_(const char *file_path, uint32 line, void *ptr, uint64 size)$/;"	f
 refcount	inc/SDL2/SDL_pixels.h	/^    int refcount;$/;"	m	struct:SDL_Palette
 refcount	inc/SDL2/SDL_pixels.h	/^    int refcount;$/;"	m	struct:SDL_PixelFormat
 refcount	inc/SDL2/SDL_surface.h	/^    int refcount;               \/**< Read-mostly *\/$/;"	m	struct:SDL_Surface
 refresh_rate	inc/SDL2/SDL_test_common.h	/^    int refresh_rate;$/;"	m	struct:__anon15
 refresh_rate	inc/SDL2/SDL_video.h	/^    int refresh_rate;           \/**< refresh rate (or zero for unspecified) *\/$/;"	m	struct:__anon44
-reg	src/_bak/input.h	/^    static void reg(std::string name, int key)$/;"	f	class:SK::Key
-released	src/_bak/input.h	/^    static bool released(std::string name) { return _state_map[name] == KEY_RELEASED; }$/;"	f	class:SK::Key
+reg	_bak/input.h	/^    static void reg(std::string name, int key)$/;"	f	class:SK::Key
+released	_bak/input.h	/^    static bool released(std::string name) { return _state_map[name] == KEY_RELEASED; }$/;"	f	class:SK::Key
 relimit	src/bear_array.h	/^void relimit(Array<T> *arr, uint64 limit)$/;"	f
 remove	src/bear_array.h	/^T remove(Array<T> *arr, uint64 index)$/;"	f
 remove_component	src/ecs/bear_ecs.cpp	/^bool remove_component(ECS *ecs, Entity *entity, ComponentType type)$/;"	f
@@ -21429,76 +21581,83 @@ remove_component	src/ecs/bear_ecs.cpp	/^bool remove_component(ECS *ecs, EntityID
 remove_components	src/ecs/bear_ecs.cpp	189;"	d	file:
 remove_components_	src/ecs/bear_ecs.cpp	/^void remove_components_(ECS *ecs, EntityID id, ...)$/;"	f
 remove_entity	src/ecs/bear_ecs.cpp	/^void remove_entity(ECS *ecs, EntityID id)$/;"	f
-remove_profile	src/_bak/renderer.h	/^	void remove_profile(string uniform_name, uint8 uniform_length)$/;"	f	namespace:Renderer
+remove_profile	_bak/renderer.h	/^	void remove_profile(string uniform_name, uint8 uniform_length)$/;"	f	namespace:Renderer
 remove_profile	src/gfx/bear_renderer.h	/^	void remove_profile(string uniform_name)$/;"	f	namespace:GFX
 render_flags	inc/SDL2/SDL_test_common.h	/^    Uint32 render_flags;$/;"	m	struct:__anon15
+renderable	src/bear_main.cpp	/^GFX::Renderable renderable;$/;"	v
 renderable	src/state/bear_test_state.h	/^	GFX::Renderable renderable;$/;"	m	namespace:GSTEST
 renderdriver	inc/SDL2/SDL_test_common.h	/^    const char *renderdriver;$/;"	m	struct:__anon15
 renderers	inc/SDL2/SDL_test_common.h	/^    SDL_Renderer **renderers;$/;"	m	struct:__anon15
 repeat	inc/SDL2/SDL_events.h	/^    Uint8 repeat;       \/**< Non-zero if this is a key repeat *\/$/;"	m	struct:SDL_KeyboardEvent
-resample	src/stb_image.h	/^   resample_row_func resample;$/;"	m	struct:__anon108
+resample	src/stb_image.h	/^   resample_row_func resample;$/;"	m	struct:__anon114
 resample_row_1	src/stb_image.h	/^static stbi_uc *resample_row_1(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
 resample_row_func	src/stb_image.h	/^typedef stbi_uc *(*resample_row_func)(stbi_uc *out, stbi_uc *in0, stbi_uc *in1,$/;"	t
-resample_row_hv_2_kernel	src/stb_image.h	/^   stbi_uc *(*resample_row_hv_2_kernel)(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs);$/;"	m	struct:__anon106
+resample_row_hv_2_kernel	src/stb_image.h	/^   stbi_uc *(*resample_row_hv_2_kernel)(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs);$/;"	m	struct:__anon112
 resolveFramebuffer	inc/SDL2/SDL_syswm.h	/^            GLuint resolveFramebuffer; \/**< The Framebuffer Object which holds the resolve color Renderbuffer, when MSAA is used. *\/$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon39
-restart_interval	src/stb_image.h	/^   int restart_interval, todo;$/;"	m	struct:__anon106
-rgb	src/stb_image.h	/^   int            rgb;$/;"	m	struct:__anon106
+restart_interval	src/stb_image.h	/^   int restart_interval, todo;$/;"	m	struct:__anon112
+rgb	src/stb_image.h	/^   int            rgb;$/;"	m	struct:__anon112
 riff	src/audio/bear_audio.cpp	/^	char  riff[4];$/;"	m	struct:WAVHeader	file:
 right_coeff	inc/SDL2/SDL_haptic.h	/^    Sint16 right_coeff[3];  \/**< How fast to increase the force towards the positive side. *\/$/;"	m	struct:SDL_HapticCondition
 right_sat	inc/SDL2/SDL_haptic.h	/^    Uint16 right_sat[3];    \/**< Level when joystick is to the positive side; max 0xFFFF. *\/$/;"	m	struct:SDL_HapticCondition
-rotation	src/_bak/transform.h	/^    glm::vec3 rotation = glm::vec3(0, 0, 0);$/;"	m	class:SK::Transform
+rot	src/math/bear_transform.h	/^	Quat rot;$/;"	m	struct:Transform
+rotate	src/math/bear_matrix.h	/^Mat4f rotate(Mat4f m, Quaternion q)$/;"	f
+rotation	_bak/transform.h	/^    glm::vec3 rotation = glm::vec3(0, 0, 0);$/;"	m	class:SK::Transform
 run_system	src/ecs/bear_ecs_init.cpp	/^void run_system(SystemType type_id, World *world, float32 delta)$/;"	f
 run_tests	src/bear_test.cpp	/^void run_tests()$/;"	f
 running	src/bear_main.h	/^	bool running;$/;"	m	struct:World
-s	src/stb_image.h	/^   stbi__context *s;$/;"	m	struct:__anon106
 s	src/stb_image.h	/^   stbi__context *s;$/;"	m	struct:__anon112
+s	src/stb_image.h	/^   stbi__context *s;$/;"	m	struct:__anon118
 s_hello_world	src/ecs/bear_ecs_init.cpp	/^void s_hello_world(World *world, float32 delta)$/;"	f
 sample_rate	src/audio/bear_audio.cpp	/^	int32 sample_rate;$/;"	m	struct:WAVHeader	file:
 sample_rate	src/audio/bear_audio.h	/^	uint16 sample_rate;$/;"	m	struct:AudioBuffer
 samples	inc/SDL2/SDL_audio.h	/^    Uint16 samples;             \/**< Audio buffer size in sample FRAMES (total samples divided by channel count) *\/$/;"	m	struct:SDL_AudioSpec
 samples	inc/SDL2/SDL_haptic.h	/^    Uint16 samples;         \/**< Amount of samples. *\/$/;"	m	struct:SDL_HapticCustom
+scale	_bak/transform.h	/^    glm::vec3 scale = glm::vec3(1, 1, 1);$/;"	m	class:SK::Transform
 scale	inc/SDL2/SDL_test_common.h	/^    float scale;$/;"	m	struct:__anon15
-scale	src/_bak/transform.h	/^    glm::vec3 scale = glm::vec3(1, 1, 1);$/;"	m	class:SK::Transform
-scale	src/physics/physics.h	/^	Vec3f scale;$/;"	m	struct:Transform
-scan_n	src/stb_image.h	/^   int scan_n, order[4];$/;"	m	struct:__anon106
+scale	src/math/bear_matrix.h	/^Mat4f scale(Mat4f m, Vec3f v)$/;"	f
+scale	src/math/bear_matrix.h	/^Mat4f scale(Mat4f m, float32 scalar)$/;"	f
+scale	src/math/bear_transform.h	/^	Vec3f scale;$/;"	m	struct:Transform
+scan_n	src/stb_image.h	/^   int scan_n, order[4];$/;"	m	struct:__anon112
 scancode	inc/SDL2/SDL_keyboard.h	/^    SDL_Scancode scancode;      \/**< SDL physical key code - see ::SDL_Scancode for details *\/$/;"	m	struct:SDL_Keysym
 seek	inc/SDL2/SDL_rwops.h	/^    Sint64 (SDLCALL * seek) (struct SDL_RWops * context, Sint64 offset,$/;"	m	struct:SDL_RWops
-sendM4	src/_bak/shaderprogram.cpp	/^void ShaderProgram::sendM4(const char* u_name, glm::mat4 m4)$/;"	f	class:ShaderProgram
-set	src/_bak/bear_array.cpp	/^T set(Array<T> *array, uint64 id, T element)$/;"	f
+sendM4	_bak/shaderprogram.cpp	/^void ShaderProgram::sendM4(const char* u_name, glm::mat4 m4)$/;"	f	class:ShaderProgram
+sendM4	src/gfx/bear_shader_program.h	/^	void sendM4(ShaderProgram program, string uniform_name, Mat4f m)$/;"	f	namespace:GFX
+send_profile	src/gfx/bear_renderer.h	/^	void send_profile(ShaderProgram program, MatrixProfile profile)$/;"	f	namespace:GFX
+set	_bak/bear_array.cpp	/^T set(Array<T> *array, uint64 id, T element)$/;"	f
 set	src/bear_array.h	/^T set(Array<T> arr, uint64 index, T val)$/;"	f
-setKeyState	src/_bak/input.h	/^    static void setKeyState(int key, int state)$/;"	f	class:SK::Key
+setKeyState	_bak/input.h	/^    static void setKeyState(int key, int state)$/;"	f	class:SK::Key
 shape	src/physics/physics.h	/^	Shape *shape;$/;"	m	struct:BodyComponent
 shell_surface	inc/SDL2/SDL_syswm.h	/^            struct wl_shell_surface *shell_surface; \/**< Wayland shell_surface (window manager handle) *\/$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon40	typeref:struct:SDL_SysWMinfo::__anon33::__anon40::wl_shell_surface
 should_run_tests	src/bear_test.cpp	/^bool should_run_tests = true;$/;"	v
 silence	inc/SDL2/SDL_audio.h	/^    Uint8 silence;              \/**< Audio buffer silence value (calculated) *\/$/;"	m	struct:SDL_AudioSpec
+size	_bak/bear_array.cpp	/^	uint32 size;$/;"	m	struct:Array	file:
+size	_bak/vertexarray.h	/^    unsigned int size;$/;"	m	struct:SK::VertexAttribute
 size	inc/SDL2/SDL_audio.h	/^    Uint32 size;                \/**< Audio buffer size in bytes (calculated) *\/$/;"	m	struct:SDL_AudioSpec
 size	inc/SDL2/SDL_rwops.h	/^            long size;$/;"	m	struct:SDL_RWops::__anon70::__anon71
 size	inc/SDL2/SDL_rwops.h	/^    Sint64 (SDLCALL * size) (struct SDL_RWops * context);$/;"	m	struct:SDL_RWops
-size	src/_bak/bear_array.cpp	/^	uint32 size;$/;"	m	struct:Array	file:
-size	src/_bak/vertexarray.h	/^    unsigned int size;$/;"	m	struct:SK::VertexAttribute
 size	src/audio/bear_audio.cpp	/^	int32 size;$/;"	m	struct:WAVChunk	file:
 size	src/audio/bear_audio.cpp	/^	int32 size;$/;"	m	struct:WAVHeader	file:
 size	src/bear_array.h	/^	uint64 size;	\/\/ current number of elements$/;"	m	struct:Array
 size	src/bear_array.h	/^uint64 size(Array<T> arr)$/;"	f
 size	src/bear_main.h	/^	uint64 size;$/;"	m	struct:OSFile
 size	src/gfx/bear_vertex_array.h	/^		uint32       size;$/;"	m	struct:GFX::VertexAttribute
-size	src/stb_image.h	/^   stbi_uc  size[257];$/;"	m	struct:__anon105
-size	src/stb_image.h	/^   stbi_uc  size[288];$/;"	m	struct:__anon109
-size	src/stb_image.h	/^   stbi_uc size,type,channel;$/;"	m	struct:__anon115
+size	src/stb_image.h	/^   stbi_uc  size[257];$/;"	m	struct:__anon111
+size	src/stb_image.h	/^   stbi_uc  size[288];$/;"	m	struct:__anon115
+size	src/stb_image.h	/^   stbi_uc size,type,channel;$/;"	m	struct:__anon121
 size_t	inc/SDL2/SDL_config_minimal.h	/^typedef unsigned int size_t;$/;"	t
 size_t	inc/SDL2/SDL_config_windows.h	/^typedef unsigned int size_t;$/;"	t
 size_t	inc/SDL2/SDL_config_winrt.h	/^typedef unsigned int size_t;$/;"	t
-skip	src/stb_image.h	/^   void     (*skip)  (void *user,int n);                 \/\/ skip the next 'n' bytes, or 'unget' the last -n bytes if negative$/;"	m	struct:__anon100
+skip	src/stb_image.h	/^   void     (*skip)  (void *user,int n);                 \/\/ skip the next 'n' bytes, or 'unget' the last -n bytes if negative$/;"	m	struct:__anon106
 skip_renderer	inc/SDL2/SDL_test_common.h	/^    SDL_bool skip_renderer;$/;"	m	struct:__anon15
 small_magnitude	inc/SDL2/SDL_haptic.h	/^    Uint16 small_magnitude; \/**< Control of the small controller motor. *\/$/;"	m	struct:SDL_HapticLeftRight
 sound	src/audio/bear_mixer.cpp	/^void sound(int16 *out_buffer, int32 num_samples)$/;"	f
-sound	src/bear_assets.h	/^		Sound sound;$/;"	m	union:Asset::__anon98
+sound	src/bear_assets.h	/^		Sound sound;$/;"	m	union:Asset::__anon104
 sound	src/bear_linux.cpp	/^	SoundFunc sound;$/;"	m	struct:GameHandle	file:
 sound	src/bear_windows.cpp	/^	SoundFunc sound;$/;"	m	struct:GameHandle	file:
 sources	src/audio/bear_audio.h	/^	AudioSource *sources;$/;"	m	struct:Audio
-spec_end	src/stb_image.h	/^   int            spec_end;$/;"	m	struct:__anon106
+spec_end	src/stb_image.h	/^   int            spec_end;$/;"	m	struct:__anon112
 spec_freq	src/audio/bear_audio.h	/^const uint32 spec_freq = 44100; \/\/ Move this.$/;"	v
-spec_start	src/stb_image.h	/^   int            spec_start;$/;"	m	struct:__anon106
+spec_start	src/stb_image.h	/^   int            spec_start;$/;"	m	struct:__anon112
 src	inc/SDL2/SDL_stdinc.h	/^SDL_FORCE_INLINE void *SDL_memcpy4(SDL_OUT_BYTECAP(dwords*4) void *dst, SDL_IN_BYTECAP(dwords*4) const void *src, size_t dwords)$/;"	v
 src	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC size_t SDLCALL SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);$/;"	v
 src	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);$/;"	v
@@ -21510,15 +21669,15 @@ src	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC void *SDLCALL SDL_memmove(SDL_OUT_BY
 src_format	inc/SDL2/SDL_audio.h	/^    SDL_AudioFormat src_format; \/**< Source audio format *\/$/;"	m	struct:SDL_AudioCVT
 start	inc/SDL2/SDL_events.h	/^    Sint32 start;                               \/**< The start cursor of selected editing text *\/$/;"	m	struct:SDL_TextEditingEvent
 start	inc/SDL2/SDL_haptic.h	/^    Sint16 start;           \/**< Beginning strength level. *\/$/;"	m	struct:SDL_HapticRamp
-start	src/physics/physics.h	/^			Vec3f start, end;$/;"	m	struct:Shape::__anon92::__anon95
-start_x	src/stb_image.h	/^   int start_x, start_y;$/;"	m	struct:__anon117
-start_y	src/stb_image.h	/^   int start_x, start_y;$/;"	m	struct:__anon117
+start	src/physics/physics.h	/^			Vec3f start, end;$/;"	m	struct:Shape::__anon1::__anon4
+start_x	src/stb_image.h	/^   int start_x, start_y;$/;"	m	struct:__anon123
+start_y	src/stb_image.h	/^   int start_x, start_y;$/;"	m	struct:__anon123
 state	inc/SDL2/SDL_events.h	/^    Uint32 state;       \/**< The current button state *\/$/;"	m	struct:SDL_MouseMotionEvent
 state	inc/SDL2/SDL_events.h	/^    Uint8 state;        \/**< ::SDL_PRESSED or ::SDL_RELEASED *\/$/;"	m	struct:SDL_ControllerButtonEvent
 state	inc/SDL2/SDL_events.h	/^    Uint8 state;        \/**< ::SDL_PRESSED or ::SDL_RELEASED *\/$/;"	m	struct:SDL_JoyButtonEvent
 state	inc/SDL2/SDL_events.h	/^    Uint8 state;        \/**< ::SDL_PRESSED or ::SDL_RELEASED *\/$/;"	m	struct:SDL_KeyboardEvent
 state	inc/SDL2/SDL_events.h	/^    Uint8 state;        \/**< ::SDL_PRESSED or ::SDL_RELEASED *\/$/;"	m	struct:SDL_MouseButtonEvent
-state	src/bear_main.h	/^	GameState state;$/;"	m	struct:World
+state	src/bear_input.h	/^	ButtonState state;$/;"	m	struct:Button
 stbi__DNL	src/stb_image.h	3084;"	d
 stbi__EOI	src/stb_image.h	3086;"	d
 stbi__SOF	src/stb_image.h	3087;"	d
@@ -21534,7 +21693,7 @@ stbi__bitcount	src/stb_image.h	/^static int stbi__bitcount(unsigned int a)$/;"	f
 stbi__bitreverse16	src/stb_image.h	/^stbi_inline static int stbi__bitreverse16(int n)$/;"	f
 stbi__blinn_8x8	src/stb_image.h	/^static stbi_uc stbi__blinn_8x8(stbi_uc x, stbi_uc y)$/;"	f
 stbi__bmask	src/stb_image.h	/^static const stbi__uint32 stbi__bmask[17]={0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535};$/;"	v
-stbi__bmp_data	src/stb_image.h	/^} stbi__bmp_data;$/;"	t	typeref:struct:__anon114
+stbi__bmp_data	src/stb_image.h	/^} stbi__bmp_data;$/;"	t	typeref:struct:__anon120
 stbi__bmp_info	src/stb_image.h	/^static int stbi__bmp_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
 stbi__bmp_load	src/stb_image.h	/^static void *stbi__bmp_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)$/;"	f
 stbi__bmp_parse_header	src/stb_image.h	/^static void *stbi__bmp_parse_header(stbi__context *s, stbi__bmp_data *info)$/;"	f
@@ -21550,7 +21709,7 @@ stbi__compute_transparency	src/stb_image.h	/^static int stbi__compute_transparen
 stbi__compute_transparency16	src/stb_image.h	/^static int stbi__compute_transparency16(stbi__png *z, stbi__uint16 tc[3], int out_n)$/;"	f
 stbi__compute_y	src/stb_image.h	/^static stbi_uc stbi__compute_y(int r, int g, int b)$/;"	f
 stbi__compute_y_16	src/stb_image.h	/^static stbi__uint16 stbi__compute_y_16(int r, int g, int b)$/;"	f
-stbi__context	src/stb_image.h	/^} stbi__context;$/;"	t	typeref:struct:__anon101
+stbi__context	src/stb_image.h	/^} stbi__context;$/;"	t	typeref:struct:__anon107
 stbi__convert_16_to_8	src/stb_image.h	/^static stbi_uc *stbi__convert_16_to_8(stbi__uint16 *orig, int w, int h, int channels)$/;"	f
 stbi__convert_8_to_16	src/stb_image.h	/^static stbi__uint16 *stbi__convert_8_to_16(stbi_uc *orig, int w, int h, int channels)$/;"	f
 stbi__convert_format	src/stb_image.h	/^static unsigned char *stbi__convert_format(unsigned char *data, int img_n, int req_comp, unsigned int x, unsigned int y)$/;"	f
@@ -21593,13 +21752,13 @@ stbi__get8	src/stb_image.h	/^stbi_inline static stbi_uc stbi__get8(stbi__context
 stbi__get_chunk_header	src/stb_image.h	/^static stbi__pngchunk stbi__get_chunk_header(stbi__context *s)$/;"	f
 stbi__get_marker	src/stb_image.h	/^static stbi_uc stbi__get_marker(stbi__jpeg *j)$/;"	f
 stbi__getn	src/stb_image.h	/^static int stbi__getn(stbi__context *s, stbi_uc *buffer, int n)$/;"	f
-stbi__gif	src/stb_image.h	/^} stbi__gif;$/;"	t	typeref:struct:__anon117
+stbi__gif	src/stb_image.h	/^} stbi__gif;$/;"	t	typeref:struct:__anon123
 stbi__gif_header	src/stb_image.h	/^static int stbi__gif_header(stbi__context *s, stbi__gif *g, int *comp, int is_info)$/;"	f
 stbi__gif_info	src/stb_image.h	/^static int stbi__gif_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
 stbi__gif_info_raw	src/stb_image.h	/^static int stbi__gif_info_raw(stbi__context *s, int *x, int *y, int *comp)$/;"	f
 stbi__gif_load	src/stb_image.h	/^static void *stbi__gif_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)$/;"	f
 stbi__gif_load_next	src/stb_image.h	/^static stbi_uc *stbi__gif_load_next(stbi__context *s, stbi__gif *g, int *comp, int req_comp, stbi_uc *two_back)$/;"	f
-stbi__gif_lzw	src/stb_image.h	/^} stbi__gif_lzw;$/;"	t	typeref:struct:__anon116
+stbi__gif_lzw	src/stb_image.h	/^} stbi__gif_lzw;$/;"	t	typeref:struct:__anon122
 stbi__gif_parse_colortable	src/stb_image.h	/^static void stbi__gif_parse_colortable(stbi__context *s, stbi_uc pal[256][4], int num_entries, int transp)$/;"	f
 stbi__gif_test	src/stb_image.h	/^static int stbi__gif_test(stbi__context *s)$/;"	f
 stbi__gif_test_raw	src/stb_image.h	/^static int stbi__gif_test_raw(stbi__context *s)$/;"	f
@@ -21614,7 +21773,7 @@ stbi__hdr_test	src/stb_image.h	/^static int stbi__hdr_test(stbi__context* s)$/;"
 stbi__hdr_test_core	src/stb_image.h	/^static int stbi__hdr_test_core(stbi__context *s, const char *signature)$/;"	f
 stbi__hdr_to_ldr	src/stb_image.h	/^static stbi_uc *stbi__hdr_to_ldr(float   *data, int x, int y, int comp)$/;"	f
 stbi__high_bit	src/stb_image.h	/^static int stbi__high_bit(unsigned int z)$/;"	f
-stbi__huffman	src/stb_image.h	/^} stbi__huffman;$/;"	t	typeref:struct:__anon105
+stbi__huffman	src/stb_image.h	/^} stbi__huffman;$/;"	t	typeref:struct:__anon111
 stbi__idct_block	src/stb_image.h	/^static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])$/;"	f
 stbi__idct_simd	src/stb_image.h	/^static void stbi__idct_simd(stbi_uc *out, int out_stride, short data[64])$/;"	f
 stbi__info_main	src/stb_image.h	/^static int stbi__info_main(stbi__context *s, int *x, int *y, int *comp)$/;"	f
@@ -21624,7 +21783,7 @@ stbi__int32	src/stb_image.h	/^typedef   signed int   stbi__int32;$/;"	t
 stbi__int32	src/stb_image.h	/^typedef int32_t  stbi__int32;$/;"	t
 stbi__is_16_main	src/stb_image.h	/^static int stbi__is_16_main(stbi__context *s)$/;"	f
 stbi__jbias	src/stb_image.h	/^static const int stbi__jbias[16] = {0,-1,-3,-7,-15,-31,-63,-127,-255,-511,-1023,-2047,-4095,-8191,-16383,-32767};$/;"	v
-stbi__jpeg	src/stb_image.h	/^} stbi__jpeg;$/;"	t	typeref:struct:__anon106
+stbi__jpeg	src/stb_image.h	/^} stbi__jpeg;$/;"	t	typeref:struct:__anon112
 stbi__jpeg_decode_block	src/stb_image.h	/^static int stbi__jpeg_decode_block(stbi__jpeg *j, short data[64], stbi__huffman *hdc, stbi__huffman *hac, stbi__int16 *fac, int b, stbi__uint16 *dequant)$/;"	f
 stbi__jpeg_decode_block_prog_ac	src/stb_image.h	/^static int stbi__jpeg_decode_block_prog_ac(stbi__jpeg *j, short data[64], stbi__huffman *hac, stbi__int16 *fac)$/;"	f
 stbi__jpeg_decode_block_prog_dc	src/stb_image.h	/^static int stbi__jpeg_decode_block_prog_dc(stbi__jpeg *j, short data[64], stbi__huffman *hdc, int b)$/;"	f
@@ -21667,16 +21826,16 @@ stbi__pic_info	src/stb_image.h	/^static int stbi__pic_info(stbi__context *s, int
 stbi__pic_is4	src/stb_image.h	/^static int stbi__pic_is4(stbi__context *s,const char *str)$/;"	f
 stbi__pic_load	src/stb_image.h	/^static void *stbi__pic_load(stbi__context *s,int *px,int *py,int *comp,int req_comp, stbi__result_info *ri)$/;"	f
 stbi__pic_load_core	src/stb_image.h	/^static stbi_uc *stbi__pic_load_core(stbi__context *s,int width,int height,int *comp, stbi_uc *result)$/;"	f
-stbi__pic_packet	src/stb_image.h	/^} stbi__pic_packet;$/;"	t	typeref:struct:__anon115
+stbi__pic_packet	src/stb_image.h	/^} stbi__pic_packet;$/;"	t	typeref:struct:__anon121
 stbi__pic_test	src/stb_image.h	/^static int stbi__pic_test(stbi__context *s)$/;"	f
 stbi__pic_test_core	src/stb_image.h	/^static int stbi__pic_test_core(stbi__context *s)$/;"	f
-stbi__png	src/stb_image.h	/^} stbi__png;$/;"	t	typeref:struct:__anon112
+stbi__png	src/stb_image.h	/^} stbi__png;$/;"	t	typeref:struct:__anon118
 stbi__png_info	src/stb_image.h	/^static int stbi__png_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
 stbi__png_info_raw	src/stb_image.h	/^static int stbi__png_info_raw(stbi__png *p, int *x, int *y, int *comp)$/;"	f
 stbi__png_is16	src/stb_image.h	/^static int stbi__png_is16(stbi__context *s)$/;"	f
 stbi__png_load	src/stb_image.h	/^static void *stbi__png_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)$/;"	f
 stbi__png_test	src/stb_image.h	/^static int stbi__png_test(stbi__context *s)$/;"	f
-stbi__pngchunk	src/stb_image.h	/^} stbi__pngchunk;$/;"	t	typeref:struct:__anon111
+stbi__pngchunk	src/stb_image.h	/^} stbi__pngchunk;$/;"	t	typeref:struct:__anon117
 stbi__pnm_getinteger	src/stb_image.h	/^static int      stbi__pnm_getinteger(stbi__context *s, char *c)$/;"	f
 stbi__pnm_info	src/stb_image.h	/^static int      stbi__pnm_info(stbi__context *s, int *x, int *y, int *comp)$/;"	f
 stbi__pnm_isdigit	src/stb_image.h	/^static int      stbi__pnm_isdigit(char c)$/;"	f
@@ -21695,13 +21854,13 @@ stbi__psd_load	src/stb_image.h	/^static void *stbi__psd_load(stbi__context *s, i
 stbi__psd_test	src/stb_image.h	/^static int stbi__psd_test(stbi__context *s)$/;"	f
 stbi__readval	src/stb_image.h	/^static stbi_uc *stbi__readval(stbi__context *s, int channel, stbi_uc *dest)$/;"	f
 stbi__refill_buffer	src/stb_image.h	/^static void stbi__refill_buffer(stbi__context *s)$/;"	f
-stbi__resample	src/stb_image.h	/^} stbi__resample;$/;"	t	typeref:struct:__anon108
+stbi__resample	src/stb_image.h	/^} stbi__resample;$/;"	t	typeref:struct:__anon114
 stbi__resample_row_generic	src/stb_image.h	/^static stbi_uc *stbi__resample_row_generic(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
 stbi__resample_row_h_2	src/stb_image.h	/^static stbi_uc*  stbi__resample_row_h_2(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
 stbi__resample_row_hv_2	src/stb_image.h	/^static stbi_uc *stbi__resample_row_hv_2(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
 stbi__resample_row_hv_2_simd	src/stb_image.h	/^static stbi_uc *stbi__resample_row_hv_2_simd(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
 stbi__resample_row_v_2	src/stb_image.h	/^static stbi_uc* stbi__resample_row_v_2(stbi_uc *out, stbi_uc *in_near, stbi_uc *in_far, int w, int hs)$/;"	f
-stbi__result_info	src/stb_image.h	/^} stbi__result_info;$/;"	t	typeref:struct:__anon103
+stbi__result_info	src/stb_image.h	/^} stbi__result_info;$/;"	t	typeref:struct:__anon109
 stbi__rewind	src/stb_image.h	/^static void stbi__rewind(stbi__context *s)$/;"	f
 stbi__setup_jpeg	src/stb_image.h	/^static void stbi__setup_jpeg(stbi__jpeg *j)$/;"	f
 stbi__shiftsigned	src/stb_image.h	/^static int stbi__shiftsigned(int v, int shift, int bits)$/;"	f
@@ -21727,7 +21886,7 @@ stbi__unpremultiply_on_load	src/stb_image.h	/^static int stbi__unpremultiply_on_
 stbi__vertical_flip	src/stb_image.h	/^static void stbi__vertical_flip(void *image, int w, int h, int bytes_per_pixel)$/;"	f
 stbi__vertical_flip_slices	src/stb_image.h	/^static void stbi__vertical_flip_slices(void *image, int w, int h, int z, int bytes_per_pixel)$/;"	f
 stbi__vertically_flip_on_load	src/stb_image.h	/^static int stbi__vertically_flip_on_load = 0;$/;"	v
-stbi__zbuf	src/stb_image.h	/^} stbi__zbuf;$/;"	t	typeref:struct:__anon110
+stbi__zbuf	src/stb_image.h	/^} stbi__zbuf;$/;"	t	typeref:struct:__anon116
 stbi__zbuild_huffman	src/stb_image.h	/^static int stbi__zbuild_huffman(stbi__zhuffman *z, const stbi_uc *sizelist, int num)$/;"	f
 stbi__zdefault_distance	src/stb_image.h	/^static const stbi_uc stbi__zdefault_distance[32] =$/;"	v
 stbi__zdefault_length	src/stb_image.h	/^static const stbi_uc stbi__zdefault_length[288] =$/;"	v
@@ -21735,7 +21894,7 @@ stbi__zdist_base	src/stb_image.h	/^static const int stbi__zdist_base[32] = { 1,2
 stbi__zdist_extra	src/stb_image.h	/^static const int stbi__zdist_extra[32] =$/;"	v
 stbi__zexpand	src/stb_image.h	/^static int stbi__zexpand(stbi__zbuf *z, char *zout, int n)  \/\/ need to make room for n bytes$/;"	f
 stbi__zget8	src/stb_image.h	/^stbi_inline static stbi_uc stbi__zget8(stbi__zbuf *z)$/;"	f
-stbi__zhuffman	src/stb_image.h	/^} stbi__zhuffman;$/;"	t	typeref:struct:__anon109
+stbi__zhuffman	src/stb_image.h	/^} stbi__zhuffman;$/;"	t	typeref:struct:__anon115
 stbi__zhuffman_decode	src/stb_image.h	/^stbi_inline static int stbi__zhuffman_decode(stbi__zbuf *a, stbi__zhuffman *z)$/;"	f
 stbi__zhuffman_decode_slowpath	src/stb_image.h	/^static int stbi__zhuffman_decode_slowpath(stbi__zbuf *a, stbi__zhuffman *z)$/;"	f
 stbi__zlength_base	src/stb_image.h	/^static const int stbi__zlength_base[31] = {$/;"	v
@@ -21753,7 +21912,7 @@ stbi_info_from_memory	src/stb_image.h	/^STBIDEF int stbi_info_from_memory(stbi_u
 stbi_inline	src/stb_image.h	531;"	d
 stbi_inline	src/stb_image.h	533;"	d
 stbi_inline	src/stb_image.h	536;"	d
-stbi_io_callbacks	src/stb_image.h	/^} stbi_io_callbacks;$/;"	t	typeref:struct:__anon100
+stbi_io_callbacks	src/stb_image.h	/^} stbi_io_callbacks;$/;"	t	typeref:struct:__anon106
 stbi_is_16_bit	src/stb_image.h	/^STBIDEF int stbi_is_16_bit(char const *filename)$/;"	f
 stbi_is_16_bit_from_callbacks	src/stb_image.h	/^STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *c, void *user)$/;"	f
 stbi_is_16_bit_from_file	src/stb_image.h	/^STBIDEF int stbi_is_16_bit_from_file(FILE *f)$/;"	f
@@ -21793,17 +21952,17 @@ stdio	inc/SDL2/SDL_rwops.h	/^        } stdio;$/;"	m	union:SDL_RWops::__anon70	ty
 step	src/bear_linux.cpp	/^	StepFunc  step;$/;"	m	struct:GameHandle	file:
 step	src/bear_main.cpp	/^void step(World *_world, float32 delta)$/;"	f
 step	src/bear_windows.cpp	/^	StepFunc step;$/;"	m	struct:GameHandle	file:
-step	src/stb_image.h	/^   int parse, step;$/;"	m	struct:__anon117
+step	src/stb_image.h	/^   int parse, step;$/;"	m	struct:__anon123
 stop	inc/SDL2/SDL_rwops.h	/^            Uint8 *stop;$/;"	m	struct:SDL_RWops::__anon70::__anon73
 stop_audio	src/audio/bear_audio.cpp	/^void stop_audio(Audio *audio, AudioID id)$/;"	f
-stride	src/_bak/vertexarray.h	/^    int stride         = 0;$/;"	m	struct:SK::VertexAttribute
+stride	_bak/vertexarray.h	/^    int stride         = 0;$/;"	m	struct:SK::VertexAttribute
 stride	src/gfx/bear_vertex_array.h	/^		int32        stride;$/;"	m	struct:GFX::VertexAttribute
 string	src/bear_types.h	/^typedef const char *string;$/;"	t
 subsystem	inc/SDL2/SDL_syswm.h	/^    SDL_SYSWM_TYPE subsystem;$/;"	m	struct:SDL_SysWMinfo
 subsystem	inc/SDL2/SDL_syswm.h	/^    SDL_SYSWM_TYPE subsystem;$/;"	m	struct:SDL_SysWMmsg
-succ_high	src/stb_image.h	/^   int            succ_high;$/;"	m	struct:__anon106
-succ_low	src/stb_image.h	/^   int            succ_low;$/;"	m	struct:__anon106
-suffix	src/stb_image.h	/^   stbi_uc suffix;$/;"	m	struct:__anon116
+succ_high	src/stb_image.h	/^   int            succ_high;$/;"	m	struct:__anon112
+succ_low	src/stb_image.h	/^   int            succ_low;$/;"	m	struct:__anon112
+suffix	src/stb_image.h	/^   stbi_uc suffix;$/;"	m	struct:__anon122
 support	src/physics/physics.h	/^SupportResult support(Vec3f direction, Shape shape)$/;"	f
 surface	inc/SDL2/SDL_syswm.h	/^            EGLSurface surface;$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon42
 surface	inc/SDL2/SDL_syswm.h	/^            IDirectFBSurface *surface;  \/**< The directfb client surface *\/$/;"	m	struct:SDL_SysWMinfo::__anon33::__anon37
@@ -21825,8 +21984,8 @@ text	inc/SDL2/SDL_events.h	/^    char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];  \/**<
 text	inc/SDL2/SDL_messagebox.h	/^    const char * text;  \/**< The UTF-8 button text *\/$/;"	m	struct:__anon55
 text	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ... ) SDL_PRINTF_VARARG_FUNC(3);$/;"	v
 text	inc/SDL2/SDL_stdinc.h	/^extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap);$/;"	v
-texture	src/_bak/renderer.h	/^		Texture             *texture;$/;"	m	struct:Renderer::Renderable
-texture	src/bear_assets.h	/^		Texture texture;$/;"	m	union:Asset::__anon98
+texture	_bak/renderer.h	/^		Texture             *texture;$/;"	m	struct:Renderer::Renderable
+texture	src/bear_assets.h	/^		Texture texture;$/;"	m	union:Asset::__anon104
 texture_formats	inc/SDL2/SDL_render.h	/^    Uint32 texture_formats[16]; \/**< The available texture formats *\/$/;"	m	struct:SDL_RendererInfo
 tfinger	inc/SDL2/SDL_events.h	/^    SDL_TouchFingerEvent tfinger;   \/**< Touch finger event data *\/$/;"	m	union:SDL_Event
 time	src/bear_main.h	/^	float64 time;$/;"	m	struct:CLK
@@ -21857,23 +22016,37 @@ timestamp	inc/SDL2/SDL_events.h	/^    Uint32 timestamp;   \/**< In milliseconds,
 timestamp	inc/SDL2/SDL_events.h	/^    Uint32 timestamp;   \/**< In milliseconds, populated using SDL_GetTicks() *\/$/;"	m	struct:SDL_WindowEvent
 timestamp	src/bear_main.h	/^	int32 timestamp;$/;"	m	struct:OSFile
 title	inc/SDL2/SDL_messagebox.h	/^    const char *title;                  \/**< UTF-8 title *\/$/;"	m	struct:__anon59
-toMat4	src/math/bear_quaternion.h	/^Mat4 toMat4(Q q)$/;"	f
-toQ	src/math/bear_quaternion.h	/^Q toQ(float32 pitch, float32 roll, float32 yaw)$/;"	f
+toMat4f	src/math/bear_matrix.h	/^Mat4f toMat4f(Q q)$/;"	f
+toMat4f	src/math/bear_transform.h	/^Mat4f toMat4f(Camera c)$/;"	f
+toMat4f	src/math/bear_transform.h	/^Mat4f toMat4f(Transform t)$/;"	f
+toQ	src/math/bear_quaternion.h	/^Q toQ(float32 roll, float32 pitch, float32 yaw)$/;"	f
+toVec2f	bear_vector_sk.h	/^Vec2f toVec2f(Vec3f v)$/;"	f
+toVec2f	bear_vector_sk.h	/^Vec2f toVec2f(Vec4f v)$/;"	f
 toVec2f	src/math/bear_vector.h	/^Vec2f toVec2f(Vec3f v)$/;"	f
 toVec2f	src/math/bear_vector.h	/^Vec2f toVec2f(Vec4f v)$/;"	f
+toVec3f	bear_vector_sk.h	/^Vec3f toVec3f(Vec2f v)$/;"	f
+toVec3f	bear_vector_sk.h	/^Vec3f toVec3f(Vec4f v)$/;"	f
 toVec3f	src/math/bear_vector.h	/^Vec3f toVec3f(Vec2f v)$/;"	f
 toVec3f	src/math/bear_vector.h	/^Vec3f toVec3f(Vec4f v)$/;"	f
+toVec4f	bear_vector_sk.h	/^Vec4f toVec4f(Vec2f v)$/;"	f
+toVec4f	bear_vector_sk.h	/^Vec4f toVec4f(Vec3f v)$/;"	f
 toVec4f	src/math/bear_vector.h	/^Vec4f toVec4f(Vec2f v)$/;"	f
 toVec4f	src/math/bear_vector.h	/^Vec4f toVec4f(Vec3f v)$/;"	f
-todo	src/stb_image.h	/^   int restart_interval, todo;$/;"	m	struct:__anon106
+todo	src/stb_image.h	/^   int restart_interval, todo;$/;"	m	struct:__anon112
 total_tests	src/bear_test.cpp	/^int total_tests = 0;$/;"	v
 touchId	inc/SDL2/SDL_events.h	/^    SDL_TouchID touchId; \/**< The touch device id *\/$/;"	m	struct:SDL_DollarGestureEvent
 touchId	inc/SDL2/SDL_events.h	/^    SDL_TouchID touchId; \/**< The touch device id *\/$/;"	m	struct:SDL_MultiGestureEvent
 touchId	inc/SDL2/SDL_events.h	/^    SDL_TouchID touchId; \/**< The touch device id *\/$/;"	m	struct:SDL_TouchFingerEvent
-tq	src/stb_image.h	/^      int tq;$/;"	m	struct:__anon106::__anon107
-transform	src/_bak/renderer.h	/^		Transform           *transform;$/;"	m	struct:Renderer::MatrixProfile
-transparent	src/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon117
+tq	src/stb_image.h	/^      int tq;$/;"	m	struct:__anon112::__anon113
+transform	_bak/renderer.h	/^		Transform           *transform;$/;"	m	struct:Renderer::MatrixProfile
+transform	src/bear_main.cpp	/^Transform transform = create_transform();$/;"	v
+transform	src/gfx/bear_renderer.h	/^		Transform           *transform;$/;"	m	struct:GFX::MatrixProfile
+transform	src/math/bear_transform.h	/^	Transform transform;$/;"	m	struct:Camera
+translate	src/math/bear_matrix.h	/^Mat4f translate(Mat4f m, Vec3f v)$/;"	f
+transparent	src/stb_image.h	/^   int flags, bgindex, ratio, transparent, eflags;$/;"	m	struct:__anon123
 trigger_count	inc/SDL2/SDL_assert.h	/^    unsigned int trigger_count;$/;"	m	struct:SDL_AssertData
+type	_bak/shaderprogram.h	/^    unsigned int type;$/;"	m	struct:SK::Shader
+type	_bak/vertexarray.h	/^    unsigned int type;$/;"	m	struct:SK::VertexAttribute
 type	inc/SDL2/SDL_events.h	/^    Uint32 type;                                \/**< ::SDL_TEXTEDITING *\/$/;"	m	struct:SDL_TextEditingEvent
 type	inc/SDL2/SDL_events.h	/^    Uint32 type;                              \/**< ::SDL_TEXTINPUT *\/$/;"	m	struct:SDL_TextInputEvent
 type	inc/SDL2/SDL_events.h	/^    Uint32 type;                    \/**< Event type, shared with all events *\/$/;"	m	union:SDL_Event
@@ -21909,14 +22082,15 @@ type	inc/SDL2/SDL_haptic.h	/^    Uint16 type;            \/**< ::SDL_HAPTIC_SPRI
 type	inc/SDL2/SDL_haptic.h	/^    Uint16 type;        \/**< ::SDL_HAPTIC_SINE, ::SDL_HAPTIC_LEFTRIGHT,$/;"	m	struct:SDL_HapticPeriodic
 type	inc/SDL2/SDL_haptic.h	/^    Uint8 type;         \/**< The type of encoding. *\/$/;"	m	struct:SDL_HapticDirection
 type	inc/SDL2/SDL_rwops.h	/^    Uint32 type;$/;"	m	struct:SDL_RWops
-type	src/_bak/shaderprogram.h	/^    unsigned int type;$/;"	m	struct:SK::Shader
-type	src/_bak/vertexarray.h	/^    unsigned int type;$/;"	m	struct:SK::VertexAttribute
 type	src/audio/bear_audio.cpp	/^	char  type[4];$/;"	m	struct:WAVChunk	file:
 type	src/bear_assets.h	/^	AssetType type;$/;"	m	struct:Asset
+type	src/bear_input.h	/^		InputType type;$/;"	m	struct:Axis::Binding
+type	src/bear_input.h	/^		InputType type;$/;"	m	struct:Button::Binding
 type	src/ecs/bear_ecs.h	/^	ComponentType type;$/;"	m	struct:BaseComponent
+type	src/gfx/bear_shader_program.h	/^		uint32 type;$/;"	m	struct:GFX::ShaderInfo
 type	src/gfx/bear_vertex_array.h	/^		uint32       type;$/;"	m	struct:GFX::VertexAttribute
-type	src/stb_image.h	/^   stbi__uint32 type;$/;"	m	struct:__anon111
-type	src/stb_image.h	/^   stbi_uc size,type,channel;$/;"	m	struct:__anon115
+type	src/stb_image.h	/^   stbi__uint32 type;$/;"	m	struct:__anon117
+type	src/stb_image.h	/^   stbi_uc size,type,channel;$/;"	m	struct:__anon121
 uid	src/audio/bear_audio.h	/^	int16 uid;$/;"	m	struct:AudioID
 uid	src/ecs/bear_ecs.h	/^	int32 uid;$/;"	m	struct:EntityID
 uid_counter	src/audio/bear_audio.h	/^	int16 uid_counter;$/;"	m	struct:Audio
@@ -21961,22 +22135,23 @@ uintptr_t	inc/SDL2/SDL_config_windows.h	/^typedef unsigned __int64 uintptr_t;$/;
 uintptr_t	inc/SDL2/SDL_config_windows.h	/^typedef unsigned int uintptr_t;$/;"	t
 uintptr_t	inc/SDL2/SDL_config_winrt.h	/^typedef unsigned __int64 uintptr_t;$/;"	t
 uintptr_t	inc/SDL2/SDL_config_winrt.h	/^typedef unsigned int uintptr_t;$/;"	t
-uniform_length	src/_bak/renderer.h	/^		uint8                uniform_length;$/;"	m	struct:Renderer::MatrixProfile
-uniform_length	src/gfx/bear_renderer.h	/^		uint8                uniform_length;$/;"	m	struct:GFX::MatrixProfile
-uniform_name	src/_bak/renderer.h	/^		string               uniform_name;$/;"	m	struct:Renderer::MatrixProfile
+uniform_length	_bak/renderer.h	/^		uint8                uniform_length;$/;"	m	struct:Renderer::MatrixProfile
+uniform_location	src/gfx/bear_shader_program.h	/^	int32 uniform_location(ShaderProgram program, string uniform_name)$/;"	f	namespace:GFX
+uniform_name	_bak/renderer.h	/^		string               uniform_name;$/;"	m	struct:Renderer::MatrixProfile
 uniform_name	src/gfx/bear_renderer.h	/^		string               uniform_name;$/;"	m	struct:GFX::MatrixProfile
 unknown	inc/SDL2/SDL_rwops.h	/^        } unknown;$/;"	m	union:SDL_RWops::__anon70	typeref:struct:SDL_RWops::__anon70::__anon74
 unused	inc/SDL2/SDL_keyboard.h	/^    Uint32 unused;$/;"	m	struct:SDL_Keysym
-up	src/_bak/input.h	/^    static bool up(std::string name) { return _state_map[name] == KEY_UP || released(name); }$/;"	f	class:SK::Key
-update	src/_bak/input.h	/^    static void update()$/;"	f	class:SK::Key
-update	src/bear_main.h	/^	void (*update)(float32);$/;"	m	struct:GameState
+up	_bak/input.h	/^    static bool up(std::string name) { return _state_map[name] == KEY_UP || released(name); }$/;"	f	class:SK::Key
+update	_bak/input.h	/^    static void update()$/;"	f	class:SK::Key
+update	src/bear_main.cpp	/^void update(float32 delta)$/;"	f
 update	src/state/bear_test_state.h	/^	void update(float32 delta)$/;"	f	namespace:GSTEST
+update_input	src/bear_input.h	/^void update_input()$/;"	f
 update_physics	src/physics/physics.h	/^void update_physics(Physics *engine, float32 delta)$/;"	f
 user	inc/SDL2/SDL_events.h	/^    SDL_UserEvent user;             \/**< Custom event data *\/$/;"	m	union:SDL_Event
 userdata	inc/SDL2/SDL_audio.h	/^    void *userdata;             \/**< Userdata passed to callback (ignored for NULL callbacks). *\/$/;"	m	struct:SDL_AudioSpec
 userdata	inc/SDL2/SDL_surface.h	/^    void *userdata;             \/**< Read-write *\/$/;"	m	struct:SDL_Surface
 uvs	src/bear_obj_loader.cpp	/^	Array<Vec2f> uvs;$/;"	m	struct:Mesh	file:
-v	src/stb_image.h	/^      int h,v;$/;"	m	struct:__anon106::__anon107
+v	src/stb_image.h	/^      int h,v;$/;"	m	struct:__anon112::__anon113
 valid	src/bear_obj_loader.cpp	/^	bool valid;$/;"	m	struct:Mesh	file:
 validate_uint32	src/stb_image.h	/^typedef unsigned char validate_uint32[sizeof(stbi__uint32)==4 ? 1 : -1];$/;"	t
 value	inc/SDL2/SDL_atomic.h	/^typedef struct { int value; } SDL_atomic_t;$/;"	m	struct:__anon87
@@ -21984,32 +22159,36 @@ value	inc/SDL2/SDL_events.h	/^    Sint16 value;       \/**< The axis value (rang
 value	inc/SDL2/SDL_events.h	/^    Sint16 value;       \/**< The axis value (range: -32768 to 32767) *\/$/;"	m	struct:SDL_JoyAxisEvent
 value	inc/SDL2/SDL_events.h	/^    Uint8 value;        \/**< The hat position value.$/;"	m	struct:SDL_JoyHatEvent
 value	inc/SDL2/SDL_gamecontroller.h	/^    } value;$/;"	m	struct:SDL_GameControllerButtonBind	typeref:union:SDL_GameControllerButtonBind::__anon81
-value	src/stb_image.h	/^   stbi__uint16 value[288];$/;"	m	struct:__anon109
-values	src/stb_image.h	/^   stbi_uc  values[256];$/;"	m	struct:__anon105
-vbo	src/_bak/vertexarray.h	/^    VertexBuffer* vbo;$/;"	m	struct:SK::VertexAttribute
+value	src/bear_input.h	/^	AxisValue value;$/;"	m	struct:Axis
+value	src/stb_image.h	/^   stbi__uint16 value[288];$/;"	m	struct:__anon115
+values	src/stb_image.h	/^   stbi_uc  values[256];$/;"	m	struct:__anon111
+vbo	_bak/vertexarray.h	/^    VertexBuffer* vbo;$/;"	m	struct:SK::VertexAttribute
 verbose	inc/SDL2/SDL_test_common.h	/^    Uint32 verbose;$/;"	m	struct:__anon15
 version	inc/SDL2/SDL_pixels.h	/^    Uint32 version;$/;"	m	struct:SDL_Palette
 version	inc/SDL2/SDL_syswm.h	/^    SDL_version version;$/;"	m	struct:SDL_SysWMinfo
 version	inc/SDL2/SDL_syswm.h	/^    SDL_version version;$/;"	m	struct:SDL_SysWMmsg
-vertex_array	src/_bak/renderer.h	/^		VertexArray         *vertex_array;$/;"	m	struct:Renderer::Renderable
+vertex_array	_bak/renderer.h	/^		VertexArray         *vertex_array;$/;"	m	struct:Renderer::Renderable
+vertex_array	src/bear_main.cpp	/^GFX::VertexArray vertex_array;$/;"	v
 vertex_array	src/gfx/bear_renderer.h	/^		VertexArray          vertex_array;$/;"	m	struct:GFX::Renderable
 vertex_array	src/state/bear_test_state.h	/^	GFX::VertexArray vertex_array;$/;"	m	namespace:GSTEST
+vertex_buffer	src/bear_main.cpp	/^GFX::VertexBuffer vertex_buffer;$/;"	v
 vertex_buffer	src/gfx/bear_vertex_array.h	/^		VertexBuffer vertex_buffer;$/;"	m	struct:GFX::VertexAttribute
 vertex_buffer	src/state/bear_test_state.h	/^	GFX::VertexBuffer vertex_buffer;$/;"	m	namespace:GSTEST
 videodriver	inc/SDL2/SDL_test_common.h	/^    const char *videodriver;$/;"	m	struct:__anon15
 vivante	inc/SDL2/SDL_syswm.h	/^        } vivante;$/;"	m	union:SDL_SysWMinfo::__anon33	typeref:struct:SDL_SysWMinfo::__anon33::__anon43
 vivante	inc/SDL2/SDL_syswm.h	/^        } vivante;$/;"	m	union:SDL_SysWMmsg::__anon26	typeref:struct:SDL_SysWMmsg::__anon26::__anon32
 volume	src/audio/bear_audio.h	/^	float32 volume; \/\/ We do some fading.$/;"	m	struct:AudioSource
-vs	src/stb_image.h	/^   int hs,vs;   \/\/ expansion factor in each axis$/;"	m	struct:__anon108
+vs	src/stb_image.h	/^   int hs,vs;   \/\/ expansion factor in each axis$/;"	m	struct:__anon114
+w	bear_vector_sk.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon96::__anon97
 w	inc/SDL2/SDL_rect.h	/^    int w, h;$/;"	m	struct:SDL_Rect
 w	inc/SDL2/SDL_surface.h	/^    int w, h;                   \/**< Read-only *\/$/;"	m	struct:SDL_Surface
 w	inc/SDL2/SDL_video.h	/^    int w;                      \/**< width, in screen coordinates *\/$/;"	m	struct:__anon44
-w	src/math/bear_quaternion.h	/^			float32 x, y, z, w;$/;"	m	struct:Q::__anon126::__anon127
-w	src/math/bear_vector.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon124::__anon125
-w	src/stb_image.h	/^   int w,h;$/;"	m	struct:__anon117
-w2	src/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon106::__anon107
+w	src/math/bear_quaternion.h	/^			float32 x, y, z, w;$/;"	m	struct:Q::__anon137::__anon138
+w	src/math/bear_vector.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon135::__anon136
+w	src/stb_image.h	/^   int w,h;$/;"	m	struct:__anon123
+w2	src/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon112::__anon113
 wParam	inc/SDL2/SDL_syswm.h	/^            WPARAM wParam;              \/**< WORD message parameter *\/$/;"	m	struct:SDL_SysWMmsg::__anon26::__anon27
-w_lores	src/stb_image.h	/^   int w_lores; \/\/ horizontal pixels pre-expansion$/;"	m	struct:__anon108
+w_lores	src/stb_image.h	/^   int w_lores; \/\/ horizontal pixels pre-expansion$/;"	m	struct:__anon114
 wave	src/audio/bear_audio.cpp	/^	char  wave[4];$/;"	m	struct:WAVHeader	file:
 wheel	inc/SDL2/SDL_events.h	/^    SDL_MouseWheelEvent wheel;      \/**< Mouse wheel event data *\/$/;"	m	union:SDL_Event
 which	inc/SDL2/SDL_events.h	/^    SDL_JoystickID which; \/**< The joystick instance id *\/$/;"	m	struct:SDL_ControllerAxisEvent
@@ -22026,7 +22205,7 @@ which	inc/SDL2/SDL_events.h	/^    Uint32 which;       \/**< The mouse instance i
 which	inc/SDL2/SDL_events.h	/^    Uint32 which;       \/**< The mouse instance id, or SDL_TOUCH_MOUSEID *\/$/;"	m	struct:SDL_MouseWheelEvent
 width	inc/SDL2/SDL_test_images.h	/^  int width;$/;"	m	struct:SDLTest_SurfaceImage_s
 width	src/bear_image_loader.cpp	/^	int32 width, height;$/;"	m	struct:Image	file:
-width	src/physics/physics.h	/^			float32 width, height, depth;$/;"	m	struct:Shape::__anon92::__anon94
+width	src/physics/physics.h	/^			float32 width, height, depth;$/;"	m	struct:Shape::__anon1::__anon3
 win	inc/SDL2/SDL_syswm.h	/^        } win;$/;"	m	union:SDL_SysWMinfo::__anon33	typeref:struct:SDL_SysWMinfo::__anon33::__anon34
 win	inc/SDL2/SDL_syswm.h	/^        } win;$/;"	m	union:SDL_SysWMmsg::__anon26	typeref:struct:SDL_SysWMmsg::__anon26::__anon27
 win_printf	src/bear_windows.cpp	/^int32 win_printf(const char *format, ...)$/;"	f
@@ -22068,6 +22247,9 @@ world	src/bear_main_plt.h	/^World world;$/;"	v
 write	inc/SDL2/SDL_rwops.h	/^    size_t (SDLCALL * write) (struct SDL_RWops * context, const void *ptr,$/;"	m	struct:SDL_RWops
 write_component	src/ecs/bear_ecs.cpp	/^static void write_component(const ECSEntry entry, const int32 to_index, const BaseComponent *comp)$/;"	f	file:
 write_component	src/ecs/bear_ecs.cpp	/^static void write_component(const ECSEntry entry, const int32 to_index, const int32 from_index)$/;"	f	file:
+x	bear_vector_sk.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon96::__anon97
+x	bear_vector_sk.h	/^			float32 x, y, z;$/;"	m	struct:Vec3f::__anon94::__anon95
+x	bear_vector_sk.h	/^			float32 x, y;$/;"	m	struct:Vec2f::__anon92::__anon93
 x	inc/SDL2/SDL_events.h	/^    Sint32 x;           \/**< The amount scrolled horizontally, positive to the right and negative to the left *\/$/;"	m	struct:SDL_MouseWheelEvent
 x	inc/SDL2/SDL_events.h	/^    Sint32 x;           \/**< X coordinate, relative to window *\/$/;"	m	struct:SDL_MouseButtonEvent
 x	inc/SDL2/SDL_events.h	/^    Sint32 x;           \/**< X coordinate, relative to window *\/$/;"	m	struct:SDL_MouseMotionEvent
@@ -22078,15 +22260,18 @@ x	inc/SDL2/SDL_rect.h	/^    int x, y;$/;"	m	struct:SDL_Rect
 x	inc/SDL2/SDL_rect.h	/^    int x;$/;"	m	struct:SDL_Point
 x	inc/SDL2/SDL_test_random.h	/^    unsigned int x;$/;"	m	struct:__anon66
 x	inc/SDL2/SDL_touch.h	/^    float x;$/;"	m	struct:SDL_Finger
-x	src/math/bear_quaternion.h	/^			float32 x, y, z, w;$/;"	m	struct:Q::__anon126::__anon127
-x	src/math/bear_vector.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon124::__anon125
-x	src/math/bear_vector.h	/^			float32 x, y, z;$/;"	m	struct:Vec3f::__anon122::__anon123
-x	src/math/bear_vector.h	/^			float32 x, y;$/;"	m	struct:Vec2f::__anon120::__anon121
-x	src/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon106::__anon107
+x	src/math/bear_quaternion.h	/^			float32 x, y, z, w;$/;"	m	struct:Q::__anon137::__anon138
+x	src/math/bear_vector.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon135::__anon136
+x	src/math/bear_vector.h	/^			float32 x, y, z;$/;"	m	struct:Vec3f::__anon133::__anon134
+x	src/math/bear_vector.h	/^			float32 x, y;$/;"	m	struct:Vec2f::__anon131::__anon132
+x	src/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon112::__anon113
 x11	inc/SDL2/SDL_syswm.h	/^        } x11;$/;"	m	union:SDL_SysWMinfo::__anon33	typeref:struct:SDL_SysWMinfo::__anon33::__anon36
 x11	inc/SDL2/SDL_syswm.h	/^        } x11;$/;"	m	union:SDL_SysWMmsg::__anon26	typeref:struct:SDL_SysWMmsg::__anon26::__anon28
 xrel	inc/SDL2/SDL_events.h	/^    Sint16 xrel;        \/**< The relative motion in the X direction *\/$/;"	m	struct:SDL_JoyBallEvent
 xrel	inc/SDL2/SDL_events.h	/^    Sint32 xrel;        \/**< The relative motion in the X direction *\/$/;"	m	struct:SDL_MouseMotionEvent
+y	bear_vector_sk.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon96::__anon97
+y	bear_vector_sk.h	/^			float32 x, y, z;$/;"	m	struct:Vec3f::__anon94::__anon95
+y	bear_vector_sk.h	/^			float32 x, y;$/;"	m	struct:Vec2f::__anon92::__anon93
 y	inc/SDL2/SDL_events.h	/^    Sint32 y;           \/**< The amount scrolled vertically, positive away from the user and negative toward the user *\/$/;"	m	struct:SDL_MouseWheelEvent
 y	inc/SDL2/SDL_events.h	/^    Sint32 y;           \/**< Y coordinate, relative to window *\/$/;"	m	struct:SDL_MouseButtonEvent
 y	inc/SDL2/SDL_events.h	/^    Sint32 y;           \/**< Y coordinate, relative to window *\/$/;"	m	struct:SDL_MouseMotionEvent
@@ -22096,29 +22281,31 @@ y	inc/SDL2/SDL_events.h	/^    float y;$/;"	m	struct:SDL_MultiGestureEvent
 y	inc/SDL2/SDL_rect.h	/^    int x, y;$/;"	m	struct:SDL_Rect
 y	inc/SDL2/SDL_rect.h	/^    int y;$/;"	m	struct:SDL_Point
 y	inc/SDL2/SDL_touch.h	/^    float y;$/;"	m	struct:SDL_Finger
-y	src/math/bear_quaternion.h	/^			float32 x, y, z, w;$/;"	m	struct:Q::__anon126::__anon127
-y	src/math/bear_vector.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon124::__anon125
-y	src/math/bear_vector.h	/^			float32 x, y, z;$/;"	m	struct:Vec3f::__anon122::__anon123
-y	src/math/bear_vector.h	/^			float32 x, y;$/;"	m	struct:Vec2f::__anon120::__anon121
-y	src/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon106::__anon107
-ypos	src/stb_image.h	/^   int ypos;    \/\/ which pre-expansion row we're on$/;"	m	struct:__anon108
+y	src/math/bear_quaternion.h	/^			float32 x, y, z, w;$/;"	m	struct:Q::__anon137::__anon138
+y	src/math/bear_vector.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon135::__anon136
+y	src/math/bear_vector.h	/^			float32 x, y, z;$/;"	m	struct:Vec3f::__anon133::__anon134
+y	src/math/bear_vector.h	/^			float32 x, y;$/;"	m	struct:Vec2f::__anon131::__anon132
+y	src/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon112::__anon113
+ypos	src/stb_image.h	/^   int ypos;    \/\/ which pre-expansion row we're on$/;"	m	struct:__anon114
 yrel	inc/SDL2/SDL_events.h	/^    Sint16 yrel;        \/**< The relative motion in the Y direction *\/$/;"	m	struct:SDL_JoyBallEvent
 yrel	inc/SDL2/SDL_events.h	/^    Sint32 yrel;        \/**< The relative motion in the Y direction *\/$/;"	m	struct:SDL_MouseMotionEvent
-ystep	src/stb_image.h	/^   int ystep;   \/\/ how far through vertical expansion we are$/;"	m	struct:__anon108
-z	src/math/bear_quaternion.h	/^			float32 x, y, z, w;$/;"	m	struct:Q::__anon126::__anon127
-z	src/math/bear_vector.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon124::__anon125
-z	src/math/bear_vector.h	/^			float32 x, y, z;$/;"	m	struct:Vec3f::__anon122::__anon123
-z_distance	src/stb_image.h	/^   stbi__zhuffman z_length, z_distance;$/;"	m	struct:__anon110
-z_expandable	src/stb_image.h	/^   int   z_expandable;$/;"	m	struct:__anon110
-z_length	src/stb_image.h	/^   stbi__zhuffman z_length, z_distance;$/;"	m	struct:__anon110
-zbuffer	src/stb_image.h	/^   stbi_uc *zbuffer, *zbuffer_end;$/;"	m	struct:__anon110
-zbuffer_end	src/stb_image.h	/^   stbi_uc *zbuffer, *zbuffer_end;$/;"	m	struct:__anon110
-zero_transform	src/math/bear_matrix.h	/^Mat4 zero_transform(Mat4 m)$/;"	f
-zout	src/stb_image.h	/^   char *zout;$/;"	m	struct:__anon110
-zout_end	src/stb_image.h	/^   char *zout_end;$/;"	m	struct:__anon110
-zout_start	src/stb_image.h	/^   char *zout_start;$/;"	m	struct:__anon110
-~IndexBuffer	src/_bak/indexbuffer.cpp	/^IndexBuffer::~IndexBuffer()$/;"	f	class:IndexBuffer
-~ShaderProgram	src/_bak/shaderprogram.cpp	/^ShaderProgram::~ShaderProgram()$/;"	f	class:ShaderProgram
-~Texture	src/_bak/texture.cpp	/^Texture::~Texture()$/;"	f	class:Texture
-~VertexArray	src/_bak/vertexarray.cpp	/^VertexArray::~VertexArray()$/;"	f	class:VertexArray
-~VertexBuffer	src/_bak/vertexbuffer.cpp	/^VertexBuffer::~VertexBuffer()$/;"	f	class:VertexBuffer
+ystep	src/stb_image.h	/^   int ystep;   \/\/ how far through vertical expansion we are$/;"	m	struct:__anon114
+z	bear_vector_sk.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon96::__anon97
+z	bear_vector_sk.h	/^			float32 x, y, z;$/;"	m	struct:Vec3f::__anon94::__anon95
+z	src/math/bear_quaternion.h	/^			float32 x, y, z, w;$/;"	m	struct:Q::__anon137::__anon138
+z	src/math/bear_vector.h	/^			float32 x, y, z, w;$/;"	m	struct:Vec4f::__anon135::__anon136
+z	src/math/bear_vector.h	/^			float32 x, y, z;$/;"	m	struct:Vec3f::__anon133::__anon134
+z_distance	src/stb_image.h	/^   stbi__zhuffman z_length, z_distance;$/;"	m	struct:__anon116
+z_expandable	src/stb_image.h	/^   int   z_expandable;$/;"	m	struct:__anon116
+z_length	src/stb_image.h	/^   stbi__zhuffman z_length, z_distance;$/;"	m	struct:__anon116
+zbuffer	src/stb_image.h	/^   stbi_uc *zbuffer, *zbuffer_end;$/;"	m	struct:__anon116
+zbuffer_end	src/stb_image.h	/^   stbi_uc *zbuffer, *zbuffer_end;$/;"	m	struct:__anon116
+zero_transform	src/math/bear_matrix.h	/^Mat4f zero_transform(Mat4f m)$/;"	f
+zout	src/stb_image.h	/^   char *zout;$/;"	m	struct:__anon116
+zout_end	src/stb_image.h	/^   char *zout_end;$/;"	m	struct:__anon116
+zout_start	src/stb_image.h	/^   char *zout_start;$/;"	m	struct:__anon116
+~IndexBuffer	_bak/indexbuffer.cpp	/^IndexBuffer::~IndexBuffer()$/;"	f	class:IndexBuffer
+~ShaderProgram	_bak/shaderprogram.cpp	/^ShaderProgram::~ShaderProgram()$/;"	f	class:ShaderProgram
+~Texture	_bak/texture.cpp	/^Texture::~Texture()$/;"	f	class:Texture
+~VertexArray	_bak/vertexarray.cpp	/^VertexArray::~VertexArray()$/;"	f	class:VertexArray
+~VertexBuffer	_bak/vertexbuffer.cpp	/^VertexBuffer::~VertexBuffer()$/;"	f	class:VertexBuffer

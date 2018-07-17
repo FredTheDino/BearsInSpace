@@ -21,13 +21,6 @@ enum ShapeID
 	SHAPE_MESH,
 };
 
-struct Transform
-{
-	Vec3f position;
-	Vec3f scale;
-	Quat  orientation;
-};
-
 struct Shape
 {
 	ShapeID id;
@@ -88,7 +81,7 @@ SupportResult minkowski_sum(Vec3f direction,
 		Shape a_shape, Transform a_trans, 
 		Shape b_shape, Transform b_trans)
 {
-
+	return {};
 }
 
 struct BodyComponent
@@ -103,5 +96,6 @@ void update_physics(Physics *engine, float32 delta)
 {
 	Shape sphere = make_sphere(16.0f);
 	SupportResult result = support({0.0f, 1.0f, 1.0f}, sphere);
-	PRINT("STEP!");
+	result = {};
+	//PRINT("STEP!");
 }

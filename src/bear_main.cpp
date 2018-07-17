@@ -23,9 +23,6 @@
 #include "audio/bear_audio.cpp"
 #include "audio/bear_mixer.cpp"
 
-// States
-#include "bear_states.h"
-
 // ECS
 #include "ecs/bear_ecs.cpp"
 
@@ -35,12 +32,18 @@
 // Tests
 #include "bear_test.cpp"
 
+GFX::Renderable renderable;
+GFX::VertexBuffer vertex_buffer;
+GFX::VertexArray vertex_array;
+GFX::ShaderProgram program;
+Transform transform = create_transform();
+Camera camera = create_camera(create_perspective_projection(M_PI / 2, ASPECT_RATIO, .01f, 100.0f));
 
-#if 0
+#if 1
 void update(float32 delta)
 {
-	// Temporary test code.
 #if 0
+	// Temporary test code.
 	EntityID entity = add_entity(&world->ecs);
 	Position comp;
 	comp.type = C_POSITION;
@@ -83,10 +86,22 @@ void update(float32 delta)
 	}
 #endif
 
+	transform.rot *= toQ(0, 0, 0.01f);
+
+	if (B_PRESSED("jump"))
+		transform.pos.y += .25f;
+	else if (B_RELEASED("jump"))
+		transform.pos.y -= .25f;
+	transform.pos.x += AXIS_VAL("tiltx") * .03f;
+	transform.pos.y -= AXIS_VAL("tilty") * .03f;
 }
 
 void draw()
 {
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	
+	GFX::draw(renderable);
 }
 #endif
 
@@ -101,46 +116,69 @@ void step(World *_world, float32 delta)
 		gladLoadGL();
 	}
 
+	update_physics(NULL, 0.0f);
+
 	if (should_run_tests)
 	{
 		run_tests();
-#if 0
+#if 1
 		// Test code.
 		Mesh mesh = load_mesh("res/monkey.obj");
 		free_mesh(mesh);
+
+
+		GFX::init_matrix_profiles();
+		
+		// Shader program
+		Array<GFX::ShaderInfo> shader_info = {
+			{ GL_VERTEX_SHADER, "src/shader/simple.vert" },
+			{ GL_FRAGMENT_SHADER, "src/shader/simple.frag" }
+		};
+
+		program = GFX::create_shader_program(shader_info);
+		delete_array(&shader_info);
+		
+		// Vertex buffer
+		Array<float32> data = {
+			.0f, .5f,
+			.5f, -.5f,
+			-.5f, -.5f
+		};
+		
+		vertex_buffer = GFX::create_vertex_buffer(data);
+		delete_array(&data);
+		
+		// Vertex array
+		Array<GFX::VertexAttribute> attributes = { { vertex_buffer, 0, 2, GL_FLOAT } };
+		vertex_array = GFX::create_vertex_array(attributes);
+		delete_array(&attributes);
+
+		// Renderable
+		renderable.vertex_array = vertex_array;
+		renderable.num_vertices = 3;
+		renderable.program = program;
+		
+		// Model matrix
+		renderable.matrix_profiles = create_array<GFX::MatrixProfile>(1);
+		GFX::MatrixProfile transform_profile = {};
+		transform_profile.uniform_name = "m_model";
+		transform_profile.transform = &transform;
+		
+		append(&renderable.matrix_profiles, transform_profile);
+
+		// View matrix
+		GFX::add_matrix_profile("m_view", &camera);
+		camera.transform.pos.z = 1;
 #endif
 	}
 
-	update_physics(NULL, 0.0f);
-
-	// Enter first state
-	if (!is_valid_state(world->state))
-		world->next_state = test_state;
-	
-	// Enter new state
-	if (is_valid_state(world->next_state))
-	{
-		// Call exit function on old state
-		if (is_valid_state(world->state))
-			world->state.exit();
-		// Set next state as current
-		world->state = world->next_state;
-		world->next_state = {};
-		world->state.enter();
-	}
-
-	// Update
-	world->state.update(delta);
-	
 	// Draw
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	world->state.draw();
-
 	
-	//update(delta);
-	//draw();
+	update(delta);
+	draw();
 }
 
 

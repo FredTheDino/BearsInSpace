@@ -1,11 +1,16 @@
 #pragma once
 #include <stdlib.h>
 #include <stdio.h>
+#include <cstring>
 #include "glad.h"
 
 #include "bear_types.h"
 #include "audio/bear_audio.h"
 #include "ecs/bear_ecs.h"
+
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGHT 600
+#define ASPECT_RATIO ((float32) WINDOW_WIDTH) / WINDOW_HEIGHT
 
 struct OSFile
 {
@@ -14,18 +19,28 @@ struct OSFile
 	void *data;
 };
 
+typedef float64 AxisValue;
+
+enum ButtonState
+{
+	UP = 1, DOWN = 2, PRESSED = 4, RELEASED = 8
+};
+
 struct PLT
 {
-	void *(*malloc)	(const char *, uint32, uint64);
+	void *(*malloc)	(string, uint32, uint64);
 	void  (*free)	(void *);
-	void *(*realloc)(const char *, uint32, void *, uint64);
+	void *(*realloc)(string, uint32, void *, uint64);
 
-	void  (*log)	(const char *, int32, const char *, const char *);
-	int   (*print)	(const char *, ...); 
+	void  (*log)	(string, int32, string, string);
+	int32 (*print)	(string, ...); 
 
-	OSFile (*read_file)	(const char *);
+	OSFile (*read_file)	(string);
 	void (*free_file)	(OSFile);
-	int32 (*last_write) (const char *);
+	int32 (*last_write) (string);
+
+	AxisValue (*axis_value) (string);
+	ButtonState (*button_state) (string);
 };
 
 struct CLK
@@ -41,23 +56,6 @@ struct MemoryAllocation
 	void *ptr;
 };
 
-struct GameState
-{
-	void (*enter)();
-	void (*update)(float32);
-	void (*draw)();
-	void (*exit)();
-};
-
-inline bool is_valid_state(GameState state)
-{
-	bool result = state.enter  != nullptr
-		&& state.update != nullptr
-		&& state.draw   != nullptr
-		&& state.exit   != nullptr;
-	return result;
-}
-
 struct World
 {
 	struct Input
@@ -68,11 +66,6 @@ struct World
 	// A clock for timing.
 	CLK clk;
 
-	// Current game state
-	GameState state;
-	// If valid, the current state will be changed before next frame
-	GameState next_state;
-	
 	// Platform functions.
 	PLT plt;
 
@@ -105,3 +98,5 @@ struct World
 
 #include "ecs/bear_ecs_init.cpp"
 
+#include "bear_array.h"
+#include "bear_input.h"

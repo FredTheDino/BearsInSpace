@@ -30,8 +30,14 @@ T lerp(T a, T b, float32 l)
 	return a * l + b * (1.0f - l);
 }
 
-#include "bear_vector.h"
-#include "bear_matrix.h"
-#include "bear_quaternion.h"
+template <typename T>
+T clamp(T min, T max, T v)
+{
+	return maximum(min, minimum(max, v));
+}
 
+#include "bear_vector.h"
+#include "bear_quaternion.h"
+#include "bear_matrix.h"
+#include "bear_transform.h"
 
