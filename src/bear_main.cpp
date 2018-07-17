@@ -36,11 +36,11 @@ GFX::ShaderProgram program;
 Transform transform = create_transform();
 Camera camera = create_camera(create_perspective_projection(M_PI / 2, ASPECT_RATIO, .01f, 100.0f));
 
-#if 0
+#if 1
 void update(float32 delta)
 {
-	// Temporary test code.
 #if 0
+	// Temporary test code.
 	EntityID entity = add_entity(&world->ecs);
 	Position comp;
 	comp.type = C_POSITION;
@@ -83,8 +83,6 @@ void update(float32 delta)
 	}
 #endif
 
-<<<<<<< HEAD
-=======
 	transform.rot *= toQ(0, 0, 0.01f);
 
 	if (B_PRESSED("jump"))
@@ -93,18 +91,14 @@ void update(float32 delta)
 		transform.pos.y -= .25f;
 	transform.pos.x += AXIS_VAL("tiltx") * .03f;
 	transform.pos.y -= AXIS_VAL("tilty") * .03f;
->>>>>>> sk
 }
 
 void draw()
 {
-<<<<<<< HEAD
-=======
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	GFX::draw(renderable);
->>>>>>> sk
 }
 #endif
 
@@ -122,7 +116,7 @@ void step(World *_world, float32 delta)
 	if (should_run_tests)
 	{
 		run_tests();
-#if 0
+#if 1
 		// Test code.
 		Mesh mesh = load_mesh("res/monkey.obj");
 		free_mesh(mesh);
@@ -130,10 +124,6 @@ void step(World *_world, float32 delta)
 
 		GFX::init_matrix_profiles();
 		
-		//TODO: REMOVE REST OF THIS IF-STATEMENT
-		Mesh mesh = load_mesh("res/monkey.obj");
-		free_mesh(mesh);
-
 		// Shader program
 		Array<GFX::ShaderInfo> shader_info = {
 			{ GL_VERTEX_SHADER, "src/shader/simple.vert" },
@@ -182,8 +172,8 @@ void step(World *_world, float32 delta)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	
-	//update(delta);
-	//draw();
+	update(delta);
+	draw();
 }
 
 
