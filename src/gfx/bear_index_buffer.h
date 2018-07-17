@@ -23,7 +23,7 @@ namespace GFX
 
 	void bind(IndexBuffer buffer)
 	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.id);
 	}
 
 	void delete_index_buffer(IndexBuffer buffer)

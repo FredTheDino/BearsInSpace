@@ -208,8 +208,8 @@ int CALLBACK WinMain(
 			"Space Bears",
 			SDL_WINDOWPOS_UNDEFINED,
 			SDL_WINDOWPOS_UNDEFINED,
-			400,
-			300,
+			WINDOW_WIDTH,
+			WINDOW_HEIGHT,
 			SDL_WINDOW_OPENGL
 			);
 
@@ -249,9 +249,12 @@ int CALLBACK WinMain(
 	}
 
 	SDL_PauseAudioDevice(audio_device, 0);
+
+	init_input();
 	
 	DEBUG_LOG("Windows launch!");
 
+<<<<<<< HEAD
 	world.running = true;
 
 	LARGE_INTEGER counter_frequency = counter_frequency;
@@ -262,11 +265,16 @@ int CALLBACK WinMain(
 	QueryPerformanceCounter(&start);
 	QueryPerformanceCounter(&last_counter);
 	while (world.running)
+=======
+	bool running = true;
+	while (running)
+>>>>>>> sk
 	{
 		
 
 		load_libbear(&game);
 
+		update_input();
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -274,13 +282,17 @@ int CALLBACK WinMain(
 			{
 				world.running = false;
 			}
+<<<<<<< HEAD
 			if (event.type == SDL_KEYDOWN)
 			{
 				world.input.jump = true;
 			}
 			if (event.type == SDL_KEYUP)
+=======
+			else
+>>>>>>> sk
 			{
-				world.input.jump = false;
+				handle_input_event(false);
 			}
 		}
 		
@@ -295,7 +307,9 @@ int CALLBACK WinMain(
 		world.clk.delta = (float64) delta_counter / (float64) counter_frequency.QuadPart;
 		world.clk.time = (float64) (counter.QuadPart - start.QuadPart) / (float64) counter_frequency.QuadPart;
 	}
-	world.state.exit();
+
+	destroy_input();
+	
 	SDL_CloseAudio();
 	SDL_DestroyMutex(game.lock);
 	SDL_Quit();

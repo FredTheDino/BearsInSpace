@@ -27,6 +27,22 @@ struct Q
 		return {x - q.x, y - q.y, z - q.z, w - q.w};
 	}
 
+	void operator+= (Q q)
+	{
+		x += q.x;
+		y += q.y;
+		z += q.z;
+		w += q.w;
+	}
+
+	void operator-= (Q q)
+	{
+		x -= q.x;
+		y -= q.y;
+		z -= q.z;
+		w -= q.w;
+	}
+
 	Q operator* (float32 s)
 	{
 		return 
@@ -37,7 +53,7 @@ struct Q
 			w * s
 		};
 	}
-
+	
 	Q operator/ (float32 s)
 	{
 		float32 d = 1.0f / s;
@@ -48,11 +64,16 @@ struct Q
 	{
 		return 
 		{
-			w * o.x + x * o.w - y * o.z - z * o.y,
-			w * o.y + y * o.w - z * o.x - x * o.z,
-			w * o.z - z * o.w - x * o.y - y * o.x,
-			w * o.w - x * o.x - y * o.y - z * o.z
+			x * o.x - y * o.y - z * o.z - w * o.w,
+			y * o.x + x * o.y - w * o.z + z * o.w,
+			z * o.x + w * o.y + x * o.z - y * o.w,
+			w * o.x - z * o.y + y * o.z + x * o.w
 		};
+	}
+
+	void operator*= (Q o)
+	{
+		*this = (*this) * (o);
 	}
 };
 
@@ -84,33 +105,7 @@ Q lerp(Q q1, Q q2, float32 lerp)
 	return q1 * lerp + (q2 * (1.0f - lerp));
 }
 
-Mat4 toMat4(Q q)
-{
-	return
-	{
-		1.0f - 2.0f * q.y * q.y - 2 * q.z * q.z, 
-		2.0f * q.x * q.y - 2.0f * q.z * q.w, 
-		2.0f * q.x * q.z + 2.0f * q.y * q.w,
-		0.0f,
-
-		2.0f * q.x * q.y + 2.0f * q.z * q.w, 
-		1.0f - 2.0f * q.x * q.x - 2 * q.z * q.z, 
-		2.0f * q.y * q.z - 2.0f * q.x * q.w,
-		0.0f,
-
-		2.0f * q.x * q.z - 2.0f * q.y * q.w, 
-		2.0f * q.y * q.z + 2.0f * q.x * q.w,
-		1.0f - 2.0f * q.x * q.x - 2 * q.y * q.y, 
-		0.0f,
-
-		0.0f,
-		0.0f,
-		0.0f,
-		1.0f,
-	};
-};
-
-Q toQ(float32 pitch, float32 roll, float32 yaw)
+Q toQ(float32 roll, float32 pitch, float32 yaw)
 {
 	float32 cy = cos(yaw   * 0.5);
 	float32 sy = sin(yaw   * 0.5);
@@ -121,10 +116,9 @@ Q toQ(float32 pitch, float32 roll, float32 yaw)
 	
 	return
 	{
+		cy * cr * cp + sy * sr * sp,
 		cy * sr * cp - sy * cr * sp,
 		cy * cr * sp + sy * sr * cp,
-		sy * cr * cp - cy * sr * sp,
-		cy * cr * cp + sy * sr * sp
+		sy * cr * cp - cy * sr * sp
 	};
 }
-
