@@ -26,6 +26,9 @@
 // ECS
 #include "ecs/bear_ecs.cpp"
 
+// Physics
+#include "physics/physics.h"
+
 // Tests
 #include "bear_test.cpp"
 
@@ -112,6 +115,8 @@ void step(World *_world, float32 delta)
 	{
 		gladLoadGL();
 	}
+
+	update_physics(NULL, 0.0f);
 
 	if (should_run_tests)
 	{
