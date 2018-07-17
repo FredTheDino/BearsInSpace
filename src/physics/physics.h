@@ -17,6 +17,7 @@ enum ShapeID
 	SHAPE_BOX,
 	SHAPE_LINE,
 	SHAPE_POINT,
+	SHAPE_SUM,
 
 	SHAPE_MESH,
 };
@@ -24,6 +25,7 @@ enum ShapeID
 struct Shape
 {
 	ShapeID id;
+	Transform transform;
 	union
 	{
 		struct // Sphear
@@ -42,8 +44,22 @@ struct Shape
 		{
 			Vec3f point;
 		};
+		struct // Sum
+		{
+			Shape *a;
+			Shape *b;
+		};
+		// Mesh
+		Array<Vec3f> points;
 	};
-	Array<Vec3f> points;
+};
+
+// I don't think we'll need more than 2 layers of shapes.
+struct MinkowskiShape
+{
+	ShapeID 
+	Shape a;
+	Shape b;
 };
 
 Shape make_sphere(float32 radius)
@@ -59,28 +75,39 @@ struct SupportResult
 	Vec3f point;
 };
 
-SupportResult support(Vec3f direction, Shape shape)
+Vec3f support(Vec3f direction, Shape shape, Transform transform)
 {
 	SupportResult result;
+	Vec3f point;
 	switch (shape.id)
 	{
 		case (SHAPE_SPHERE):
-			result.length = shape.radius;
-			result.point = normalized(direction) * shape.radius;
+			point = normalized(direction) * shape.radius;
+			point = point * transform.rot;
 			break;
 		default:
 			PRINT("[PHYSICS] Unsupported shapeid %d\n", shape.id);
-			result.length = -1.0f;
-			result.point = {};
+			point = {};
 			break;
 	};
-	return(result);
+	return point;
 }
 
-SupportResult minkowski_sum(Vec3f direction, 
-		Shape a_shape, Transform a_trans, 
-		Shape b_shape, Transform b_trans)
+struct Overlap
 {
+	float32 penetration;
+	Vec3f normal;
+};
+
+SupportResult minkowski_sum(Vec3f inital_direction, 
+		Shape a_shape,
+		Shape b_shape)
+{
+	// TODO: Transforms that aren't just positions.
+	Vec3f direction = inital_direction;
+	Vec3f a = support(direction, a_shape).point + 
+
+
 	return {};
 }
 
