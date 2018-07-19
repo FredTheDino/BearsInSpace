@@ -36,6 +36,16 @@ T clamp(T min, T max, T v)
 	return maximum(min, minimum(max, v));
 }
 
+template <typename T>
+int32 sign(T n)
+{
+	if (n < 0)
+		return -1;
+	if (n > 0)
+		return 1;
+	return 0;
+}
+
 #include "bear_vector.h"
 #include "bear_quaternion.h"
 #include "bear_matrix.h"

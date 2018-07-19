@@ -128,7 +128,8 @@ struct Vec3f
 	Vec3f operator/ (float32 scaler)
 	{
 		float32 divisor = 1.0f / scaler;
-		return {x * divisor, y * divisor, z * divisor};
+		Vec3f result = {x * divisor, y * divisor, z * divisor};
+		return result;
 	}
 
 	void operator+= (Vec3f other)

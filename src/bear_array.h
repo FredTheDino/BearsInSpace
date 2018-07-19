@@ -144,6 +144,12 @@ T remove(Array<T> *arr, uint64 index)
 }
 
 template <typename T>
+void clear(Array<T> *arr)
+{
+	arr->size = 0;
+}
+
+template <typename T>
 void delete_array(Array<T> *arr)
 {
 	if (arr->data)
