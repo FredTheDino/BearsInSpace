@@ -155,4 +155,9 @@ namespace GFX
 	{
 		glUniformMatrix4fv(uniform_location(program, uniform_name), 1, GL_TRUE, data_ptr(m));
 	}
+
+	void send3f(ShaderProgram program, string uniform_name, Vec3f v)
+	{
+		glUniform3f(uniform_location(program, uniform_name), v.x, v.y, v.z);
+	}
 }
