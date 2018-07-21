@@ -1,3 +1,5 @@
+#pragma once
+
 bool should_run_tests = true;
 int passed_tests = 0;
 int total_tests = 0;

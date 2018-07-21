@@ -1,23 +1,36 @@
-// Exists just here.
+// This file is compileda on each platform.
+// This file should _NOT HAVE ANY_ platform specific code,
+// that code should be placed on the platform layer.
 
-#define GL_LOADED glClear
 
 #define BEAR_GAME
 #include "bear_main.h"
+
+// Misc
+#include "bear_array.h"
+
+// Math
 #include "math/bear_math.h"
-#include "bear_obj_loader.cpp"
+
+// GFX
 #include "glad.c"
+#include "bear_obj_loader.cpp"
 
 #include "bear_gfx.h"
+#define GL_LOADED glClear
 
+// Audio
+#include "audio/bear_audio.cpp"
+#include "audio/bear_mixer.cpp"
+
+// ECS
+#include "ecs/bear_ecs.cpp"
+
+// Physics
+#include "physics/physics.h"
+
+// Tests
 #include "bear_test.cpp"
-
-// This file is included in each platform specific file. 
-// This file should _NOT HAVE ANY_ platform specific code.
-
-// TODO: This is temporary. We shouldn't rely on printf 
-// since windows dosn't allow it when not running a console 
-// application.
 
 GFX::Renderable renderable;
 GFX::VertexBuffer vertex_buffer;
@@ -29,18 +42,57 @@ Camera camera = create_camera(create_perspective_projection(M_PI / 2, ASPECT_RAT
 
 float32 rotx = 0;
 float32 roty = 0;
-float32 speed = .1f;
+float32 speed = 6.0f;
 
+#if 1
 void update(float32 delta)
 {
+#if 0
+	// Temporary test code.
+	EntityID entity = add_entity(&world->ecs);
+	Position comp;
+	comp.type = C_POSITION;
+	comp.position = {1.0f, 2.0f, 3.0f};
 
-	if (should_run_tests)
+	Blargh blarg;
+	blarg.type = C_BLARGH;
+	blarg.a = 32;
+	blarg.b = 11111111;
+
+	add_components(&world->ecs, entity, &comp, &blarg);
+
+	EntityID entity2 = add_entity(&world->ecs);
+	add_component(&world->ecs, entity2, C_BLARGH, (BaseComponent *) &blarg);
+
+	remove_entity(&world->ecs, entity);
+	remove_entity(&world->ecs, entity2);
+
+	run_system(S_HELLO_WORLD, world, delta);
+
+	id = load_sound(&world->audio, "res/smack.wav");
+	stockhousen = load_sound(&world->audio, "res/stockhausen.wav");
+	play_music(&world->audio, stockhousen, 1.0f, 1.0f, true);
+	world->audio.left = {-1.0f, 0.0f, 0.0f};
+	world->audio.position = { (float32) sin(t / 2.0f), 0.0f, 2.0f};
+	t += delta;
+
+	static bool pressed_jump = false;
+	if (world->input.jump)
 	{
-		run_tests();
+		if (!pressed_jump)
+		{
+			pressed_jump = true;
+			play_sound(&world->audio, id, 0.5f, 0.5f);
+		}
 	}
+	else
+	{
+		pressed_jump = false;
+	}
+#endif
 
-	float32 rx = AXIS_VAL("xrot") * .03f;
-	float32 ry = AXIS_VAL("yrot") * .03f;
+	float32 rx = AXIS_VAL("xrot") * 3.0f * delta;
+	float32 ry = AXIS_VAL("yrot") * 3.0f * delta;
 
 	if (rx || ry)
 	{
@@ -48,15 +100,15 @@ void update(float32 delta)
 		roty -= ry;
 		camera.transform.rot = toQ(roty, rotx, 0);
 	}
-	float32 dx = AXIS_VAL("xmove") * speed;
-	float32 dz = AXIS_VAL("zmove") * speed;
+	float32 dx = AXIS_VAL("xmove") * speed * delta;
+	float32 dz = AXIS_VAL("zmove") * speed * delta;
 	if (dx || dz)
 	{
 		camera.transform.pos.x += dx * cos(-rotx) - dz * sin(-rotx);
 		camera.transform.pos.z += dz * cos(-rotx) + dx * sin(-rotx);
 	}
 
-	camera.transform.pos.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed;
+	camera.transform.pos.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
 }
 
 void draw()
@@ -70,6 +122,7 @@ void draw()
 	GFX::debug_draw_line({ .0f, 1.0f, .0f }, { .0f, 2.0f, .0f }, { 1.0f, .0f, .0f });
 	GFX::debug_draw_point({ .0f, 2.5f, .0f }, { .0f, 1.0f, .0f });
 }
+#endif
 
 extern "C"
 void step(World *_world, float32 delta)
@@ -87,10 +140,18 @@ void step(World *_world, float32 delta)
 
 		GFX::init_debug();
 		
+	}
 		//TODO: REMOVE REST OF THIS IF-STATEMENT
+	update_physics(NULL, 0.0f);
+
+	if (should_run_tests)
+	{
+		run_tests();
+#if 1
+		// Test code.
 		Mesh mesh = load_mesh("res/monkey.obj");
 		free_mesh(mesh);
-
+		
 		// Shader program
 		Array<GFX::ShaderInfo> shader_info = {
 			{ GL_VERTEX_SHADER, "src/shader/simple.vert" },
@@ -150,30 +211,16 @@ void step(World *_world, float32 delta)
 		// View matrix
 		GFX::add_matrix_profile("m_view", &camera);
 		camera.transform.pos.z = 1;
+#endif
 	}
+
+	// Draw
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
 	
 	update(delta);
 	draw();
-}
-
-#define PI 3.1419f
-
-uint32 spec_freq = 44100;
-float32 t = 0;
-
-extern "C"
-void sound(float32 *buffer, int32 num_samples)
-{
-	while (num_samples)
-	{
-		float32 sample = sin(t * 2 * 442 * PI);
-		sample = 0.0f; // This is so it doesn't get annoying.
-		t += 1.0f / spec_freq;
-		float32 left_panning = sin(t * 2 * PI * 0.1f) * 0.5f;
-		*buffer++ = sample * left_panning;
-		*buffer++ = sample * (1.0f - left_panning);
-		num_samples -= 2;
-	}
 }
 
 

@@ -1,6 +1,6 @@
 World world;
 
-#define LOG(message) debug_log_(__FILE__, __LINE__, "LOG", message)
+#define LOG(type, message) debug_log_(__FILE__, __LINE__, type, message)
 #define ERROR_LOG(message) debug_log_(__FILE__, __LINE__, "ERROR", message)
 
 #define DEBUG_LOG(message) debug_log_(__FILE__, __LINE__, "DEBUG", message)

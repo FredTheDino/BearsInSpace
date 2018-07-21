@@ -5,6 +5,8 @@
 #include "glad.h"
 
 #include "bear_types.h"
+#include "audio/bear_audio.h"
+#include "ecs/bear_ecs.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -41,6 +43,12 @@ struct PLT
 	ButtonState (*button_state) (string);
 };
 
+struct CLK
+{
+	float64 time;
+	float32 delta;
+};
+
 struct MemoryAllocation
 {
 	const char *file;
@@ -54,9 +62,20 @@ struct World
 	{
 		bool jump;
 	} input;
-	
+
+	// A clock for timing.
+	CLK clk;
+
 	// Platform functions.
 	PLT plt;
+
+	// The ECS, all storage in one place.
+	ECS ecs;
+
+	// Audio, so the world can feel the beats.
+	Audio audio;
+
+	bool running;
 
 	// TODO: Remove in reloase
 	uint32 __mem_length = 0;
@@ -76,6 +95,8 @@ struct World
 #include "bear_memory.h"
 
 #endif
+
+#include "ecs/bear_ecs_init.cpp"
 
 #include "bear_array.h"
 #include "bear_input.h"

@@ -56,7 +56,7 @@ namespace GFX
 			pos2.x, pos2.y, pos2.z
 		};
 		
-		sub_data(vb_lines, NULL, data);
+		sub_data(vb_lines, 0, data);
 		delete_array(&data);
 		
 		draw(r_lines, GL_LINES);

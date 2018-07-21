@@ -189,7 +189,7 @@ AxisValue axis_value(string name)
 	if (abs(value) < CONTROLLER_AXIS_THRESHOLD)
 		return 0;
 	else
-		return clamp_val(value, -1.0, 1.0);
+		return clamp(value, -1.0, 1.0);
 }
 
 ButtonState button_state(string name)
@@ -478,7 +478,7 @@ void handle_controller_axis_event(SDL_Event event)
 		if (a->binding.type == InputType::CONTROLLER &&
 			a->binding.c_device == event.caxis.which &&
 			a->binding.c_axis == event.caxis.axis)
-			a->value = clamp_val(event.caxis.value * CONTROLLER_AXIS_FACTOR, -1.0, 1.0);
+			a->value = clamp(event.caxis.value * CONTROLLER_AXIS_FACTOR, -1.0, 1.0);
 	}
 }
 
