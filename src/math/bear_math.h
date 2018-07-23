@@ -46,6 +46,14 @@ int32 sign(T n)
 	return 0;
 }
 
+template <typename T>
+T absolute(T n)
+{
+	if (n < 0)
+		return -n;
+	return n;
+}
+
 #include "bear_vector.h"
 #include "bear_quaternion.h"
 #include "bear_matrix.h"

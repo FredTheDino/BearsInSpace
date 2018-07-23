@@ -37,7 +37,7 @@ GFX::VertexBuffer vertex_buffer;
 GFX::VertexArray vertex_array;
 GFX::ShaderProgram program;
 Transform transform = create_transform();
-Camera camera = create_camera(create_perspective_projection(M_PI / 2, ASPECT_RATIO, .01f, 100.0f));
+Camera camera = create_camera(create_perspective_projection(PI / 2, ASPECT_RATIO, .01f, 100.0f));
 
 #if 1
 void update(float32 delta)

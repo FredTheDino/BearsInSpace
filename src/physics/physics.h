@@ -23,6 +23,9 @@ enum ShapeID
 
 struct Shape
 {
+	// This fixes a compiler bug on MSVC 14. Yay.
+	Shape() {};
+
 	ShapeID id;
 	Vec3f position;
 	union
@@ -52,14 +55,16 @@ struct Shape
 
 Shape make_sphere(float32 radius)
 {
-	Shape shape = {SHAPE_SPHERE};
+	Shape shape;
+	shape.id = SHAPE_SPHERE;
 	shape.radius = radius;
 	return shape;
 }
 
 Shape make_box(float32 width, float32 height, float32 depth)
 {
-	Shape box = {SHAPE_SPHERE};
+	Shape box;
+	box.id = SHAPE_BOX;
 	box.width = width;
 	box.height = height;
 	box.depth = depth;
@@ -252,12 +257,10 @@ void add_edge_if_unique(Array<Edge> *edges, Edge e)
 	{
 		if (e == (*edges)[edge_id])
 		{
-			PRINT("Duplicate edge\n");
 			remove(edges, edge_id);
 			return;
 		}
 	}
-	PRINT("New Edge\n");
 	append(edges, e);
 }
 
@@ -267,15 +270,12 @@ Triangle make_triangle(Vec3f a, Vec3f b, Vec3f c, Vec3f center)
 	Vec3f ab = b - a;
 	Vec3f ac = c - a;
 	// TODO: Something here is busted. I don't know what.
-	Vec3f normal = {
-		(ab.y * ac.z) - (ab.z * ac.y),
-		(ab.z * ac.x) - (ab.x * ac.z),
-		(ab.x * ac.y) - (ab.y * ac.x)};
+	Vec3f normal = cross(ab, ac);
 	normal = normalized(normal);
 	//Vec3f normal = normalized(cross(ac, ab));
 	float32 dir = dot(normal, center) - dot(normal, a);
 
-	if (dir < 0.0f)
+	if (dir > 0.0f)
 	{
 		t.a = a;
 		t.b = b;
@@ -291,7 +291,7 @@ Triangle make_triangle(Vec3f a, Vec3f b, Vec3f c, Vec3f center)
 	}
 
 
-	t.depth = abs(dot(normal, a));
+	t.depth = absolute(dot(normal, a));
 	return t;
 }
 
@@ -350,50 +350,33 @@ Overlap minkowski_sum(Vec3f inital_direction,
 
 	uint32 itteration = 0;
 	for (; 
-			itteration < 20; 
+			itteration < 35; 
 			itteration++)
 	{
 		int32 closest = 0;
 		depth = triangles[0].depth;
-		PRINT("Normals this step\n");
 		for (int32 i = 0; i < (int32) size(triangles); i++)
 		{
 			Vec3f _n = triangles[i].normal;
-			PRINT("%.3f, %.3f, %.3f\n", 0,  _n.x, _n.y, _n.z); 
 			if (triangles[i].depth < depth)
 			{
 				depth = triangles[i].depth;
 				closest = i;
 			}
 		}
-		PRINT("Points this step\n");
-		for (int32 i = 0; i < (int32) size(triangles); i++)
-		{
-			Vec3f _n = triangles[i].a;
-			PRINT("%.3f, %.3f, %.3f\n", 0,  _n.x, _n.y, _n.z); 
-			_n = triangles[i].b;
-			PRINT("%.3f, %.3f, %.3f\n", 0,  _n.x, _n.y, _n.z); 
-			_n = triangles[i].c;
-			PRINT("%.3f, %.3f, %.3f\n ", 0,  _n.x, _n.y, _n.z); 
-		}
-
-		PRINT("Closest: %d\n", closest);
 
 		normal = triangles[closest].normal;
 		Vec3f new_point = support(normal, a_shape) - support(-normal, b_shape);
-		PRINT("New point: %.3f, %.3f, %.3f\n", new_point.x, new_point.y, new_point.z); 
-		float32 delta = abs(dot(new_point, normal) - depth);
+		float32 delta = absolute(dot(new_point, normal) - depth);
 		if (delta < 0.0001f)
 		{
 			break;
 		}
-#define P_Vec3f "%.3f, %.3f, %.3f"
 		
 		for (int32 i = size(triangles) - 1; i > -1; i--)
 		{
 			float32 view_check = dot(new_point, triangles[i].normal);
-			view_check -= -triangles[i].depth;
-				
+			view_check -= triangles[i].depth;
 			if (view_check < 0.0f) continue;
 
 			Triangle triangle = remove(&triangles, i);
@@ -410,13 +393,10 @@ Overlap minkowski_sum(Vec3f inital_direction,
 			add_edge_if_unique(&removed_edges, e);
 		}
 
-
-		PRINT("Num triangles to add: %d\n", size(removed_edges));
 		for (int32 i = 0; i < (int32) size(removed_edges); i++)
 		{
 			auto a = removed_edges[i].a;
 			auto b = removed_edges[i].b;
-			PRINT("New T a: " P_Vec3f "\t b: " P_Vec3f "\n", a.x, a.y, a.z, b.x, b.y, b.z);
 			Triangle triangle = make_triangle(
 					a, 
 					b, 
@@ -426,7 +406,7 @@ Overlap minkowski_sum(Vec3f inital_direction,
 		}
 		clear(&removed_edges);
 	}
-	PRINT("its: %d\n", itteration);
+
 	delete_array(&removed_edges);
 	delete_array(&triangles);
 
@@ -457,7 +437,7 @@ void update_physics(Physics *engine, float32 delta)
 	Shape shape_b = make_sphere(5.0f);
 	shape_b.position = {0.0f, 0.0f, 0.0f};
 	Overlap overlap = minkowski_sum({0.0f, 0.0f, 1.0f}, shape_a, shape_b);
-	PRINT("Overlapping: %u, normal: %.3f, %.3f, %.3f, depth: %.3f\n", 
+ 	PRINT("Overlapping: %u, normal: %.3f, %.3f, %.3f, depth: %.3f\n", 
 			overlap.depth != -1.0f, overlap.normal.x, overlap.normal.y, overlap.normal.z, overlap.depth);
 	//PRINT("STEP!");
 }

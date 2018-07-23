@@ -180,6 +180,9 @@ int CALLBACK WinMain(
 	world.plt.free_file = free_file;
 	world.plt.last_write = get_file_edit_time;
 
+	world.plt.axis_value = axis_value;
+	world.plt.button_state = button_state;
+
 	world.__mem = (MemoryAllocation *)(void *)__mem;
 	world.audio = {};
 	world.audio.buffers = MALLOC2(AudioBuffer, BEAR_MAX_AUDIO_BUFFERS);
@@ -254,7 +257,6 @@ int CALLBACK WinMain(
 	
 	DEBUG_LOG("Windows launch!");
 
-<<<<<<< HEAD
 	world.running = true;
 
 	LARGE_INTEGER counter_frequency = counter_frequency;
@@ -265,10 +267,6 @@ int CALLBACK WinMain(
 	QueryPerformanceCounter(&start);
 	QueryPerformanceCounter(&last_counter);
 	while (world.running)
-=======
-	bool running = true;
-	while (running)
->>>>>>> sk
 	{
 		
 
@@ -282,17 +280,9 @@ int CALLBACK WinMain(
 			{
 				world.running = false;
 			}
-<<<<<<< HEAD
-			if (event.type == SDL_KEYDOWN)
-			{
-				world.input.jump = true;
-			}
-			if (event.type == SDL_KEYUP)
-=======
 			else
->>>>>>> sk
 			{
-				handle_input_event(false);
+				handle_input_event(event);
 			}
 		}
 		

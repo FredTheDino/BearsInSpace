@@ -154,6 +154,9 @@ int main(int varc, char *varv[])
 	world.plt.button_state = button_state;
 
 	world.__mem = (MemoryAllocation *)(void *)__mem;
+	world.audio = {};
+	world.audio.buffers = MALLOC2(AudioBuffer, BEAR_MAX_AUDIO_BUFFERS);
+	world.audio.sources = MALLOC2(AudioSource, BEAR_MAX_AUDIO_SOURCES);
 
 	if (!load_libgame(&game))
 	{
@@ -264,6 +267,9 @@ int main(int varc, char *varv[])
 	
 	SDL_CloseAudio();
 	SDL_Quit();
+
+	FREE(world.audio.sources);
+	FREE(world.audio.buffers);
 
 	destroy_ecs(&world);
 

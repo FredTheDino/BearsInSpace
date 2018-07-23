@@ -186,7 +186,7 @@ AxisValue axis_value(string name)
 		value += a->value;
 	}
 	
-	if (abs(value) < CONTROLLER_AXIS_THRESHOLD)
+	if (absolute(value) < CONTROLLER_AXIS_THRESHOLD)
 		return 0;
 	else
 		return clamp(value, -1.0, 1.0);
