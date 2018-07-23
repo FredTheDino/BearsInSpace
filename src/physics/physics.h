@@ -92,6 +92,7 @@ Vec3f support(Vec3f direction, Shape shape)
 				shape.depth  * sign(direction.z) / 2.0f
 			};
 			point += shape.position;
+			break;
 		case (SHAPE_SUM):
 			point = support(direction, *shape.a) + support(direction, *shape.b);
 		default:
@@ -275,7 +276,7 @@ Triangle make_triangle(Vec3f a, Vec3f b, Vec3f c, Vec3f center)
 	//Vec3f normal = normalized(cross(ac, ab));
 	float32 dir = dot(normal, center) - dot(normal, a);
 
-	if (dir > 0.0f)
+	if (dir < 0.0f)
 	{
 		t.a = a;
 		t.b = b;
@@ -344,13 +345,18 @@ Overlap minkowski_sum(Vec3f inital_direction,
 	append(&triangles, make_triangle(b, d, c, center));
 	append(&triangles, make_triangle(b, d, a, center));
 
+	GFX::debug_draw_point(center, {0.0f, 1.0f, 0.5f});
+
 	auto removed_edges = create_array<Edge>(20);
 	float32 depth;
 	Vec3f normal;
 
+	// TODO(Ed):Add in special case for when you hit the itteration cap, to lerp the "best" normals into 1. 
+	// This should give us a huge boon against spheres.
+
 	uint32 itteration = 0;
 	for (; 
-			itteration < 35; 
+			itteration < 30; 
 			itteration++)
 	{
 		int32 closest = 0;
@@ -405,7 +411,20 @@ Overlap minkowski_sum(Vec3f inital_direction,
 			append(&triangles, triangle);
 		}
 		clear(&removed_edges);
+
 	}
+
+#if 1
+	for (int32 i = 0; i < size(triangles); i++)
+	{
+		Triangle t = triangles[i];
+		GFX::debug_draw_line(t.a, t.b, {0.9f, 0.9f, 0.3f});
+		GFX::debug_draw_line(t.a, t.c, {0.9f, 0.9f, 0.3f});
+		GFX::debug_draw_line(t.c, t.b, {0.9f, 0.9f, 0.3f});
+		Vec3f center = (t.a + t.b + t.c) / 3.0f;
+		GFX::debug_draw_line(center, center + t.normal, {0.5f, 0.3f, 0.75f});
+	}
+#endif 
 
 	delete_array(&removed_edges);
 	delete_array(&triangles);
@@ -428,13 +447,13 @@ struct BodyComponent
 void update_physics(Physics *engine, float32 delta)
 {
 	//float64 t = world->clk.time;
-	Shape shape_a = make_sphere(8.0f);
-	shape_a.position = {-12.0f, 0.0f, 0.0f};//{sinf(t) * 17.0f, cosf(t) * 0.0f, 0.0f};
+	Shape shape_a = make_box(8.0f, 8.0f, 8.0f);
+	shape_a.position = {-5.0f, 0.0f, 0.0f};//{sinf(t) * 17.0f, cosf(t) * 0.0f, 0.0f};
 #if 1
 	PRINT("pos: %f, %f, %f\n", 
 			shape_a.position.x, shape_a.position.y, shape_a.position.z);
 #endif
-	Shape shape_b = make_sphere(5.0f);
+	Shape shape_b = make_box(5.0f, 5.0f, 5.0f);
 	shape_b.position = {0.0f, 0.0f, 0.0f};
 	Overlap overlap = minkowski_sum({0.0f, 0.0f, 1.0f}, shape_a, shape_b);
  	PRINT("Overlapping: %u, normal: %.3f, %.3f, %.3f, depth: %.3f\n", 

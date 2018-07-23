@@ -587,14 +587,15 @@ void init_input()
 	controller_array = {};
 	SDL_GameControllerEventState(SDL_ENABLE);
 	open_controllers();
-
-	bind_button_controller("jump", 0, SDL_CONTROLLER_BUTTON_DPAD_UP);
-	bind_button_key("jump", SDLK_SPACE);
-	bind_button_key("jej", SDLK_LEFT);
-	bind_axis_controller("tiltx", 0, SDL_CONTROLLER_AXIS_LEFTX);
-	bind_axis_controller("tilty", 0, SDL_CONTROLLER_AXIS_LEFTY);
-	bind_axis_controller("tiltx", 0, SDL_CONTROLLER_AXIS_RIGHTX);
-	bind_axis_controller("tilty", 0, SDL_CONTROLLER_AXIS_RIGHTY);
+	
+	bind_axis_controller("xmove", 0, SDL_CONTROLLER_AXIS_LEFTX);
+	bind_axis_controller("zmove", 0, SDL_CONTROLLER_AXIS_LEFTY);
+	
+	bind_axis_controller("xrot", 0, SDL_CONTROLLER_AXIS_RIGHTX);
+	bind_axis_controller("yrot", 0, SDL_CONTROLLER_AXIS_RIGHTY);
+	
+	bind_axis_controller("up", 0, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+	bind_axis_controller("down", 0, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 }
 
 void destroy_input()

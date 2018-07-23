@@ -11,7 +11,7 @@ struct Image
 	uint8 *data;
 };
 
-Image load_image(const char *path)
+Image load_image(string path)
 {
 	OSFile file = world->plt.read_file(path);
 	Image img;
@@ -20,8 +20,13 @@ Image load_image(const char *path)
 	return img;
 }
 
-void free_image(Image img)
+void free_image(Image *img)
 {
-	stbi_image_free(img.data);
+	stbi_image_free(img->data);
+
+	img->width = 0;
+	img->height = 0;
+	img->channels = 0;
+	img->data = nullptr;
 }
 

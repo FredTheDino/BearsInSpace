@@ -2,7 +2,7 @@
 
 #include "bear_vertex_array.h"
 #include "bear_shader_program.h"
-//#include "texture.h"
+#include "bear_texture.h"
 
 #define GLOBAL_MATRIX_PROFILES 16
 
