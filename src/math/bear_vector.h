@@ -163,7 +163,6 @@ struct Vec3f
 			(y - other.y) * (y - other.y) < FLOAT_EQ_MARGIN && 
 			(z - other.z) * (z - other.z) < FLOAT_EQ_MARGIN;
 	}
-
 };
 
 float32 dot(Vec3f a, Vec3f b)

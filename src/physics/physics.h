@@ -237,9 +237,10 @@ struct Edge
 
 	bool operator== (Edge e)
 	{
+		const float32 ACC = 0.00001f;
 		return 
-			(a == e.a && b == e.b) ||
-			(a == e.b && b == e.a);
+			(length_squared(a - e.a) < ACC && length_squared(b - e.b) < ACC) ||
+			(length_squared(a - e.b) < ACC && length_squared(b - e.a) < ACC);
 	}
 };
 
@@ -251,10 +252,12 @@ void add_edge_if_unique(Array<Edge> *edges, Edge e)
 	{
 		if (e == (*edges)[edge_id])
 		{
+			PRINT("Duplicate edge\n");
 			remove(edges, edge_id);
 			return;
 		}
 	}
+	PRINT("New Edge\n");
 	append(edges, e);
 }
 
@@ -264,7 +267,12 @@ Triangle make_triangle(Vec3f a, Vec3f b, Vec3f c, Vec3f center)
 	Vec3f ab = b - a;
 	Vec3f ac = c - a;
 	// TODO: Something here is busted. I don't know what.
-	Vec3f normal = normalized(cross(ac, ab));
+	Vec3f normal = {
+		(ab.y * ac.z) - (ab.z * ac.y),
+		(ab.z * ac.x) - (ab.x * ac.z),
+		(ab.x * ac.y) - (ab.y * ac.x)};
+	normal = normalized(normal);
+	//Vec3f normal = normalized(cross(ac, ab));
 	float32 dir = dot(normal, center) - dot(normal, a);
 
 	if (dir < 0.0f)
@@ -281,6 +289,7 @@ Triangle make_triangle(Vec3f a, Vec3f b, Vec3f c, Vec3f center)
 		t.c = b;
 		t.normal = -normal;
 	}
+
 
 	t.depth = abs(dot(normal, a));
 	return t;
@@ -300,7 +309,6 @@ Overlap minkowski_sum(Vec3f inital_direction,
 #define SMALEST_FLOAT 0.0000001f
 	
 	// TODO: Transforms that work.
-	// TODO: Suplex data structure.
 
 	Simplex simplex;
 	simplex.num_points = 0;
@@ -342,49 +350,76 @@ Overlap minkowski_sum(Vec3f inital_direction,
 
 	uint32 itteration = 0;
 	for (; 
-			itteration < 10; 
+			itteration < 20; 
 			itteration++)
 	{
 		int32 closest = 0;
 		depth = triangles[0].depth;
-		for (int32 i = 1; i < (int32) size(triangles); i++)
+		PRINT("Normals this step\n");
+		for (int32 i = 0; i < (int32) size(triangles); i++)
 		{
+			Vec3f _n = triangles[i].normal;
+			PRINT("%.3f, %.3f, %.3f\n", 0,  _n.x, _n.y, _n.z); 
 			if (triangles[i].depth < depth)
 			{
 				depth = triangles[i].depth;
 				closest = i;
 			}
 		}
+		PRINT("Points this step\n");
+		for (int32 i = 0; i < (int32) size(triangles); i++)
+		{
+			Vec3f _n = triangles[i].a;
+			PRINT("%.3f, %.3f, %.3f\n", 0,  _n.x, _n.y, _n.z); 
+			_n = triangles[i].b;
+			PRINT("%.3f, %.3f, %.3f\n", 0,  _n.x, _n.y, _n.z); 
+			_n = triangles[i].c;
+			PRINT("%.3f, %.3f, %.3f\n ", 0,  _n.x, _n.y, _n.z); 
+		}
+
+		PRINT("Closest: %d\n", closest);
 
 		normal = triangles[closest].normal;
 		Vec3f new_point = support(normal, a_shape) - support(-normal, b_shape);
-		if (abs(dot(new_point, normal) - depth) < 0.00001f)
+		PRINT("New point: %.3f, %.3f, %.3f\n", new_point.x, new_point.y, new_point.z); 
+		float32 delta = abs(dot(new_point, normal) - depth);
+		if (delta < 0.0001f)
 		{
 			break;
 		}
+#define P_Vec3f "%.3f, %.3f, %.3f"
 		
-		uint32 num_removed_triangles = 0;
-		uint32 inital_num_triangles = size(triangles);
 		for (int32 i = size(triangles) - 1; i > -1; i--)
 		{
-			float32 dot_product = dot(new_point, triangles[i].normal);
-			if (dot_product < 0.0f) continue;
+			float32 view_check = dot(new_point, triangles[i].normal);
+			view_check -= -triangles[i].depth;
+				
+			if (view_check < 0.0f) continue;
 
-			num_removed_triangles++;
 			Triangle triangle = remove(&triangles, i);
-			Edge e = {triangle.a, triangle.b};
+			Edge e;
+			e.a = triangle.a; 
+			e.b = triangle.b;
+
 			add_edge_if_unique(&removed_edges, e);
-			e = {triangle.a, triangle.c};
+			e.a = triangle.a; 
+			e.b = triangle.c;
 			add_edge_if_unique(&removed_edges, e);
-			e = {triangle.b, triangle.c};
+			e.a = triangle.b; 
+			e.b = triangle.c;
 			add_edge_if_unique(&removed_edges, e);
 		}
 
+
+		PRINT("Num triangles to add: %d\n", size(removed_edges));
 		for (int32 i = 0; i < (int32) size(removed_edges); i++)
 		{
+			auto a = removed_edges[i].a;
+			auto b = removed_edges[i].b;
+			PRINT("New T a: " P_Vec3f "\t b: " P_Vec3f "\n", a.x, a.y, a.z, b.x, b.y, b.z);
 			Triangle triangle = make_triangle(
-					removed_edges[i].a, 
-					removed_edges[i].b, 
+					a, 
+					b, 
 					new_point,
 					center);
 			append(&triangles, triangle);
@@ -412,14 +447,14 @@ struct BodyComponent
 // System
 void update_physics(Physics *engine, float32 delta)
 {
-	float64 t = world->clk.time;
+	//float64 t = world->clk.time;
 	Shape shape_a = make_sphere(8.0f);
-	shape_a.position = {sinf(t) * 17.0f, cosf(t) * 0.0f, 0.0f};
+	shape_a.position = {-12.0f, 0.0f, 0.0f};//{sinf(t) * 17.0f, cosf(t) * 0.0f, 0.0f};
 #if 1
 	PRINT("pos: %f, %f, %f\n", 
 			shape_a.position.x, shape_a.position.y, shape_a.position.z);
 #endif
-	Shape shape_b = make_box(5.0f, 5.0f, 5.0f);
+	Shape shape_b = make_sphere(5.0f);
 	shape_b.position = {0.0f, 0.0f, 0.0f};
 	Overlap overlap = minkowski_sum({0.0f, 0.0f, 1.0f}, shape_a, shape_b);
 	PRINT("Overlapping: %u, normal: %.3f, %.3f, %.3f, depth: %.3f\n", 

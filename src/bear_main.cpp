@@ -98,16 +98,15 @@ void update(float32 delta)
 
 void draw()
 {
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
 	
-	GFX::draw(renderable);
+	//GFX::draw(renderable);
 }
 #endif
 
 extern "C"
 void step(World *_world, float32 delta)
 {
+
 	world = _world;
 	
 	// Initialize GLAD if necessary
@@ -115,6 +114,9 @@ void step(World *_world, float32 delta)
 	{
 		gladLoadGL();
 	}
+
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	update_physics(NULL, 0.0f);
 
