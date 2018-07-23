@@ -15,7 +15,7 @@
 // GFX
 #include "glad.c"
 #include "bear_obj_loader.cpp"
-#include "bear_image_loader.cpp"
+
 #include "bear_gfx.h"
 #define GL_LOADED glClear
 
@@ -36,8 +36,13 @@ GFX::Renderable renderable;
 GFX::VertexBuffer vertex_buffer;
 GFX::VertexArray vertex_array;
 GFX::ShaderProgram program;
+GFX::Texture texture;
 Transform transform = create_transform();
 Camera camera = create_camera(create_perspective_projection(M_PI / 2, ASPECT_RATIO, .01f, 100.0f));
+
+float32 rotx = 0;
+float32 roty = 0;
+float32 speed = 6.0f;
 
 #if 1
 void update(float32 delta)
@@ -86,22 +91,36 @@ void update(float32 delta)
 	}
 #endif
 
-	transform.rot *= toQ(0, 0, 0.01f);
+	float32 rx = AXIS_VAL("xrot") * 3.0f * delta;
+	float32 ry = AXIS_VAL("yrot") * 3.0f * delta;
 
-	if (B_PRESSED("jump"))
-		transform.pos.y += .25f;
-	else if (B_RELEASED("jump"))
-		transform.pos.y -= .25f;
-	transform.pos.x += AXIS_VAL("tiltx") * .03f;
-	transform.pos.y -= AXIS_VAL("tilty") * .03f;
+	if (rx || ry)
+	{
+		rotx -= rx;
+		roty -= ry;
+		camera.transform.rot = toQ(roty, rotx, 0);
+	}
+	float32 dx = AXIS_VAL("xmove") * speed * delta;
+	float32 dz = AXIS_VAL("zmove") * speed * delta;
+	if (dx || dz)
+	{
+		camera.transform.pos.x += dx * cos(-rotx) - dz * sin(-rotx);
+		camera.transform.pos.z += dz * cos(-rotx) + dx * sin(-rotx);
+	}
+
+	camera.transform.pos.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
 }
 
 void draw()
 {
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	GFX::bind(texture);
 	GFX::draw(renderable);
+
+	GFX::debug_draw_line({ .0f, 1.0f, .0f }, { .0f, 2.0f, .0f }, { 1.0f, .0f, .0f });
+	GFX::debug_draw_point({ .0f, 2.5f, .0f }, { .0f, 1.0f, .0f });
 }
 #endif
 
@@ -114,8 +133,15 @@ void step(World *_world, float32 delta)
 	if (!GL_LOADED)
 	{
 		gladLoadGL();
-	}
 
+		glEnable(GL_DEPTH_TEST);
+
+		GFX::init_matrix_profiles();
+
+		GFX::init_debug();
+		
+	}
+		//TODO: REMOVE REST OF THIS IF-STATEMENT
 	update_physics(NULL, 0.0f);
 
 	if (should_run_tests)
@@ -125,9 +151,6 @@ void step(World *_world, float32 delta)
 		// Test code.
 		Mesh mesh = load_mesh("res/monkey.obj");
 		free_mesh(mesh);
-
-
-		GFX::init_matrix_profiles();
 		
 		// Shader program
 		Array<GFX::ShaderInfo> shader_info = {
@@ -137,25 +160,44 @@ void step(World *_world, float32 delta)
 
 		program = GFX::create_shader_program(shader_info);
 		delete_array(&shader_info);
+
+		texture = GFX::create_texture("res/test2.png");
 		
 		// Vertex buffer
-		Array<float32> data = {
-			.0f, .5f,
-			.5f, -.5f,
-			-.5f, -.5f
+		Array<float32> data_vb = {
+			-.5f, .0f, .5f, .0f, .0f,
+			-.5f, .0f, -.5f, 2.0f, .0f,
+			.5f, .0f, -.5f, .0f, .0f,
+			.5f, .0f, .5f, 2.0f, .0f,
+			.0f, 1.0f, .0f, .5f, 2.0f
 		};
 		
-		vertex_buffer = GFX::create_vertex_buffer(data);
-		delete_array(&data);
+		vertex_buffer = GFX::create_vertex_buffer(data_vb);
+		delete_array(&data_vb);
+
+		// Index buffer
+		Array<uint32> data_ib = {
+			0, 4, 3,
+			1, 4, 0,
+			2, 4, 1,
+			3, 4, 2
+		};
+
+		GFX::IndexBuffer index_buffer = GFX::create_index_buffer(data_ib);
+		
+		delete_array(&data_ib);
 		
 		// Vertex array
-		Array<GFX::VertexAttribute> attributes = { { vertex_buffer, 0, 2, GL_FLOAT } };
-		vertex_array = GFX::create_vertex_array(attributes);
+		Array<GFX::VertexAttribute> attributes = {
+			{ vertex_buffer, 0, 3, GL_FLOAT, false, 5 << 2, (void *) 0 },
+			{ vertex_buffer, 1, 2, GL_FLOAT, false, 5 << 2, (void *) (3 << 2) }
+		};
+		vertex_array = GFX::create_vertex_array(attributes, index_buffer);
 		delete_array(&attributes);
 
 		// Renderable
 		renderable.vertex_array = vertex_array;
-		renderable.num_vertices = 3;
+		renderable.num_vertices = 12;
 		renderable.program = program;
 		
 		// Model matrix
