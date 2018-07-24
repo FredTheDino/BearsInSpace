@@ -95,9 +95,21 @@ uint64 size(Array<T> arr)
 }
 
 template <typename T>
+uint64 size(Array<T> *arr)
+{
+	return arr->size;
+}
+
+template <typename T>
 uint64 limit(Array<T> arr)
 {
 	return arr.limit;
+}
+
+template <typename T>
+uint64 limit(Array<T> *arr)
+{
+	return arr->limit;
 }
 
 template <typename T>
@@ -111,6 +123,13 @@ T get(Array<T> arr, uint64 index)
 {
 	ASSERT(index >= 0 && index < arr.size);
 	return arr.data[index];
+}
+
+template <typename T>
+T get(Array<T> *arr, uint64 index)
+{
+	ASSERT(index >= 0 && index < arr->size);
+	return arr->data[index];
 }
 
 template<typename T>

@@ -27,7 +27,7 @@
 #include "ecs/bear_ecs.cpp"
 
 // Physics
-#include "physics/physics.h"
+#include "physics/bear_physics.h"
 
 // Tests
 #include "bear_test.cpp"
@@ -40,8 +40,10 @@ GFX::Texture texture;
 Transform transform = create_transform();
 Camera camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
 
+#if 0
 float32 rotx = 0;
 float32 roty = 0;
+#endif
 float32 speed = 6.0f;
 
 #if 1
@@ -96,19 +98,22 @@ void update(float32 delta)
 
 	if (rx || ry)
 	{
-		rotx -= rx;
-		roty -= ry;
-		camera.transform.rot = toQ(roty, rotx, 0);
+		world->camera.rotx -= rx;
+		world->camera.roty -= ry;
 	}
+	camera.transform.rot = toQ(world->camera.roty, world->camera.rotx, 0);
+
 	float32 dx = AXIS_VAL("xmove") * speed * delta;
 	float32 dz = AXIS_VAL("zmove") * speed * delta;
 	if (dx || dz)
 	{
-		camera.transform.pos.x += dx * cos(-rotx) - dz * sin(-rotx);
-		camera.transform.pos.z += dz * cos(-rotx) + dx * sin(-rotx);
+		world->camera.position.x += dx * cos(-world->camera.rotx) - dz * sin(-world->camera.rotx);
+		world->camera.position.z += dz * cos(-world->camera.rotx) + dx * sin(-world->camera.rotx);
 	}
 
-	camera.transform.pos.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
+	world->camera.position.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
+
+	camera.transform.pos = world->camera.position;
 }
 
 void draw()
@@ -116,11 +121,15 @@ void draw()
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	GFX::debug_draw_point({ .0f, .0f, .0f }, { .5f, .75f, .25f });
+
+#if 0
 	GFX::bind(texture);
 	GFX::draw(renderable);
 
 	GFX::debug_draw_line({ .0f, 1.0f, .0f }, { .0f, 2.0f, .0f }, { 1.0f, .0f, .0f });
 	GFX::debug_draw_point({ .0f, 2.5f, .0f }, { .0f, 1.0f, .0f });
+#endif
 }
 #endif
 

@@ -63,6 +63,14 @@ struct World
 		bool jump;
 	} input;
 
+	// Graphics related things
+	struct
+	{
+		float32 rotx;
+		float32 roty;
+		Vec3f position;
+	} camera;
+
 	// A clock for timing.
 	CLK clk;
 

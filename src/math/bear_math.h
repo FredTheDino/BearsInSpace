@@ -37,6 +37,14 @@ T clamp(T min, T max, T v)
 }
 
 template <typename T>
+int32 sign_no_zero(T n)
+{
+	if (n < 0)
+		return -1;
+	return 1;
+}
+
+template <typename T>
 int32 sign(T n)
 {
 	if (n < 0)
