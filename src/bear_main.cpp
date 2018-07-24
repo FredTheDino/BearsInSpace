@@ -27,7 +27,7 @@
 #include "ecs/bear_ecs.cpp"
 
 // Physics
-#include "physics/bear_physics.h"
+#include "physics/bear_physics.cpp"
 
 // Tests
 #include "bear_test.cpp"
@@ -154,6 +154,8 @@ void step(World *_world, float32 delta)
 
 	if (should_run_tests)
 	{
+		// For the physics. TEMPRYRY
+		world->phy.bodies[0].position = {};
 		run_tests();
 #if 1
 		// Test code.
@@ -225,7 +227,7 @@ void step(World *_world, float32 delta)
 	
 	update(delta);
 	draw();
-	update_physics(NULL, 0.0f);
+	update_physics(&world->phy, delta);
 }
 
 
