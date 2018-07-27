@@ -110,6 +110,7 @@ struct World
 #endif
 
 #include "ecs/bear_ecs_init.cpp"
+#include "physics/bear_physics_init.cpp"
 
 #include "bear_array.cpp"
 #include "bear_input.h"

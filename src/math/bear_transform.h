@@ -7,6 +7,7 @@ struct Transform
 	Quat rot;
 };
 
+
 struct Camera
 {
 	Mat4f projection;

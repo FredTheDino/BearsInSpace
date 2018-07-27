@@ -190,6 +190,8 @@ int CALLBACK WinMain(
 
 	init_ecs(&world);
 
+	init_phy(&world);
+
 	game.lock = SDL_CreateMutex();
 	if (load_libbear(&game) == false)
 	{
@@ -308,6 +310,7 @@ int CALLBACK WinMain(
 	FREE(world.audio.buffers);
 
 	destroy_ecs(&world);
+	destroy_phy(&world);
 
 	check_for_leaks();
 	return 0;

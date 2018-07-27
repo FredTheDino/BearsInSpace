@@ -15,10 +15,10 @@ bool _contains_origin(Simplex simplex)
 	if (simplex.num_points < 4)
 		return false;
 
-	Vec3f a = simplex.points[0];
-	Vec3f b = simplex.points[1];
-	Vec3f c = simplex.points[2];
-	Vec3f d = simplex.points[3];
+	Vec3f a = simplex.points[0].point;
+	Vec3f b = simplex.points[1].point;
+	Vec3f c = simplex.points[2].point;
+	Vec3f d = simplex.points[3].point;
 
 
 	Vec3f normal = get_normal_from_triangle(a, b, c, d);
@@ -50,10 +50,10 @@ bool _contains_origin(Simplex simplex)
 
 Vec3f _get_next_gjk_direction(Simplex *simplex, Vec3f direction)
 {
-	Vec3f a = simplex->points[0];
-	Vec3f b = simplex->points[1];
-	Vec3f c = simplex->points[2];
-	Vec3f d = simplex->points[3];
+	Vec3f a = simplex->points[0].point;
+	Vec3f b = simplex->points[1].point;
+	Vec3f c = simplex->points[2].point;
+	Vec3f d = simplex->points[3].point;
 
 	if (simplex->num_points == 1)
 	{
@@ -100,30 +100,26 @@ Vec3f _get_next_gjk_direction(Simplex *simplex, Vec3f direction)
 		suggestion = get_normal_from_triangle(a, d, c, b);
 		if (dot(a, suggestion) < 0.0)
 		{
-			simplex->points[1] = d;
+			simplex->points[1] = simplex->points[3];
 			return suggestion;
 		}
 
 		suggestion = get_normal_from_triangle(b, d, a, c);
 		if (dot(a, suggestion) < 0.0)
 		{
-			simplex->points[2] = d;
+			simplex->points[2] = simplex->points[3];
 			return suggestion;
 		}
 
 		suggestion = get_normal_from_triangle(c, d, b, a);
 		if (dot(a, suggestion) < 0.0)
 		{
-			simplex->points[0] = d;
+			simplex->points[0] = simplex->points[3];
 			return suggestion;
 		}
 	}
 	return direction;
 }
-
-
-
-
 
 Simplex gjk(Vec3f inital_direction, Shape a_shape, Shape b_shape)
 {
@@ -133,8 +129,8 @@ Simplex gjk(Vec3f inital_direction, Shape a_shape, Shape b_shape)
 	Vec3f direction = inital_direction;
 	for (uint32 i = 0; i < GJK_MAX_ITTERATIONS; i++)
 	{
-		Vec3f point = support(direction, a_shape) - support(-direction, b_shape);
-		if (dot(direction, point) < 0)
+		SimplexPoint point = minkowski_difference(direction, a_shape, b_shape);
+		if (dot(direction, point.point) < 0)
 		{
 			return {};
 		}

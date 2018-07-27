@@ -154,8 +154,56 @@ void step(World *_world, float32 delta)
 
 	if (should_run_tests)
 	{
-		// For the physics. TEMPRYRY
-		world->phy.bodies[0].position = {};
+		{
+			clear_ecs(world);
+
+			CTransform transform = {};
+			transform.type = C_TRANSFORM;
+			transform.pos = {15.0f, 5.0f, 5.5f};
+
+			CBody body = {};
+			body.type = C_BODY;
+			body.mass = 1.0f;
+			body.shape = make_box(10.0f, 5.0f, 10.0f);
+
+			EntityID e = add_entity(&world->ecs);
+			add_components(&world->ecs, &world->phy, e, body, transform);
+
+			transform.type = C_TRANSFORM;
+			transform.pos = {0.0f, 0.0f, 3.0f};
+
+			body.type = C_BODY;
+			body.mass = 0.0f;
+			body.shape = make_box(24.0f, 2.0f, 24.0f);
+
+			EntityID f = add_entity(&world->ecs);
+			add_components(&world->ecs, &world->phy, f, body, transform);
+			/*
+
+			transform.type = C_TRANSFORM;
+			transform.pos = {-15.6f, 3.0f, -0.0f};
+
+			body.type = C_BODY;
+			body.mass = 1.0f;
+			body.velocity = {9.0f, 0.0f, 0.0f};
+			body.shape = make_sphere(1.0f);
+
+			EntityID g = add_entity(&world->ecs);
+			add_components(&world->ecs, &world->phy, g, body, transform);
+
+			transform.type = C_TRANSFORM;
+			transform.pos = {10.0f, 5.0f, -0.0f};
+
+			body.type = C_BODY;
+			body.mass = 0.0f;
+			body.velocity = {0.0f, 0.0f, 0.0f};
+			body.shape = make_box(1.0f, 10.0f, 30.0f);
+
+			EntityID h = add_entity(&world->ecs);
+			add_components(&world->ecs, &world->phy, h, body, transform);
+			*/
+		}
+
 		run_tests();
 #if 1
 		// Test code.
@@ -223,11 +271,10 @@ void step(World *_world, float32 delta)
 		camera.transform.pos.z = 1;
 #endif
 	}
-
 	
 	update(delta);
 	draw();
-	update_physics(&world->phy, delta);
+	run_system(S_PHYSICS, world, delta); 
 }
 
 

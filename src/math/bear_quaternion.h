@@ -14,7 +14,7 @@ struct Q
 
 	Q operator- ()
 	{
-		return {-x, -y, -z, -w};
+		return {-x, -y, -z, w};
 	}
 
 	Q operator+ (Q q)
@@ -81,6 +81,16 @@ struct Q
 	void operator*= (Q o)
 	{
 		*this = (*this) * (o);
+	}
+
+	Q operator/ (Q o)
+	{
+		return (*this) * (-o);
+	}
+
+	void operator/= (Q o)
+	{
+		*this = (*this) / o;
 	}
 };
 

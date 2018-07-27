@@ -42,7 +42,7 @@ Vec3f support(Vec3f direction, Shape shape)
 	switch (shape.id)
 	{
 		case (SHAPE_SPHERE):
-			point = shape.position + (normalized(direction) * shape.radius); // This is a mess. Can this be made easier?
+			point = (normalized(direction) * shape.radius); // This is a mess. Can this be made easier?
 			break;
 		case (SHAPE_BOX):
 			point = {
@@ -50,7 +50,6 @@ Vec3f support(Vec3f direction, Shape shape)
 				shape.height * sign(direction.y) / 2.0f,
 				shape.depth  * sign(direction.z) / 2.0f
 			};
-			point += shape.position;
 			break;
 		case (SHAPE_LINE):
 			point = dot(direction, shape.start) > dot(direction, shape.end) ? shape.start : shape.end;
@@ -65,4 +64,14 @@ Vec3f support(Vec3f direction, Shape shape)
 	};
 	return point;
 }
+
+SimplexPoint minkowski_difference(Vec3f direction, Shape a, Shape b)
+{
+	SimplexPoint result;
+	result.a = support(direction, a) + a.position;
+	result.b = -support(-direction, b) - b.position;
+	result.point = result.a + result.b;
+	return result;
+}
+
 

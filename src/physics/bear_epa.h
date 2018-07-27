@@ -2,15 +2,15 @@ struct Triangle
 {
 	float32 depth;
 	Vec3f normal;
-	Vec3f a;
-	Vec3f b;
-	Vec3f c;
+	SimplexPoint a;
+	SimplexPoint b;
+	SimplexPoint c;
 };
 
 struct Edge
 {
-	Vec3f a;
-	Vec3f b;
+	SimplexPoint a;
+	SimplexPoint b;
 
 	bool operator== (Edge e)
 	{
@@ -21,12 +21,12 @@ struct Edge
 };
 
 inline
-Triangle _make_triangle (Vec3f a, Vec3f b, Vec3f c, Vec3f center)
+Triangle _make_triangle (SimplexPoint a, SimplexPoint b, SimplexPoint c, Vec3f center)
 {
-	Vec3f ab = b - a;
-	Vec3f ac = c - a;
+	Vec3f ab = b.point - a.point;
+	Vec3f ac = c.point - a.point;
 	Vec3f normal = normalized(cross(ab, ac));
-	float32 depth = dot(normal, a);
+	float32 depth = dot(normal, a.point);
 	float32 dir = dot(normal, center) - depth;
 
 	Triangle t;
@@ -65,11 +65,11 @@ Overlap epa(Simplex simplex, Array<Triangle> *triangles, Shape a_shape, Shape b_
 
 
 	// Assumes the two shapes are overlapping.
-	Vec3f a = simplex.points[0];
-	Vec3f b = simplex.points[1];
-	Vec3f c = simplex.points[2];
-	Vec3f d = simplex.points[3];
-	Vec3f center = (a + b + c + d) / 4.0f;
+	SimplexPoint a = simplex.points[0];
+	SimplexPoint b = simplex.points[1];
+	SimplexPoint c = simplex.points[2];
+	SimplexPoint d = simplex.points[3];
+	Vec3f center = (a.point + b.point + c.point + d.point) / 4.0f;
 
 	append(triangles, _make_triangle(a, b, c, center));
 	append(triangles, _make_triangle(a, d, c, center));
@@ -80,6 +80,7 @@ Overlap epa(Simplex simplex, Array<Triangle> *triangles, Shape a_shape, Shape b_
 
 	auto removed_edges = create_array<Edge>(20);
 	
+	uint32 closest_triangle;
 	for (uint32 itteration = 0; true; itteration++)
 	{
 		if (size(triangles) == 0)
@@ -93,11 +94,12 @@ Overlap epa(Simplex simplex, Array<Triangle> *triangles, Shape a_shape, Shape b_
 			{
 				result.depth  = t.depth;
 				result.normal = t.normal;
+				closest_triangle = i;
 			}
 		}
 
-		Vec3f extreem_point = support(result.normal, a_shape) - support(-result.normal, b_shape);
-		float32 point_depth = dot(extreem_point, result.normal);
+		SimplexPoint extreem_point = minkowski_difference(result.normal, a_shape, b_shape);
+		float32 point_depth = dot(extreem_point.point, result.normal);
 		float32 difference = absolute(point_depth - result.depth);
 
 		if (difference < EPA_MIN_DIFFERENCE || itteration >= EPA_MAX_ITTERATIONS)
@@ -108,7 +110,7 @@ Overlap epa(Simplex simplex, Array<Triangle> *triangles, Shape a_shape, Shape b_
 		for (int32 i = size(triangles) - 1; i > -1; i--)
 		{
 			Triangle t = get(triangles, i);
-			float32 view_check = dot(extreem_point, t.normal);
+			float32 view_check = dot(extreem_point.point, t.normal);
 			view_check -= t.depth;
 			if (view_check < 0.0f) continue;
 
@@ -120,8 +122,8 @@ Overlap epa(Simplex simplex, Array<Triangle> *triangles, Shape a_shape, Shape b_
 
 		for (int32 i = 0; i < (int32) size(removed_edges); i++)
 		{
-			Vec3f a = removed_edges[i].a;
-			Vec3f b = removed_edges[i].b;
+			SimplexPoint a = removed_edges[i].a;
+			SimplexPoint b = removed_edges[i].b;
 			Triangle t = _make_triangle(a, b, extreem_point, center);
 			append(triangles, t);
 		}
@@ -129,7 +131,32 @@ Overlap epa(Simplex simplex, Array<Triangle> *triangles, Shape a_shape, Shape b_
 	}
 	delete_array(&removed_edges);
 
-	result.point = result.normal * result.depth;
+	// Calculate barycentric coordinates, maybe a function?
+	Vec3f contact_point;
+	{
+		Vec3f p = result.normal * result.depth;
+		Triangle t = get(triangles, closest_triangle);
+		Vec3f a = t.b.point - t.a.point;
+		Vec3f b = t.c.point - t.a.point;
+		Vec3f c = p - t.a.point;
+
+		float32 aa = dot(a, a);
+		float32 ab = dot(a, b);
+		float32 ac = dot(a, c);
+		float32 bb = dot(b, b);
+		float32 bc = dot(b, c);
+		float32 cc = dot(c, c);
+
+		float32 det = aa * bb - ab * ab;
+		float32 b_v = (bb * ac - ab * bc) / det;
+		float32 b_w = (aa * bc - ab * ac) / det;
+		float32 b_u = 1.0f - b_v - b_w;
+		
+		contact_point = t.a.a * b_u + t.b.a * b_v + t.c.a * b_w;
+	}
+	result.contact_point = contact_point;
+
+	//result.point = result.normal * result.depth;
 	return result;
 }
 
