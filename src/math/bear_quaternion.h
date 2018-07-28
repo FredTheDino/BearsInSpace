@@ -1,5 +1,8 @@
 #pragma once
 
+struct Q;
+Q normalize(Q q);
+
 struct Q
 {
 	union 
@@ -7,6 +10,11 @@ struct Q
 		struct
 		{
 			float32 x, y, z, w;
+		};
+		struct
+		{
+			Vec3f v;
+			float32 w;
 		};
 		float32 _[4];
 	};
@@ -62,6 +70,10 @@ struct Q
 
 	Q operator* (Q o)
 	{
+		Q result;
+		result.v = cross(v, o.v) + o.v * w + v * o.w;
+		result.w = w * o.w - dot(v, o.v);
+		/*
 		return
 		{
 			w * o.x + x * o.w + y * o.z - z * o.y,
@@ -69,13 +81,8 @@ struct Q
 			w * o.z + x * o.y - y * o.x + z * o.w,
 			w * o.w - x * o.x - y * o.y + z * o.z,
 		};
-		/*return 
-		{
-			x * o.x - y * o.y - z * o.z - w * o.w,
-			y * o.x + x * o.y - w * o.z + z * o.w,
-			z * o.x + w * o.y + x * o.z - y * o.w,
-			w * o.x - z * o.y + y * o.z + x * o.w
-		};*/
+		*/
+		return result;
 	}
 
 	void operator*= (Q o)
@@ -91,6 +98,24 @@ struct Q
 	void operator/= (Q o)
 	{
 		*this = (*this) / o;
+	}
+
+	Vec3f operator* (Vec3f v)
+	{
+		Q p = {v.x, v.y, v.z, 0.0f};
+		Q q = (*this);
+		Q tmp = q * p;
+		tmp = tmp * -q;
+		return {tmp.x, tmp.y, tmp.z};
+	}
+
+	Vec3f operator/ (Vec3f v)
+	{
+		Q p = {v.x, v.y, v.z, 0.0f};
+		Q q = -(*this);
+		Q tmp = q * p;
+		tmp = tmp * -q;
+		return {tmp.x, tmp.y, tmp.z};
 	}
 };
 

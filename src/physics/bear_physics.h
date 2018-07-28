@@ -53,8 +53,11 @@ struct CBody
 	float32 mass;
 	float32 drag;
 
-	Vec3f velocity;
 	Vec3f force;
+	Vec3f velocity;
+
+	Vec3f rotational_force;
+	Vec3f rotational_velocity;
 
 	Shape shape;
 };

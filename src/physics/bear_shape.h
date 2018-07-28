@@ -15,7 +15,7 @@ struct Shape
 	Shape() {};
 
 	ShapeID id;
-	Vec3f position;
+	Transform transform;
 	union
 	{
 		struct // Sphear

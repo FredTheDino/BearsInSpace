@@ -253,6 +253,11 @@ int CALLBACK WinMain(
 		return(-1);
 	}
 
+	// Can't be asked to move the camera.
+	world.camera.rotx = -1.0f;
+	world.camera.roty = 5.7f;
+	world.camera.position = {-30.0f, 25.0f, 20.0f};;
+
 	SDL_PauseAudioDevice(audio_device, 0);
 
 	init_input();

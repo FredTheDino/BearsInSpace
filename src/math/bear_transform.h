@@ -5,6 +5,14 @@ struct Transform
 	Vec3f pos;
 	Vec3f scale;
 	Quat rot;
+
+	Vec3f operator* (Vec3f p)
+	{
+		Vec3f out_p = rot * p;
+		out_p = {scale.x * out_p.x, scale.y * out_p.y, scale.z * out_p.z};
+		out_p += pos;
+		return out_p;
+	}
 };
 
 

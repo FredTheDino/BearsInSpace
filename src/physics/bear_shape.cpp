@@ -68,9 +68,9 @@ Vec3f support(Vec3f direction, Shape shape)
 SimplexPoint minkowski_difference(Vec3f direction, Shape a, Shape b)
 {
 	SimplexPoint result;
-	result.a = support(direction, a) + a.position;
-	result.b = -support(-direction, b) - b.position;
-	result.point = result.a + result.b;
+	result.a = a.transform * support(a.transform.rot / direction, a);
+	result.b = b.transform * support(b.transform.rot / -direction, b);
+	result.point = result.a - result.b;
 	return result;
 }
 

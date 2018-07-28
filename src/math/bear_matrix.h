@@ -43,6 +43,11 @@ struct Mat4f
 		};
 	}
 
+	Vec3f operator* (Vec3f v)
+	{
+		return toVec3f((*this) * toVec4f(v));
+	}
+
 	bool operator== (Mat4f m)
 	{
 		for (uint8 i = 0; i < 16; i++)
