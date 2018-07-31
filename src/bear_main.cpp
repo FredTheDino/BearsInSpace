@@ -101,7 +101,7 @@ void update(float32 delta)
 		world->camera.rotx -= rx;
 		world->camera.roty -= ry;
 	}
-	camera.transform.rot = toQ(world->camera.roty, world->camera.rotx, 0);
+	camera.transform.orientation = toQ(world->camera.roty, world->camera.rotx, 0);
 
 	float32 dx = AXIS_VAL("xmove") * speed * delta;
 	float32 dz = AXIS_VAL("zmove") * speed * delta;
@@ -113,7 +113,7 @@ void update(float32 delta)
 
 	world->camera.position.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
 
-	camera.transform.pos = world->camera.position;
+	camera.transform.position = world->camera.position;
 }
 
 void draw()
@@ -157,7 +157,33 @@ void step(World *_world, float32 delta)
 		{
 			clear_ecs(world);
 
+			{
+				Transform t;
+				t.scale = {2.0f, 3.0f, 1.0f,};
+				t.orientation = toQ({1.0f, 2.0f, 3.0f}, PI * 0.33f);
+				t.position = {1.0f, 1.0f, -1.0f};
+				Vec3f p = {1.0f, 1.0f, 1.0f};
+				Vec3f t_p = t * p;
+				Vec3f rt_p = t / t_p;
+				ASSERT(p == rt_p);
+
+				Mat4f m = {
+					1.0f, 0.0f, 0.0f, 0.0f,
+					1.0f, 1.0f, 0.0f, 0.0f,
+					1.0f, 0.0f, 1.0f, 0.0f,
+					0.0f, 0.0f, 0.0f, 1.0f
+				};
+				p = {1.0f, 0.0f, 0.0f};
+				Vec3f n = m * p;
+				n = n;
+			}
+
 			camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
+
+			if (world->phy.collisions.data == nullptr)
+			{
+				world->phy.collisions = create_array<Collision>(30);
+			}
 
 			Q a = {0.0f, 1.0f, 0.0f, 1.0f};
 			Vec3f p = {1.0f, 0.0f, 0.0f};
@@ -166,30 +192,36 @@ void step(World *_world, float32 delta)
 
 			CTransform transform = {};
 			transform.type = C_TRANSFORM;
-			transform.pos = {0.0f, 3.0f, 0.0f};
+			transform.position = {1.0f, 5.0f, -1.5f};
 			transform.scale = {1.0f, 1.0f, 1.0f};
-			transform.rot = {1.0f, 0.0f, 0.0f, 0.0f};
+			transform.orientation = toQ(1.5f, 1.5f, 0.0f);
 
 			CBody body = {};
 			body.type = C_BODY;
-			body.mass = 1.0f;
+			body.inverse_mass = 1.0f;
 			body.velocity = {0.0f, -1.0f, 0.0f};
+			body.rotation = {0.0f, -0.0f, 0.0f};
+			body.linear_damping = 0.99f;
+			body.angular_damping = 1.0f;
 			body.shape = make_box(2.0f, 2.0f, 2.0f);
-			body.rotational_velocity = {0.0f, 0.0f, -0.0f};
+			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 1.0f));
 
 			EntityID e = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, e, body, transform);
 
 #if 1
 			transform.type = C_TRANSFORM;
-			transform.pos = {-0.0f, 0.0f, 0.0f};
-			transform.rot = {1.0f, 0.0f, 0.0f, 0.0f};
+			transform.position = {-1.0f, 1.0f, 1.0f};
+			transform.orientation = {1.0f, 0.0f, 0.0f, 0.0f};
 
 			body.type = C_BODY;
-			body.mass = 0.0f;
+			body.inverse_mass = 0.0f;
 			body.velocity = {0.0f, 0.0f, 0.0f};
-			body.rotational_velocity = {0.0f, 0.0f, 0.0f};
+			body.rotation = {0.0f, 0.0f, 0.0f};
+			body.linear_damping = 0.0f;
+			body.angular_damping = 0.0f;
 			body.shape = make_box(10.0f, 1.0f, 10.0f);
+			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 0.0f));
 
 			EntityID f = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, f, body, transform);
@@ -287,13 +319,17 @@ void step(World *_world, float32 delta)
 
 		// View matrix
 		GFX::add_matrix_profile("m_view", &camera);
-		camera.transform.pos.z = 1;
+		camera.transform.position.z = 1;
+
+		run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
 #endif
 	}
 	
 	update(delta);
 	draw();
-	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+	if (B_DOWN("play"))
+		run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+	debug_draw_engine(&world->ecs, &world->phy);
 }
 
 

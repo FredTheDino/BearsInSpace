@@ -65,7 +65,7 @@ void sound(int16 *out_buffer, int32 num_samples)
 
 		Vec3f distance = source.position - audio->position;
 		float32 angle_factor = dot(audio->left, 
-				normalized(distance));
+				normalize(distance));
 		float32 distance_falloff = 1.0f / length_cubed(distance);
 
 		float32 left_volume  = volume * maximum(1.0f, 1.0f + angle_factor) * distance_falloff;

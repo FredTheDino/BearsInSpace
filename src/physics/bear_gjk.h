@@ -121,7 +121,7 @@ Vec3f _get_next_gjk_direction(Simplex *simplex, Vec3f direction)
 	return direction;
 }
 
-Simplex gjk(Vec3f inital_direction, Shape a_shape, Shape b_shape)
+Simplex gjk(Vec3f inital_direction, Shape a, Transform ta, Shape b, Transform tb)
 {
 	Simplex simplex;
 	simplex.num_points = 0;
@@ -129,7 +129,7 @@ Simplex gjk(Vec3f inital_direction, Shape a_shape, Shape b_shape)
 	Vec3f direction = inital_direction;
 	for (uint32 i = 0; i < GJK_MAX_ITTERATIONS; i++)
 	{
-		SimplexPoint point = minkowski_difference(direction, a_shape, b_shape);
+		SimplexPoint point = minkowski_difference(direction, a, ta, b, tb);
 		if (dot(direction, point.point) < 0)
 		{
 			return {};

@@ -165,6 +165,15 @@ Q toQ(float32 roll, float32 pitch, float32 yaw)
 	};
 }
 
+Q toQ(Vec3f axis, float32 angle)
+{
+	float32 theta = angle / 2.0f;
+	Q result;
+	result.v = axis * sin(theta);
+	result.w = (float32) cos(theta);
+	result = normalize(result);
+	return result;
+}
 
 Vec3f to_euler(Q q)
 {

@@ -15,7 +15,6 @@ struct Shape
 	Shape() {};
 
 	ShapeID id;
-	Transform transform;
 	union
 	{
 		struct // Sphear

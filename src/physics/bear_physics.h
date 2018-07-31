@@ -22,14 +22,6 @@ struct Simplex
 	SimplexPoint points[4]; // Assumes 3D (should 5 for 4D)
 };
 
-struct Overlap
-{
-	float32 depth;
-	Vec3f normal;
-	Vec3f shortest_translation;
-	Vec3f contact_point;
-};
-
 struct CTransform
 {
 	COMPONENT;
@@ -39,9 +31,9 @@ struct CTransform
 		Transform transform;
 		struct 
 		{
-			Vec3f pos;
+			Vec3f position;
 			Vec3f scale;
-			Quat rot;
+			Quat orientation;
 		};
 	};
 };
@@ -50,16 +42,48 @@ struct CBody
 {
 	COMPONENT;
 
-	float32 mass;
-	float32 drag;
+	float32 restitution;
 
-	Vec3f force;
-	Vec3f velocity;
+	Mat4f inverse_inertia;
 
-	Vec3f rotational_force;
-	Vec3f rotational_velocity;
+	float32 inverse_mass;
+	float32 linear_damping; 
+	float32 angular_damping; 
+	
+	// A pointer so we don't have to go looking for the
+	// transform when updating the body. Not garanteed to work
+	// outside of the physics step.
+	Transform *_transform; 
+
+
+	Vec3f velocity; // Linear velocity
+	Vec3f acceleration; // Linear accelration
+	Vec3f force_accumulator;
+
+	// Stored as axis angles.
+	Vec3f rotation;
+	// Vec3f torque_accumulator; TODO
 
 	Shape shape;
+};
+
+void set_mass(CBody *body, float32 mass)
+{
+	if (mass == 0.0f)
+		body->inverse_mass = mass;
+	else
+		body->inverse_mass = 1.0f / mass;
+}
+
+struct Collision
+{
+	float32 depth;
+	Vec3f normal;
+	Vec3f shortest_translation;
+	Vec3f contact_point;
+
+	CBody *a;
+	CBody *b;
 };
 
 // Ranges in a tightly packed array.
@@ -77,6 +101,7 @@ struct Physics
 {
 	// Vec3f sort_direction; // Used for Temporal optimizations.
 	Array<BodyLimit> body_limits;
+	Array<Collision> collisions;
 };
 
 bool add_body(Physics *phy, EntityID owner);

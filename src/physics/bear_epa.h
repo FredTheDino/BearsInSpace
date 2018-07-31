@@ -25,7 +25,7 @@ Triangle _make_triangle (SimplexPoint a, SimplexPoint b, SimplexPoint c, Vec3f c
 {
 	Vec3f ab = b.point - a.point;
 	Vec3f ac = c.point - a.point;
-	Vec3f normal = normalized(cross(ab, ac));
+	Vec3f normal = normalize(cross(ab, ac));
 	float32 depth = dot(normal, a.point);
 	float32 dir = dot(normal, center) - depth;
 
@@ -59,24 +59,27 @@ void _add_if_unique (Array<Edge> *edges, Edge e)
 	append(edges, e);
 }
 
-Overlap epa(Simplex simplex, Array<Triangle> *triangles, Shape a_shape, Shape b_shape)
+Collision epa(Simplex simplex, Array<Triangle> *triangles, Shape a, Transform ta, Shape b, Transform tb)
 {
 	// Helper functions. Not sure if this is the best place for it.
 
 
 	// Assumes the two shapes are overlapping.
-	SimplexPoint a = simplex.points[0];
-	SimplexPoint b = simplex.points[1];
-	SimplexPoint c = simplex.points[2];
-	SimplexPoint d = simplex.points[3];
-	Vec3f center = (a.point + b.point + c.point + d.point) / 4.0f;
+	Vec3f center;
+	{
+		SimplexPoint a = simplex.points[0];
+		SimplexPoint b = simplex.points[1];
+		SimplexPoint c = simplex.points[2];
+		SimplexPoint d = simplex.points[3];
+		center = (a.point + b.point + c.point + d.point) / 4.0f;
 
-	append(triangles, _make_triangle(a, b, c, center));
-	append(triangles, _make_triangle(a, d, c, center));
-	append(triangles, _make_triangle(b, d, c, center));
-	append(triangles, _make_triangle(b, d, a, center));
+		append(triangles, _make_triangle(a, b, c, center));
+		append(triangles, _make_triangle(a, d, c, center));
+		append(triangles, _make_triangle(b, d, c, center));
+		append(triangles, _make_triangle(b, d, a, center));
+	}
 
-	Overlap result;
+	Collision result;
 
 	auto removed_edges = create_array<Edge>(20);
 	
@@ -98,7 +101,7 @@ Overlap epa(Simplex simplex, Array<Triangle> *triangles, Shape a_shape, Shape b_
 			}
 		}
 
-		SimplexPoint extreem_point = minkowski_difference(result.normal, a_shape, b_shape);
+		SimplexPoint extreem_point = minkowski_difference(result.normal, a, ta, b, tb);
 		float32 point_depth = dot(extreem_point.point, result.normal);
 		float32 difference = absolute(point_depth - result.depth);
 

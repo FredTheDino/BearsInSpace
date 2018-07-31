@@ -42,7 +42,7 @@ Vec3f support(Vec3f direction, Shape shape)
 	switch (shape.id)
 	{
 		case (SHAPE_SPHERE):
-			point = (normalized(direction) * shape.radius); // This is a mess. Can this be made easier?
+			point = (normalize(direction) * shape.radius); // This is a mess. Can this be made easier?
 			break;
 		case (SHAPE_BOX):
 			point = {
@@ -65,11 +65,11 @@ Vec3f support(Vec3f direction, Shape shape)
 	return point;
 }
 
-SimplexPoint minkowski_difference(Vec3f direction, Shape a, Shape b)
+SimplexPoint minkowski_difference(Vec3f direction, Shape a, Transform ta, Shape b, Transform tb)
 {
 	SimplexPoint result;
-	result.a = a.transform * support(a.transform.rot / direction, a);
-	result.b = b.transform * support(b.transform.rot / -direction, b);
+	result.a = ta * support(ta.orientation / direction, a);
+	result.b = tb * support(tb.orientation / -direction, b);
 	result.point = result.a - result.b;
 	return result;
 }

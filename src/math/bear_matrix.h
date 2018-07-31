@@ -311,7 +311,7 @@ Mat4f inverse(Mat4f m)
 	float32 det = m.__[0] * inv.__[0] + m.__[1] * inv.__[4] + m.__[2] * inv.__[8] + m.__ [3] * inv.__[12];
 
 	if (det == 0)
-		return create_identity();
+		return {};
 
 	det = 1.0f / det;
 

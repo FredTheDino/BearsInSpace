@@ -4,7 +4,7 @@ struct Vec2f;
 struct Vec3f;
 struct Vec4f;
 
-#define FLOAT_EQ_MARGIN 0.0000000000001
+#define FLOAT_EQ_MARGIN 0.0000001
 
 // SIMD this, later OFC.
 struct Vec2f
@@ -89,7 +89,7 @@ float32 length(Vec2f a)
 	return sqrt(length_squared(a));
 }
 
-Vec2f normalized(Vec2f a)
+Vec2f normalize(Vec2f a)
 {
 	return a / length(a);
 }
@@ -195,7 +195,7 @@ float32 length(Vec3f a)
 	return sqrt(length_squared(a));
 }
 
-Vec3f normalized(Vec3f a)
+Vec3f normalize(Vec3f a)
 {
 	return a / length(a);
 }
@@ -289,7 +289,7 @@ float32 length(Vec4f a)
 	return sqrt(length_squared(a));
 }
 
-Vec4f normalized(Vec4f a)
+Vec4f normalize(Vec4f a)
 {
 	return a / length(a);
 }
