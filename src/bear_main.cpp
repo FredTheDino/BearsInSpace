@@ -166,31 +166,35 @@ void step(World *_world, float32 delta)
 
 			CTransform transform = {};
 			transform.type = C_TRANSFORM;
-			transform.pos = {0.0f, 1.0f, 1.0f};
+			transform.pos = {0.0f, 3.0f, 0.0f};
 			transform.scale = {1.0f, 1.0f, 1.0f};
 			transform.rot = {1.0f, 0.0f, 0.0f, 0.0f};
 
 			CBody body = {};
 			body.type = C_BODY;
 			body.mass = 1.0f;
-			body.shape = make_box(1.0f, 10.0f, 10.0f);
+			body.velocity = {0.0f, -1.0f, 0.0f};
+			body.shape = make_box(2.0f, 2.0f, 2.0f);
 			body.rotational_velocity = {0.0f, 0.0f, -0.0f};
 
 			EntityID e = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, e, body, transform);
 
+#if 1
 			transform.type = C_TRANSFORM;
-			transform.pos = {-5.0f, 0.0f, 0.0f};
+			transform.pos = {-0.0f, 0.0f, 0.0f};
 			transform.rot = {1.0f, 0.0f, 0.0f, 0.0f};
 
 			body.type = C_BODY;
-			body.mass = 1.0f;
-			body.velocity = {1.0f, 0.0f, 0.0f};
+			body.mass = 0.0f;
+			body.velocity = {0.0f, 0.0f, 0.0f};
 			body.rotational_velocity = {0.0f, 0.0f, 0.0f};
-			body.shape = make_sphere(2.0f);
+			body.shape = make_box(10.0f, 1.0f, 10.0f);
 
 			EntityID f = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, f, body, transform);
+#endif
+#if 0
 
 			transform.type = C_TRANSFORM;
 			transform.pos = {15.0f, 0.0f, 0.0f};
@@ -198,23 +202,25 @@ void step(World *_world, float32 delta)
 			body.type = C_BODY;
 			body.mass = 1.0f;
 			body.velocity = {0.0f, 0.0f, 0.0f};
+			body.rotational_velocity = {0.0f, 0.0f, -0.0f};
 			body.shape = make_box(1.0f, 10.0f, 10.0f);
 
 			EntityID g = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, g, body, transform);
-			/*
+#endif
+#if 0
 
 			transform.type = C_TRANSFORM;
-			transform.pos = {10.0f, 5.0f, -0.0f};
+			transform.pos = {0.0f, 0.0f, 0.0f};
 
 			body.type = C_BODY;
 			body.mass = 0.0f;
 			body.velocity = {0.0f, 0.0f, 0.0f};
-			body.shape = make_box(1.0f, 10.0f, 30.0f);
+			body.shape = make_box(15.0f, 3.0f, 50.0f);
 
 			EntityID h = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, h, body, transform);
-			*/
+#endif
 		}
 
 		run_tests();

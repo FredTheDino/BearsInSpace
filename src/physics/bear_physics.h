@@ -65,17 +65,11 @@ struct CBody
 // Ranges in a tightly packed array.
 // Actual bodies stored in the "fancy array structure".
 
-enum BodyLimitFlags
-{
-	BLF_STATIC,
-};
-
 struct BodyLimit
 {
 	float32 min_limit;
 	float32 max_limit;
 
-	uint32 flags;
 	EntityID owner;
 };
 

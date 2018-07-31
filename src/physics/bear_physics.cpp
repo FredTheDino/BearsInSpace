@@ -3,16 +3,6 @@
 #include "bear_gjk.h"
 #include "bear_epa.h"
 
-void impulse_at(CBody *body, float32 relative_mass, Vec3f normal, Vec3f impulse, float32 distance)
-{
-	if (relative_mass == 0.0f)
-		return;
-	Vec3f p = normal * dot(impulse * relative_mass, normal) / distance;
-	Vec3f w = (impulse - p) / distance;
-	body->velocity += p;
-	//body->rotational_velocity += w;
-}
-
 Overlap overlap_test(Vec3f inital_direction, 
 		Shape a_shape,
 		Shape b_shape,
@@ -58,6 +48,7 @@ Overlap overlap_test(Vec3f inital_direction,
 
 		GFX::debug_draw_line({}, overlap.shortest_translation, {1.0f, 0.5f, 0.3f});
 		GFX::debug_draw_point(overlap.contact_point, {0.5f, 1.0f, 0.3f});
+		GFX::debug_draw_point(overlap.contact_point, {1.0f, 1.0f, 1.0f});
 	}
 
 	delete_array(&triangles);
@@ -147,7 +138,6 @@ bool add_body(Physics *phy, EntityID owner)
 {
 	BodyLimit limit;
 	limit.owner = owner;
-	//limit.flags = BLF_NEW;
 	append(&phy->body_limits, limit);
 	return true;
 }
@@ -165,22 +155,11 @@ void update_physics(ECS *ecs, Physics *engine, float32 delta)
 	GFX::debug_draw_line({}, {0.0f, 5.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
 	GFX::debug_draw_line({}, {0.0f, 0.0f, 5.0f}, {0.0f, 0.0f, 1.0f});
 
-	//
-	//////////////
-	// Sort the limits with velocity in mind
-	//////////////
-	// Run collision against the objects
-	//////////////
-	// Finish with that body
-	//////////////
-	// Loop
-	//
-
 	// Fixed physics steps? Maybe.
 	// NOTE: Should we extend this to use 3 axies, so we create bounding boxes
 	// for all the objects. How much of a speed up will it give? Is this fast
 	// enough for now? Probably.
-	Vec3f gravity = {}; //{0.0f, -9.82f * delta, 0.0f};
+	Vec3f gravity = {0.0f, -10.0f * delta, 0.0f};
 	Vec3f sort_direction = {0.0f, 0.0f, 1.0f};
 
 	//   Simulate the velocty change
@@ -206,10 +185,10 @@ void update_physics(ECS *ecs, Physics *engine, float32 delta)
 		
 		body->shape.transform = transform->transform;
 		Quat rot_vel = 
-			normalize(toQ(
+			toQ(
 				body->rotational_velocity.x * delta, 
 				body->rotational_velocity.y * delta, 
-				body->rotational_velocity.z * delta));
+				body->rotational_velocity.z * delta);
 		body->shape.transform.rot *= rot_vel;
 
 
@@ -233,18 +212,13 @@ void update_physics(ECS *ecs, Physics *engine, float32 delta)
 
 		ASSERT(limit.min_limit < limit.max_limit);
 
-		if (body->mass == 0.0f)
-			limit.flags |= BLF_STATIC;
-		else
-			limit.flags = 0;
-
 		set(engine->body_limits, i, limit);
 	}
 
 	// TODO: Drag the shapes by the velocity. It will help tunneling a bit.
 
 	// Insertion sort is one of the fastest with allready sorted lists.
-	// If you don't randomly change the sorting direction everyframe,
+	// If you don't randomly change the sorting direction every frame,
 	// this will be VERY performant.
 	for (int32 i = 1; i < size(engine->body_limits); i++)
 	{
@@ -301,7 +275,6 @@ void update_physics(ECS *ecs, Physics *engine, float32 delta)
 
 			Shape a_shape = inner->shape;
 			Shape b_shape = outer->shape;
-			GFX::debug_draw_line(shape_a.transform.pos, b_shape.transform.pos, {1.0f, 1.0f, 0.0f});
 			Overlap overlap = overlap_test({0.0f, 0.0f, 1.0f}, a_shape, b_shape, false);
 			if (overlap.depth <= 0)
 			{
@@ -309,12 +282,10 @@ void update_physics(ECS *ecs, Physics *engine, float32 delta)
 			}
 			// Static VS Dynamic
 
-			float32 bounce = 1.0f;
+			float32 bounce = 0.5f;
 			// Do we need this? It is needed for calculations. But I don't know if we need it.
-			Vec3f temp_inertia = {1.0f, 1.0f, 1.0f};
+			Vec3f temp_inertia = {3.0f, 3.0f, 3.0f};
 
-
-			GFX::debug_draw_point(overlap.contact_point, {1.0f, 1.0f, 1.0f});
 			Vec3f inner_radius = overlap.contact_point - inner->shape.transform.pos;
 			Vec3f outer_radius = overlap.contact_point - outer->shape.transform.pos;
 			Vec3f inner_velocity = inner->velocity + cross(inner_radius, overlap.normal);
@@ -331,81 +302,18 @@ void update_physics(ECS *ecs, Physics *engine, float32 delta)
 				continue;
 
 			// TODO
-			float32 j = relative_velocity / (inv_outer_mass + inv_inner_mass + 
+			float32 j = -relative_velocity / (inv_outer_mass + inv_inner_mass +
 				dot(overlap.normal * dot(cross(inner_radius, overlap.normal), temp_inertia), inner_radius) +
 				dot(overlap.normal * dot(cross(inner_radius, overlap.normal), temp_inertia), inner_radius));
-#if 0
-				dot(overlap.normal, cross(dot(cross(inner_radius, overlap.normal), temp_inertia), inner_radius)) +
-				dot(overlap.normal, cross(dot(cross(outer_radius, overlap.normal), temp_inertia), outer_radius));
-#endif
+
+			GFX::debug_draw_line(overlap.contact_point, overlap.contact_point + overlap.normal * j * 10.0f, {1.0f, 0.0f, 1.0f});
 			
-			outer->velocity += overlap.normal * j * inv_outer_mass;
-			inner->velocity -= overlap.normal * j * inv_inner_mass;
-			outer->rotational_velocity -= cross(outer_radius, overlap.normal * j) * 1.0f;
-			inner->rotational_velocity += cross(inner_radius, overlap.normal * j) * 1.0f;
-
-#if 0
-			if (dot(relative_velocity, overlap.normal) > 0.0f)
-				break;
-#endif
-
-			/*
-			Vec3f impulse = overlap.normal * dot(overlap.normal, relative_velocity);
-
-			impulse += inner->rotational_velocity * inner_to_contact;
-			impulse += outer->rotational_velocity * outer_to_contact;
-			
-			float32 total_mass = outer->mass + inner->mass;
-			impulse_at(outer, outer->mass / total_mass, overlap.normal, impulse, outer_to_contact);
-			impulse_at(inner, inner->mass / total_mass, overlap.normal, -impulse, inner_to_contact);
-
-			*/
-			/*
-			Vec3f angular_impulse_inner = cross(impulse, overlap.contact_point - inner->shape.transform.pos) / rotational_mass;
-			Vec3f angular_impulse_outer = cross(impulse, overlap.contact_point - outer->shape.transform.pos) / rotational_mass;
-			*/
-#if 0
-			CBody *static_body;
-			CBody *dynamic_body;
-
-			GFX::debug_draw_point(overlap.contact_point, {1.0f, 0.0f, 1.0f});
-			GFX::debug_draw_line(
-					overlap.contact_point - overlap.normal * 0.5f, 
-					overlap.contact_point + overlap.normal * 0.5f, {1.0f, 0.0f, 1.0f});
-			if (outer->mass == 0.0f)
-			{
-				static_body = outer;
-				dynamic_body = inner;
-
-				inner->velocity -= impulse;
-				inner->rotational_velocity -= angular_impulse_inner;
-				inner->shape.transform.pos -= overlap.shortest_translation;
-			}
-			else if (inner->mass == 0.0f)
-			{
-				static_body = inner;
-				dynamic_body = outer;
-
-				outer->velocity += impulse;
-				outer->rotational_velocity -= angular_impulse_outer;
-				outer->shape.transform.pos += overlap.shortest_translation;
-			}
-			else
-			{
-				Vec3f delta_vel = overlap.normal * dot(overlap.normal, relative_velocity);
-				float32 total_mass = outer->mass + inner->mass;
-				float32 inner_scale = outer->mass / total_mass;
-				inner->velocity -= delta_vel * inner_scale;
-				inner->shape.transform.pos -= overlap.shortest_translation * inner_scale;
-
-				float32 outer_scale = inner->mass / total_mass;
-				outer->velocity += delta_vel * outer_scale;
-				outer->shape.transform.pos += overlap.shortest_translation * outer_scale;
-
-				outer->rotational_velocity += angular_impulse_outer;
-				inner->rotational_velocity += angular_impulse_inner;
-			}
-#endif
+			outer->velocity -= overlap.normal * j * inv_outer_mass;
+			inner->velocity += overlap.normal * j * inv_inner_mass;
+			// TODO: Rotations aren't done correctly. The forces needs to be rotated since 
+			// they're ino world coordinates. This is a major bug.
+			outer->rotational_velocity -= cross(outer_radius, overlap.normal * j) * 1.0f * inv_outer_mass;
+			inner->rotational_velocity += cross(inner_radius, overlap.normal * j) * 1.0f * inv_inner_mass;
 		}
 	}
 
