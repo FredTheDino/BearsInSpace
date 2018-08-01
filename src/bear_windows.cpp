@@ -227,7 +227,7 @@ int CALLBACK WinMain(
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
 
-	SDL_GL_SetSwapInterval(0);
+	SDL_GL_SetSwapInterval(1);
 
 	// I don't think this needs OpenGL...
 	/*
@@ -258,7 +258,7 @@ int CALLBACK WinMain(
 	world.camera.roty = 5.7f;
 	world.camera.position = {-30.0f, 25.0f, 20.0f};;
 
-	SDL_PauseAudioDevice(audio_device, 0);
+	SDL_PauseAudioDevice(audio_device, 1);
 
 	init_input();
 	

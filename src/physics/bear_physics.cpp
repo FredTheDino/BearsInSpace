@@ -34,7 +34,7 @@ Collision collision_test(Vec3f inital_direction,
 	Collision collision = epa(simplex, &triangles, a->shape, *a->_transform, b->shape, *b->_transform);
 	collision.a = a;
 	collision.b = b;
-	collision.shortest_translation = collision.normal * collision.depth;
+	Vec3f penetration = collision.normal * collision.depth;
 
 	if (debug_draw)
 	{
@@ -48,7 +48,7 @@ Collision collision_test(Vec3f inital_direction,
 			GFX::debug_draw_line(center, center + t.normal, {0.5f, 0.3f, 0.75f});
 		}
 
-		GFX::debug_draw_line({}, collision.shortest_translation, {1.0f, 0.5f, 0.3f});
+		GFX::debug_draw_line({}, penetration, {1.0f, 0.5f, 0.3f});
 		GFX::debug_draw_point(collision.contact_point, {0.5f, 1.0f, 0.3f});
 		GFX::debug_draw_point(collision.contact_point, {1.0f, 1.0f, 1.0f});
 	}
@@ -180,22 +180,32 @@ bool add_body(Physics *phy, EntityID owner)
 	return true;
 }
 
+Quat rotate_by_vector(Quat q, Vec3f v, float32 delta = 1.0f)
+{
+	Quat r = {v.x, v.y, v.z, 0.0f};
+	Quat out = q + r * q * (delta / 2.0f);
+	return normalize(out);
+}
+
 void integrate_body(CBody *body, Vec3f gravity, float32 delta)
 {
 	body->acceleration = {};
-	body->acceleration = body->force_accumulator * body->inverse_mass + gravity;
+	if (body->inverse_mass != 0.0f)
+		body->acceleration = body->force_accumulator * body->inverse_mass + gravity;
 
 	body->velocity *= pow((float64) body->linear_damping, (float64) delta);
 
 	body->velocity += body->acceleration * delta;
 	body->_transform->position += body->velocity * delta + body->acceleration * delta * delta / 2.0f;
 
-	body->rotation *= pow((float64) body->angular_damping, (float64) delta);
-	Quat r = {body->rotation.x, body->rotation.y, body->rotation.z, 0.0f};
-	Quat o = body->_transform->orientation;
-	body->_transform->orientation = normalize(o + r * o * (delta / 2.0f));
+	GFX::debug_draw_line(
+			body->_transform->position,
+			body->_transform->position + body->velocity, 
+			{0.0f, 1.0f, 1.0f});
 
-	
+	body->rotation += body->torque_accumulator;
+	body->rotation *= pow((float64) body->angular_damping, (float64) delta);
+	body->_transform->orientation = rotate_by_vector(body->_transform->orientation, body->rotation, delta);
 }
 
 BodyLimit find_limit(CBody *body, Vec3f sort_direction)
@@ -262,6 +272,10 @@ void find_collisions(ECS *ecs, Physics *engine)
 			Collision collision = collision_test({0.0f, 0.0f, 1.0f}, a, b, false);
 			if (0.0f < collision.depth)
 			{
+				if (a->inverse_mass == 0.0f)
+					collision.a = nullptr;
+				if (b->inverse_mass == 0.0f)
+					collision.b = nullptr;
 				append(&engine->collisions, collision);
 			}
 		}
@@ -295,84 +309,189 @@ Mat4f make_orthonormal_basis(Vec3f x)
 	};
 }
 
+struct Inertia
+{
+	float32 linear;
+	float32 angular;
+	Vec3f velocity_per_impulse;
+	float32 total;
+};
+
+Inertia calculate_inertia(CBody *body, Vec3f normal, Vec3f relative_position)
+{
+	if (!body)
+		return {};
+
+	Inertia inertia;
+	Vec3f rotation_per_impulse = body->inverse_inertia * cross(relative_position, normal);
+	Vec3f velocity_per_impulse = cross(rotation_per_impulse, relative_position);
+	inertia.velocity_per_impulse = velocity_per_impulse;
+	inertia.angular = dot(velocity_per_impulse, normal); // This only works if you don't care about friction.
+	inertia.linear = body->inverse_mass;
+	inertia.total = inertia.angular + inertia.linear;
+	return inertia;
+}
+
+void apply_impulse_relative(CBody *body, Vec3f impulse, Vec3f rel)
+{
+	body->velocity += impulse * body->inverse_mass;
+	body->rotation += body->inverse_inertia * cross(rel, impulse);
+}
+
+void apply_impulse_at(CBody *body, Vec3f impulse, Vec3f at)
+{
+	apply_impulse_relative(body, impulse, at - body->_transform->position);
+}
+
 void solve_collisions_randomly(Physics *engine)
 {
 	// Solves them in the order they come in. For now.
 	auto collisions = engine->collisions;
 	for (int32 i = 0; i < size(collisions); i++)
 	{
-		DEBUG_LOG("HIT!\n");
+
 		Collision collision = get(collisions, i);
+		float32 bounce = 0.5f;
 		CBody *a = collision.a;
 		CBody *b = collision.b;
 
+		GFX::debug_draw_line(
+				collision.contact_point, 
+				collision.contact_point + collision.normal, 
+				{0.5f, 0.33f, 0.77f});
+
+		Vec3f a_relative;
+		if (a)
+			a_relative = collision.contact_point - a->_transform->position;
+		else
+			a_relative = {};
+
+		Vec3f b_relative;
+		if (b)
+			b_relative = collision.contact_point - b->_transform->position;
+		else
+			b_relative = {};
+
 		// Shouldn't this inverse inertia be rotated by the the bodys rotation relative to the normal? Maybe it doesn't? How do I figure it out?
-		// TODO: Move the bodies out of eachother.
-		float32 float_correct = 0.0001f;
-		if (a->inverse_mass == 0.0f)
-			b->_transform->position += collision.normal * (collision.depth + float_correct);
-		else if (b->inverse_mass == 0.0f)
-			a->_transform->position -= collision.normal * (collision.depth + float_correct);
+		// Position correction. TODO: Move the bodies out of eachother.
+
+		Inertia a_inertia = calculate_inertia(a, collision.normal, a_relative);
+		Inertia b_inertia = calculate_inertia(b, collision.normal, b_relative);
+
+		// Fix this cluster fuck...
+		const float32 angular_limit_constant = 0.2f;
+		float32 inverse_inertia = 1.0f / (a_inertia.total + b_inertia.total);
+		if (a_inertia.total)
+		{
+			float32 linear_move = collision.depth * inverse_inertia * a_inertia.linear;
+			float32 angular_move = collision.depth * inverse_inertia * a_inertia.angular;
+
+			float32 limit = angular_limit_constant * length(a_relative);
+			if (limit < absolute(angular_move))
+			{
+				float32 total_move = linear_move + angular_move;
+				angular_move = sign(angular_move) * limit;
+				linear_move = total_move - angular_move;
+			}
+
+			if (a_inertia.linear)
+			{
+				a->_transform->position -= collision.normal * linear_move;
+			}
+
+			if (a_inertia.angular)
+			{
+				Vec3f rotation_per_impulse = a->inverse_inertia * cross(collision.normal, a_relative);
+				Vec3f rotation = rotation_per_impulse * angular_move / a_inertia.angular;
+				a->_transform->orientation = rotate_by_vector(a->_transform->orientation, rotation);
+			}
+		}
+
+		if (b_inertia.total)
+		{
+			float32 linear_move = collision.depth * inverse_inertia * b_inertia.linear;
+			float32 angular_move = collision.depth * inverse_inertia * b_inertia.angular;
+
+			float32 limit = angular_limit_constant * length(b_relative);
+			if (limit < absolute(angular_move))
+			{
+				float32 total_move = linear_move + angular_move;
+				angular_move = sign(angular_move) * limit;
+				linear_move = total_move - angular_move;
+			}
+
+			if (b_inertia.linear)
+			{
+				b->_transform->position += collision.normal * linear_move;
+			}
+
+			if (b_inertia.angular)
+			{
+				Vec3f rotation_per_impulse = b->inverse_inertia * cross(collision.normal, b_relative);
+				Vec3f rotation = rotation_per_impulse * angular_move / b_inertia.angular;
+				b->_transform->orientation = rotate_by_vector(b->_transform->orientation, -rotation);
+			}
+		}
+
+		// Velocity correction. TODO: Function
 		Vec3f impulse;
 		{
 			Mat4f to_world = make_orthonormal_basis(collision.normal);
 			Mat4f to_contact = transpose(to_world); // This works cause it's a rotation.
-			float32 bounce = 0.0f;
-			float32 delta_vel;
-			Vec3f vel;
+			float32 delta_vel = 0.0f;
+			Vec3f a_vel;
 			if (a)
 			{
-				Vec3f a_rel_position = collision.contact_point - a->_transform->position;
-				Vec3f rotation_per_impulse = a->inverse_inertia * cross(a_rel_position, collision.normal);
-				Vec3f velocity_per_impulse = cross(rotation_per_impulse, a_rel_position);
-				// TODO: This only works because we only care for the x component. Won't work for friction.
-				delta_vel = dot(collision.normal, velocity_per_impulse); 
+				Vec3f velocity_per_impulse = (to_contact * a_inertia.velocity_per_impulse);
+				delta_vel += velocity_per_impulse.x;
+				//delta_vel += dot(collision.normal, a_inertia.velocity_per_impulse);
 				delta_vel += a->inverse_mass;
-				vel = a->velocity + cross(a->rotation, a_rel_position);
+				a_vel = a->velocity + cross(a->rotation, a_relative);
+			}
+			else
+			{
+				a_vel = {};
 			}
 
-
+			Vec3f b_vel;
 			if (b)
 			{
-				Vec3f b_rel_position = collision.contact_point - b->_transform->position;
-				Vec3f rotation_per_impulse = b->inverse_inertia * cross(b_rel_position, collision.normal);
-				Vec3f velocity_per_impulse = cross(rotation_per_impulse, b_rel_position);
-
-				// TODO: This only works because we only care for the x component. Won't work for friction.
-				delta_vel += dot(collision.normal, velocity_per_impulse);
+				Vec3f velocity_per_impulse = (to_contact * b_inertia.velocity_per_impulse);
+				delta_vel += velocity_per_impulse.x;
 				delta_vel += b->inverse_mass;
-
-				vel += b->velocity + cross(b->rotation, b_rel_position);
+				b_vel = b->velocity + cross(b->rotation, b_relative);
+			}
+			else
+			{
+				b_vel = {};
 			}
 
+
+			Vec3f vel = a_vel - b_vel;
+
 			// TODO: This only works because we only care for the x component. Won't work for friction.
-			float32 contact_speed = dot(collision.normal, vel);
-			float32 impulse_strength = contact_speed * (1.0f + bounce) / delta_vel; // Supposed to be anegative here.
-			/*
-			if (impulse_strength > 0.0f)
-				continue;
-			*/
-#if 0
+			Vec3f contact_speed = to_contact * vel;
+			if (absolute(contact_speed.x) < 0.05f)
+				bounce = 0.0f;
+			float32 impulse_strength = -contact_speed.x * (1.0f + bounce) / delta_vel;
 			Vec3f impulse_contact;
 			impulse_contact.x = impulse_strength;
 			impulse_contact.y = {};
 			impulse_contact.z = {};
 
 			impulse = to_world * impulse_contact;
-#else
-			impulse = collision.normal * impulse_strength;
 		}
-#endif
 
 		// Update velocity
-		a->velocity += impulse * a->inverse_mass;
-		b->velocity -= impulse * b->inverse_mass;
+		if (a)
+		{
+			apply_impulse_relative(a, impulse, a_relative);
+		}
 
-		Vec3f a_rel_position = collision.contact_point - a->_transform->position;
-		Vec3f b_rel_position = collision.contact_point - b->_transform->position;
-		a->rotation += a->inverse_inertia * cross(impulse, a_rel_position);
-		b->rotation -= b->inverse_inertia * cross(impulse, b_rel_position);
-
+		if (b)
+		{
+			apply_impulse_relative(b, -impulse, b_relative);
+		}
 	}
 }
 
@@ -428,129 +547,68 @@ void debug_draw_engine(ECS *ecs, Physics *engine)
 }
 
 // System
-void update_physics(ECS *ecs, Physics *engine, float32 delta)
+void update_physics(ECS *ecs, Physics *engine, float32 world_delta)
 {
 
 	// Fixed physics steps? Maybe.
 	// NOTE: Should we extend this to use 3 axies, so we create bounding boxes
 	// for all the objects. How much of a speed up will it give? Is this fast
-	// enough for now? Probably.
-	Vec3f gravity = {0.0f, -10.0f * delta, 0.0f};
-	Vec3f sort_direction = {0.0f, 0.0f, 1.0f};
+	// enough for now? Probably. Using the X, Y and Z axis is probably the best bet.
+	// But it's un noticeable for the ammount of collisions we have.
+	static float32 time_accumulator;
+	const float32 delta = 1.0f / 120.0f;
+	time_accumulator += world_delta;
 
-	//   Simulate the veloctiy change
-	//   Update the limits
+	// This is ugly, but there needs to be a way to get between the position and
+	// the body that is easier than this.
 	for (uint32 i = 0; i < size(engine->body_limits); i++)
 	{
 		BodyLimit limit = get(engine->body_limits, i);
-		
+
 		CBody *body = (CBody *) get_component(ecs, limit.owner, C_BODY);
 		CTransform *c_transform = (CTransform *) get_component(ecs, limit.owner, C_TRANSFORM);
 		body->_transform = &c_transform->transform;
 
 		ASSERT(body);
 		ASSERT(body->_transform);
-
-		integrate_body(body, {0.0f, -10.0f * delta, 0.0f}, delta);
-
-		BodyLimit limt = find_limit(body, sort_direction);
-		set(engine->body_limits, i, limt);
 	}
 
-	// TODO: Drag the shapes by the velocity. It will help tunneling a bit.
-
-
-
-	//sort_limits(&engine->body_limits);
-
-	clear(&engine->collisions);
-	find_collisions(ecs, engine);
-
-	solve_collisions_randomly(engine);
-#if 0
-	for (int32 outer_limit_index = 0; 
-		outer_limit_index < size(engine->body_limits);
-		outer_limit_index++)
+	while (time_accumulator > delta)
 	{
-		BodyLimit outer_limit = engine->body_limits[outer_limit_index];
-		CBody *outer = (CBody *) get_component(ecs, outer_limit.owner, C_BODY);
-		Vec3f offset = {(float32) outer_limit_index, 1.0f, 1.0f};
-		GFX::debug_draw_line(
-				sort_direction * outer_limit.min_limit + offset, 
-				sort_direction * outer_limit.max_limit + offset, 
-				{1.0f, 0.32f, 0.77f});
-		switch(outer->shape.id)
-		{
-			case (SHAPE_BOX):
-				debug_draw_box(outer->shape, {1.0f, 1.0f, 0.0f});
-				break;
-			case (SHAPE_SPHERE):
-				debug_draw_sphere(outer->shape, {1.0f, 1.0f, 0.0f});
-				break;
-			default:
-				GFX::debug_draw_point(outer->shape.transform.pos, {1.0f, 1.0f, 0.0f});
+		time_accumulator -= delta;
 
+		Vec3f gravity = {0.0f, -1000.0f * delta, 0.0f};
+		Vec3f sort_direction = {0.0f, 0.0f, 1.0f};
+		for (uint32 i = 0; i < size(engine->body_limits); i++)
+		{
+			BodyLimit limit = get(engine->body_limits, i);
+			CBody *body = (CBody *) get_component(ecs, limit.owner, C_BODY);
+
+			integrate_body(body, gravity, delta);
+
+			limit = find_limit(body, sort_direction);
+			set(engine->body_limits, i, limit);
 		}
-		for (int32 inner_limit_index = outer_limit_index + 1; 
-				inner_limit_index < size(engine->body_limits);
-				inner_limit_index++)
+
+		// TODO: Drag the shapes by the velocity. It will help tunneling a bit.
+
+		sort_limits(&engine->body_limits);
+
+		// NOTE: We're running the collision detection multiple times. This is 
+		// very slow and a bad idea... But it does produce some nice results.
+		// If we need to fix this. We can. It's just more complex to implement. 
+		// That would involce changeing the collision detection to return multiple
+		// collision points and updateing the collisions after by approximation after
+		// we calculate one.
+		for (uint32 i = 0; i < 3; i++)
 		{
-			BodyLimit inner_limit = engine->body_limits[inner_limit_index];
-			if (outer_limit.max_limit < inner_limit.min_limit)
-				break; // They can't possibly collide.
-			CBody *inner = (CBody *) get_component(ecs, inner_limit.owner, C_BODY);
-
-			if (outer->mass == 0.0f && inner->mass == 0.0f)
-				continue;
-
-			Collision collision = overlap_test({0.0f, 0.0f, 1.0f}, outer, inner, false);
-			if (overlap.depth <= 0)
-			{
-				continue;
-			}
-			// Static VS Dynamic
-
-			float32 bounce = 0.5f;
-			// Do we need this? It is needed for calculations. But I don't know if we need it.
-			Vec3f temp_inertia = {3.0f, 3.0f, 3.0f};
-
-			Vec3f inner_radius = overlap.contact_point - inner->shape.transform.pos;
-			Vec3f outer_radius = overlap.contact_point - outer->shape.transform.pos;
-			Vec3f inner_velocity = inner->velocity + cross(inner_radius, overlap.normal);
-			Vec3f outer_velocity = outer->velocity + cross(outer_radius, overlap.normal);
-			float32 relative_velocity = dot(inner_velocity - outer_velocity, overlap.normal) * (1.0f + bounce);
-			float32 inv_outer_mass = outer->mass == 0.0f ? 0.0f : 1.0f / outer->mass;
-			float32 inv_inner_mass = inner->mass == 0.0f ? 0.0f : 1.0f / inner->mass;
-
-			float32 total_mass = inner->mass + outer->mass;
-			outer->shape.transform.pos += overlap.normal * overlap.depth * inv_outer_mass / total_mass;
-			inner->shape.transform.pos -= overlap.normal * overlap.depth * inv_inner_mass / total_mass;
-
-			if (relative_velocity < 0.0f)
-				continue;
-
-			// TODO
-			float32 j = -relative_velocity / (inv_outer_mass + inv_inner_mass +
-				dot(overlap.normal * dot(cross(inner_radius, overlap.normal), temp_inertia), inner_radius) +
-				dot(overlap.normal * dot(cross(inner_radius, overlap.normal), temp_inertia), inner_radius));
-
-			GFX::debug_draw_line(overlap.contact_point, overlap.contact_point + overlap.normal * j * 10.0f, {1.0f, 0.0f, 1.0f});
-			
-			outer->velocity -= overlap.normal * j * inv_outer_mass;
-			inner->velocity += overlap.normal * j * inv_inner_mass;
-			// TODO: Rotations aren't done correctly. The forces needs to be rotated since 
-			// they're ino world coordinates. This is a major bug.
-			outer->rotational_velocity -= cross(outer_radius, overlap.normal * j) * 1.0f * inv_outer_mass;
-			inner->rotational_velocity += cross(inner_radius, overlap.normal * j) * 1.0f * inv_inner_mass;
+			clear(&engine->collisions);
+			find_collisions(ecs, engine);
+			if (size(engine->collisions) == 0)
+				break;
+			// Solving them randomly, is a bad idea. If we sort them and then solve them and updat them,
+			// we can make this bad boy run faster.
+			solve_collisions_randomly(engine);
 		}
 	}
-
-	for (uint32 i = 0; i < size(engine->body_limits); i++)
-	{
-		BodyLimit limit = get(engine->body_limits, i);
-		CBody *body = (CBody *) get_component(ecs, limit.owner, C_BODY);
-		CTransform *component = (CTransform *) get_component(ecs, limit.owner, C_TRANSFORM);;
-		component->transform = body->shape.transform;
-	}
-#endif
 }

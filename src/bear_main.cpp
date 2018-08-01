@@ -133,6 +133,8 @@ void draw()
 }
 #endif
 
+
+EntityID e;
 extern "C"
 void step(World *_world, float32 delta)
 {
@@ -192,24 +194,24 @@ void step(World *_world, float32 delta)
 
 			CTransform transform = {};
 			transform.type = C_TRANSFORM;
-			transform.position = {1.0f, 5.0f, -1.5f};
+			transform.position = {0.0f, 5.0f, -4.0f};
 			transform.scale = {1.0f, 1.0f, 1.0f};
 			transform.orientation = toQ(1.5f, 1.5f, 0.0f);
 
 			CBody body = {};
 			body.type = C_BODY;
-			body.inverse_mass = 1.0f;
-			body.velocity = {0.0f, -1.0f, 0.0f};
-			body.rotation = {0.0f, -0.0f, 0.0f};
-			body.linear_damping = 0.99f;
-			body.angular_damping = 1.0f;
+			body.inverse_mass = 0.1f;
+			body.velocity = {0.0f, -1.0f, 1.0f};
+			body.rotation = {0.0f, 1.0f, 1.0f};
+			body.linear_damping = 1.0f;
+			body.angular_damping = 0.99f;
 			body.shape = make_box(2.0f, 2.0f, 2.0f);
-			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 1.0f));
+			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 10.0f));
 
-			EntityID e = add_entity(&world->ecs);
+			e = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, e, body, transform);
 
-#if 1
+#if 1 // Plane
 			transform.type = C_TRANSFORM;
 			transform.position = {-1.0f, 1.0f, 1.0f};
 			transform.orientation = {1.0f, 0.0f, 0.0f, 0.0f};
@@ -226,16 +228,19 @@ void step(World *_world, float32 delta)
 			EntityID f = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, f, body, transform);
 #endif
-#if 0
+#if 0 // Cannon ball
 
 			transform.type = C_TRANSFORM;
-			transform.pos = {15.0f, 0.0f, 0.0f};
+			transform.position = {-4.0f, 6.0f, -1.0f};
 
 			body.type = C_BODY;
-			body.mass = 1.0f;
-			body.velocity = {0.0f, 0.0f, 0.0f};
-			body.rotational_velocity = {0.0f, 0.0f, -0.0f};
-			body.shape = make_box(1.0f, 10.0f, 10.0f);
+			body.inverse_mass = 1.0f;
+			body.velocity = {4.0f, 0.0f, 0.0f};
+			body.rotation = {0.0f, 0.0f, -0.0f};
+			body.linear_damping = 1.0f;
+			body.angular_damping = 0.99f;
+			body.shape = make_sphere(1.0f);
+			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 1.0f));
 
 			EntityID g = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, g, body, transform);
@@ -327,8 +332,13 @@ void step(World *_world, float32 delta)
 	
 	update(delta);
 	draw();
-	if (B_DOWN("play"))
-		run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+	if (B_PRESSED("play"))
+	{
+		CBody *body = (CBody *) get_component(&world->ecs, e, C_BODY);
+		body->velocity.y = 0.5f;
+	}
+
+	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
 	debug_draw_engine(&world->ecs, &world->phy);
 }
 

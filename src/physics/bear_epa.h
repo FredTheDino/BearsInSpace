@@ -79,17 +79,18 @@ Collision epa(Simplex simplex, Array<Triangle> *triangles, Shape a, Transform ta
 		append(triangles, _make_triangle(b, d, a, center));
 	}
 
-	Collision result;
+	Collision result = {};
 
 	auto removed_edges = create_array<Edge>(20);
 	
-	uint32 closest_triangle;
+	uint32 closest_triangle = 0;
 	for (uint32 itteration = 0; true; itteration++)
 	{
 		if (size(triangles) == 0)
-		{
-			break;
-		}
+			return {};
+		if (size(triangles) > EPA_MAX_ITTERATIONS * 10)
+			return {};
+
 		for (int32 i = 0; i < (int32) size(triangles); i++)
 		{
 			Triangle t = get(triangles, i);
@@ -155,6 +156,7 @@ Collision epa(Simplex simplex, Array<Triangle> *triangles, Shape a, Transform ta
 		float32 b_w = (aa * bc - ab * ac) / det;
 		float32 b_u = 1.0f - b_v - b_w;
 		
+		// We could find more contact points by projecting the two triangles onto eachother.
 		contact_point = t.a.a * b_u + t.b.a * b_v + t.c.a * b_w;
 	}
 	result.contact_point = contact_point;

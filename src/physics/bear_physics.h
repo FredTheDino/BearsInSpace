@@ -62,7 +62,7 @@ struct CBody
 
 	// Stored as axis angles.
 	Vec3f rotation;
-	// Vec3f torque_accumulator; TODO
+	Vec3f torque_accumulator;
 
 	Shape shape;
 };
@@ -79,7 +79,6 @@ struct Collision
 {
 	float32 depth;
 	Vec3f normal;
-	Vec3f shortest_translation;
 	Vec3f contact_point;
 
 	CBody *a;

@@ -16,10 +16,10 @@ enum InputType
 
 #define AXIS_VAL(name) world->plt.axis_value(name)
 #define B_STATE(name) world->plt.button_state(name)
-#define B_PRESSED(name) world->plt.button_state(name) == ButtonState::PRESSED
-#define B_RELEASED(name) world->plt.button_state(name) == ButtonState::RELEASED
-#define B_DOWN(name) world->plt.button_state(name) == ButtonState::DOWN
-#define B_UP(name) world->plt.button_state(name) == ButtonState::UP
+#define B_PRESSED(name) (world->plt.button_state(name) == ButtonState::PRESSED)
+#define B_RELEASED(name) (world->plt.button_state(name) == ButtonState::RELEASED)
+#define B_DOWN(name) (world->plt.button_state(name) == ButtonState::DOWN)
+#define B_UP(name) (world->plt.button_state(name) == ButtonState::UP)
 
 #else
 
