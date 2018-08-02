@@ -87,9 +87,9 @@ Collision epa(Simplex simplex, Array<Triangle> *triangles, Shape a, Transform ta
 	for (uint32 itteration = 0; true; itteration++)
 	{
 		if (size(triangles) == 0)
-			return {};
+			return {-1.0f};
 		if (size(triangles) > EPA_MAX_ITTERATIONS * 10)
-			return {};
+			return {-1.0f};
 
 		for (int32 i = 0; i < (int32) size(triangles); i++)
 		{

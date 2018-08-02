@@ -597,7 +597,9 @@ void init_input()
 	bind_axis_controller("up", 0, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 	bind_axis_controller("down", 0, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
 
-	bind_button_controller("play", 0, SDL_CONTROLLER_BUTTON_A);
+	bind_button_controller("forward", 0, SDL_CONTROLLER_BUTTON_A);
+	bind_button_controller("left", 0, SDL_CONTROLLER_BUTTON_B);
+	bind_button_controller("right", 0, SDL_CONTROLLER_BUTTON_X);
 }
 
 void destroy_input()

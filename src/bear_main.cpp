@@ -203,8 +203,8 @@ void step(World *_world, float32 delta)
 			body.inverse_mass = 0.1f;
 			body.velocity = {0.0f, -1.0f, 1.0f};
 			body.rotation = {0.0f, 1.0f, 1.0f};
-			body.linear_damping = 1.0f;
-			body.angular_damping = 0.99f;
+			body.linear_damping = 0.80f;
+			body.angular_damping = 0.80f;
 			body.shape = make_box(2.0f, 2.0f, 2.0f);
 			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 10.0f));
 
@@ -214,7 +214,7 @@ void step(World *_world, float32 delta)
 #if 1 // Plane
 			transform.type = C_TRANSFORM;
 			transform.position = {-1.0f, 1.0f, 1.0f};
-			transform.orientation = {1.0f, 0.0f, 0.0f, 0.0f};
+			transform.orientation = {1.0f, 0.0f, 0.0f, -0.05f};
 
 			body.type = C_BODY;
 			body.inverse_mass = 0.0f;
@@ -228,7 +228,7 @@ void step(World *_world, float32 delta)
 			EntityID f = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, f, body, transform);
 #endif
-#if 0 // Cannon ball
+#if 1 // Cannon ball
 
 			transform.type = C_TRANSFORM;
 			transform.position = {-4.0f, 6.0f, -1.0f};
@@ -332,10 +332,31 @@ void step(World *_world, float32 delta)
 	
 	update(delta);
 	draw();
-	if (B_PRESSED("play"))
+	if (B_DOWN("forward"))
 	{
 		CBody *body = (CBody *) get_component(&world->ecs, e, C_BODY);
-		body->velocity.y = 0.5f;
+		Vec3f offset = {-0.0f, -1.0f, 0.0f};
+		Vec3f impulse = {0.0f, 1.0f, 0.0f};
+		impulse *= delta * 25.0f;
+		relative_impulse(body, impulse, offset);
+	}
+
+	if (B_DOWN("left"))
+	{
+		CBody *body = (CBody *) get_component(&world->ecs, e, C_BODY);
+		Vec3f offset = {-0.0f, -0.0f, -1.0f};
+		Vec3f impulse = {0.0f, 1.0f, 0.0f};
+		impulse *= delta * 25.0f;
+		relative_impulse(body, impulse, offset);
+	}
+
+	if (B_DOWN("right"))
+	{
+		CBody *body = (CBody *) get_component(&world->ecs, e, C_BODY);
+		Vec3f offset = {-0.0f, -0.0f, 1.0f};
+		Vec3f impulse = {0.0f, 1.0f, 0.0f};
+		impulse *= delta * 25.0f;
+		relative_impulse(body, impulse, offset);
 	}
 
 	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 

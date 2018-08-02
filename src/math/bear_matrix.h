@@ -16,6 +16,24 @@ struct Mat4f
 		float32 __[16];
 	};
 
+	Mat4f operator* (float32 s)
+	{
+		Mat4f out;
+		for (uint8 i = 0; i < 16; i++)
+		{
+			out.__[i] = __[i] * s;
+		}
+		return out;
+	}
+
+	void operator*= (float32 s)
+	{
+		for (uint8 i = 0; i < 16; i++)
+		{
+			__[i] = __[i] * s;
+		}
+	}
+
 	Mat4f operator* (Mat4f m)
 	{
 		Mat4f out = {};
@@ -30,6 +48,11 @@ struct Mat4f
 			}
 		}
 		return out;
+	}
+	
+	void operator*= (Mat4f m)
+	{
+		*this = (*this) * m;
 	}
 
 	Vec4f operator* (Vec4f v)
@@ -56,6 +79,24 @@ struct Mat4f
 				return false;
 		}
 		return true;
+	}
+
+	Mat4f operator+ (Mat4f m)
+	{
+		Mat4f out;
+		for (uint8 i = 0; i < 16; i++)
+		{
+			out.__[i] = m.__[i] + __[i];
+		}
+		return out;
+	}
+
+	void operator+= (Mat4f m)
+	{
+		for (uint8 i = 0; i < 16; i++)
+		{
+			__[i] = m.__[i] + __[i];
+		}
 	}
 };
 
@@ -153,6 +194,19 @@ Mat4f toMat4f(Q q)
 Mat4f rotate(Mat4f m, Quaternion q)
 {
 	return m * toMat4f(q);
+}
+
+Mat4f create_skew_symmetric(Vec3f v)
+{
+	Mat4f m;
+	m._00 = m._11 = m._22 = m._33 = 0.0f;
+	m._10 =  v.z;
+	m._01 = -v.z;
+	m._02 =  v.y;
+	m._20 = -v.y;
+	m._13 =  v.z;
+	m._31 = -v.z;
+	return m;
 }
 
 Mat4f zero_transform(Mat4f m)
