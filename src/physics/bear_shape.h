@@ -35,7 +35,12 @@ struct Shape
 			Shape *b;
 		};
 		// Mesh
-		Array<Vec3f> points;
+		struct
+		{
+			Array<Vec3f> points;
+			Array<int32> indicies;
+			uint32 stride;
+		};
 	};
 };
 

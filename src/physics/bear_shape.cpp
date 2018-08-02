@@ -18,6 +18,16 @@ Shape make_box(float32 width, float32 height, float32 depth)
 	return box;
 }
 
+Shape make_mesh(Array<Vec3f> points, uint32 stride=0, Array<int32> indicies={})
+{
+	Shape mesh;
+	mesh.id = SHAPE_MESH;
+	mesh.points = points;
+	mesh.indicies = indicies;
+	mesh.stride = stride;
+	return mesh;
+}
+
 Shape make_line(Vec3f start, Vec3f end)
 {
 	Shape line;
@@ -56,6 +66,22 @@ Vec3f support(Vec3f direction, Shape shape)
 			break;
 		case (SHAPE_SUM):
 			point = support(direction, *shape.a) + support(direction, *shape.b);
+			break;
+		case (SHAPE_MESH):
+			{
+				float32 best_distance = dot(shape.points[0], direction);
+				point = shape.points[0];
+				for (uint32 i = 1; i < size(shape.points); i++)
+				{
+					float32 distance = dot(shape.points[i], direction);
+					if (best_distance < distance)
+					{
+						best_distance = distance;
+						point = shape.points[i];
+					}
+					
+				}
+			}
 			break;
 		default:
 			PRINT("[PHYSICS] Unsupported ShapeID %d\n", shape.id);

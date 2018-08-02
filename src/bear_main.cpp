@@ -121,9 +121,9 @@ void draw()
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#if 0
 	GFX::debug_draw_point({ .0f, .0f, .0f }, { .5f, .75f, .25f });
 
-#if 0
 	GFX::bind(texture);
 	GFX::draw(renderable);
 
@@ -133,6 +133,7 @@ void draw()
 }
 #endif
 
+Mesh cone;
 
 EntityID e;
 extern "C"
@@ -208,8 +209,10 @@ void step(World *_world, float32 delta)
 			body.shape = make_box(2.0f, 2.0f, 2.0f);
 			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 10.0f));
 
+#if 0 // Box
 			e = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, e, body, transform);
+#endif
 
 #if 1 // Plane
 			transform.type = C_TRANSFORM;
@@ -231,15 +234,18 @@ void step(World *_world, float32 delta)
 #if 1 // Cannon ball
 
 			transform.type = C_TRANSFORM;
-			transform.position = {-4.0f, 6.0f, -1.0f};
+			transform.position = {-0.0f, 3.0f, -0.0f};
+
+			cone = load_mesh("res/monkey.obj");
+			if (cone.valid)
 
 			body.type = C_BODY;
 			body.inverse_mass = 1.0f;
-			body.velocity = {4.0f, 0.0f, 0.0f};
-			body.rotation = {0.0f, 0.0f, -0.0f};
+			body.velocity = {0.0f, 0.0f, 0.0f};
+			body.rotation = {0.0f, 0.0f, 2.0f};
 			body.linear_damping = 1.0f;
 			body.angular_damping = 0.99f;
-			body.shape = make_sphere(1.0f);
+			body.shape = make_mesh(cone.positions, cone.stride, cone.indicies);
 			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 1.0f));
 
 			EntityID g = add_entity(&world->ecs);
@@ -265,6 +271,7 @@ void step(World *_world, float32 delta)
 		// Test code.
 		Mesh mesh = load_mesh("res/monkey.obj");
 		free_mesh(mesh);
+
 		
 		// Shader program
 		Array<GFX::ShaderInfo> shader_info = {
@@ -332,6 +339,7 @@ void step(World *_world, float32 delta)
 	
 	update(delta);
 	draw();
+#if 0
 	if (B_DOWN("forward"))
 	{
 		CBody *body = (CBody *) get_component(&world->ecs, e, C_BODY);
@@ -358,8 +366,8 @@ void step(World *_world, float32 delta)
 		impulse *= delta * 25.0f;
 		relative_impulse(body, impulse, offset);
 	}
-
-	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+#endif
+	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f) * B_DOWN("forward")); 
 	debug_draw_engine(&world->ecs, &world->phy);
 }
 

@@ -97,6 +97,27 @@ Mat4f calculate_inertia_tensor(Shape shape, float32 mass)
 				inertia._22 = c;
 			}
 			break;
+		case (SHAPE_MESH):
+			{
+				Vec3f x = {1.0f, 0.0f, 0.0f};
+				float32 x_sum = 0.0f;
+				Vec3f y = {0.0f, 1.0f, 0.0f};
+				float32 y_sum = 0.0f;
+				Vec3f z = {0.0f, 0.0f, 1.0f};
+				float32 z_sum = 0.0f;
+
+				for (uint32 i = 0; i < size(shape.points); i++)
+				{
+#define dot_n_square(p, axis) (dot(p, axis) * dot(p, axis))
+					Vec3f p = get(shape.points, i);
+					x_sum += dot_n_square(p, x);
+					y_sum += dot_n_square(p, y);
+					z_sum += dot_n_square(p, z);
+				}
+				inertia._00 = x_sum * mass / size(shape.points);
+				inertia._11 = y_sum * mass / size(shape.points);
+				inertia._22 = z_sum * mass / size(shape.points);
+			}
 		default:
 			break;
 	}
@@ -173,6 +194,36 @@ void debug_draw_sphere(Transform t, float32 radius, Vec3f color)
 void debug_draw_sphere(CBody *body, Vec3f color)
 {
 	debug_draw_sphere(*body->_transform, body->shape.radius, color);
+}
+
+void debug_draw_mesh_as_points(Transform t, Array<Vec3f> points, Vec3f color)
+{
+	for (uint32 i = 0; i < size(points); i++)
+	{
+		Vec3f p = get(points, i);
+		GFX::debug_draw_point(t * p, color);
+	}
+}
+
+void debug_draw_mesh_with_indicies(Transform t, Array<Vec3f> points, uint32 stride, Array<int32> indicies, Vec3f color)
+{
+	for (uint32 i = 0; i < size(indicies); i += stride * 3)
+	{
+		Vec3f a = t * get(points, get(indicies, i + stride * 0) - 1);
+		Vec3f b = t * get(points, get(indicies, i + stride * 1) - 1);
+		Vec3f c = t * get(points, get(indicies, i + stride * 2) - 1);
+		GFX::debug_draw_line(a, b, color);
+		GFX::debug_draw_line(c, b, color);
+		GFX::debug_draw_line(c, a, color);
+	}
+}
+
+void debug_draw_mesh(CBody *body, Vec3f color)
+{
+	if (size(body->shape.indicies) == 0)
+		debug_draw_mesh_as_points(*body->_transform, body->shape.points, color);
+	else
+		debug_draw_mesh_with_indicies(*body->_transform, body->shape.points, body->shape.stride, body->shape.indicies, color);
 }
 
 bool add_body(Physics *phy, EntityID owner)
@@ -617,7 +668,6 @@ void solve_collisions_randomly(Physics *engine)
 
 void debug_draw_engine(ECS *ecs, Physics *engine)
 {
-	Vec3f sort_direction = {0.0f, 0.0f, 1.0f}; // COpY
 
 	GFX::debug_draw_line({}, {5.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f});
 	GFX::debug_draw_line({}, {0.0f, 5.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
@@ -632,12 +682,13 @@ void debug_draw_engine(ECS *ecs, Physics *engine)
 		float32 length = spacing * grid_dim;
 		float32 offset = start + grid * spacing;
 
-		Vec3f z_start = {-length, 0.0f, offset};
-		Vec3f z_end = {length, 0.0f, offset};
+		float32 depth = -0.5f;
+		Vec3f z_start = {-length, depth, offset};
+		Vec3f z_end = {length, depth, offset};
 		GFX::debug_draw_line(z_start, z_end, color);
 
-		Vec3f x_start = {offset, 0.0f, -length};
-		Vec3f x_end = {offset, 0.0f, length};
+		Vec3f x_start = {offset, depth, -length};
+		Vec3f x_end = {offset, depth, length};
 		GFX::debug_draw_line(x_start, x_end, color);
 	}
 
@@ -651,12 +702,14 @@ void debug_draw_engine(ECS *ecs, Physics *engine)
 				body->_transform->position + body->velocity, 
 				{0.0f, 1.0f, 1.0f});
 
-
+#if 0 // Draws the broadphase.
+		Vec3f sort_direction = {0.0f, 0.0f, 1.0f}; // COpY
 		Vec3f offset = {(float32) i, 1.0f, 1.0f};
 		GFX::debug_draw_line(
 				sort_direction * limit.min_limit + offset, 
 				sort_direction * limit.max_limit + offset, 
 				{1.0f, 0.32f, 0.77f});
+#endif
 
 		switch(body->shape.id)
 		{
@@ -665,6 +718,9 @@ void debug_draw_engine(ECS *ecs, Physics *engine)
 				break;
 			case (SHAPE_SPHERE):
 				debug_draw_sphere(body, {1.0f, 1.0f, 0.0f});
+				break;
+			case (SHAPE_MESH):
+				debug_draw_mesh(body, {1.0f, 1.0f, 0.0f});
 				break;
 			default:
 				GFX::debug_draw_point(body->_transform->position, {1.0f, 1.0f, 0.0f});
@@ -703,7 +759,7 @@ void update_physics(ECS *ecs, Physics *engine, float32 world_delta)
 	{
 		time_accumulator -= delta;
 
-		Vec3f gravity = {0.0f, 0.0f * delta, 0.0f};
+		Vec3f gravity = {0.0f, -100.0f * delta, 0.0f};
 		Vec3f sort_direction = {0.0f, 0.0f, 1.0f};
 		for (uint32 i = 0; i < size(engine->body_limits); i++)
 		{
@@ -726,7 +782,7 @@ void update_physics(ECS *ecs, Physics *engine, float32 world_delta)
 		// That would involce changeing the collision detection to return multiple
 		// collision points and updateing the collisions after by approximation after
 		// we calculate one.
-		for (uint32 i = 0; i < 3; i++)
+		for (uint32 i = 0; i < 1; i++)
 		{
 			clear(&engine->collisions);
 			find_collisions(ecs, engine);
