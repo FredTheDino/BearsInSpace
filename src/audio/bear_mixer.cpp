@@ -40,7 +40,7 @@ void sound(int16 *out_buffer, int32 num_samples)
 	num_samples *= 0.5f;
 
 	Audio *audio = &world->audio;
-	for (int32 i = 0; i <= audio->max_source; i++)
+	for (int32 i = 0; i < audio->max_source; i++)
 	{
 		AudioSource source = audio->sources[i];
 		if (source.id.uid < 0) continue;

@@ -2,14 +2,25 @@
 
 // Functions
 template <typename T>
-Array<T> create_array(uint64 limit)
+Array<T> static_array(uint64 limit)
 {
 	Array<T> arr;
-	arr.data = MALLOC2(T, limit);
+	arr.data = push_array_to_static(T, limit);
 	arr.limit = limit;
 	arr.size = 0;
 	return arr;
 }
+
+template <typename T>
+Array<T> temp_array(uint64 limit)
+{
+	Array<T> arr;
+	arr.data = (T *) push_memory_to_temp(sizeof(T) * limit);
+	arr.limit = limit;
+	arr.size = 0;
+	return arr;
+}
+
 
 template <typename T>
 void append(Array<T> *arr, T val)
@@ -18,6 +29,24 @@ void append(Array<T> *arr, T val)
 		relimit(arr, arr->limit * 2);
 	
 	arr->data[arr->size++] = val;
+}
+
+template <typename T>
+Array<T> temp_array(std::initializer_list<T> list)
+{
+	auto arr = temp_array<T>((uint64) list.size());
+	for (auto e : list)
+		append(&arra, e);
+	return arr;
+}
+
+template <typename T>
+Array<T> static_array(std::initializer_list<T> list)
+{
+	auto arr = static_array<T>((uint64) list.size());
+	for (auto e : list)
+		append(&arra, e);
+	return arr;
 }
 
 template <typename T>
@@ -135,7 +164,7 @@ void delete_array(Array<T> *arr)
 {
 	if (arr->data)
 	{
-		FREE(arr->data);
+		pop_memory_from_static(arr->data);
 		arr->data = 0;
 	}
 }

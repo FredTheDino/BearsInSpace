@@ -30,7 +30,7 @@ void init_ecs(World *world)
 	{
 		if (cs[i].c)
 			continue;
-		LOG("ECS", "No Initalization for component type %u. Please check 'init_ecs' in '" __FILE__ "'\n");
+		world->plt.print("[%s] ECS: No Initalization for component type %u. Please check 'init_ecs' \n",  __FILE__, i);
 	}
 };
 

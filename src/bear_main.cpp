@@ -2,26 +2,31 @@
 // This file should _NOT HAVE ANY_ platform specific code,
 // that code should be placed on the platform layer.
 
+struct GameMemory;
+GameMemory *mem;
 
-#define BEAR_GAME
+#include "bear_shared.h"
+#include "bear_memory.cpp"
 #include "bear_main.h"
 
-// Misc
-#include "bear_array.h"
+PLT plt;
+World *world;
 
-// Math
-#include "math/bear_math.h"
-
-// GFX
-#include "glad.c"
-#include "bear_obj_loader.cpp"
-
-#include "bear_gfx.h"
-#define GL_LOADED glClear
+// Array
+#include "bear_array.cpp"
 
 // Audio
 #include "audio/bear_audio.cpp"
 #include "audio/bear_mixer.cpp"
+
+#if 0
+// GFX
+#include "glad.c"
+#define GL_LOADED glClear
+#include "bear_obj_loader.cpp"
+
+#include "bear_gfx.h"
+
 
 // ECS
 #include "ecs/bear_ecs.cpp"
@@ -31,7 +36,13 @@
 
 // Tests
 #include "bear_test.cpp"
+#endif
 
+
+#include "glad.c"
+#define GL_LOADED glClear
+
+#if 0
 GFX::Renderable renderable;
 GFX::VertexBuffer vertex_buffer;
 GFX::VertexArray vertex_array;
@@ -39,60 +50,86 @@ GFX::ShaderProgram program;
 GFX::Texture texture;
 Transform transform = create_transform();
 Camera camera;
+#endif
 
 #if 0
 float32 rotx = 0;
 float32 roty = 0;
-#endif
-float32 speed = 6.0f;
 
-#if 1
+Mesh cone;
+float32 speed = 6.0f;
+#endif
+
+
+#define PRINT(__VA_ARGS__) plt.print(__VA_ARGS__)
+#define LOG(type, msg) plt.log(__FILE__, __LINE__, type, msg)
+
+AudioID buffer;
+
+struct SuperWorld
+{
+	float32 list[10];
+};
+
+// Enter APP
+extern "C"
+void init(PLT _plt, GameMemory *_mem)
+{
+	mem = _mem;
+	plt = _plt;
+	world = push_struct_to_static(World);
+#if 0
+	world->audio.max_source = -1;
+	world->audio.max_buffer = -1;
+#endif
+
+	buffer = load_sound(&world->audio, "res/stockhausen.wav");
+
+	void *ptr = push_struct_to_static(World);
+	void *ptr_2 = push_struct_to_static(SuperWorld);
+	pop_memory_from_static(ptr_2);
+	pop_memory_from_static(ptr);
+
+	Array<float32> float_array = static_array<float32>(10);
+	delete_array(&float_array);
+
+	Array<float32> temp_float_array = temp_array<float32>(30);
+
+
+	OSFile file = plt.read_file("res/hello.txt", push_memory_to_temp);
+	plt.print("File contents: %s\n", (char *) file.data);
+	PRINT("Init!\n");
+}
+
+// Reload the library.
+extern "C"
+void reload(PLT _plt, GameMemory *_mem)
+{
+	mem = _mem;
+	plt = _plt;
+	world = (World *) ((MemoryAllocation *) _mem->static_memory + 1);
+	play_sound(&world->audio, buffer, 1.0f, 1.0f);
+	PRINT("Reload!\n");
+	PRINT("NNNNNNNN!\n");
+}
+
+// Exit APP
+extern "C"
+void destroy()
+{
+	PRINT("Destroy!\n");
+}
+
+// Exit the library
+extern "C"
+void replace()
+{
+	PRINT("Replace!\n");
+}
+
+#if 0
 void update(float32 delta)
 {
-#if 0
-	// Temporary test code.
-	EntityID entity = add_entity(&world->ecs);
-	Position comp;
-	comp.type = C_POSITION;
-	comp.position = {1.0f, 2.0f, 3.0f};
-
-	Blargh blarg;
-	blarg.type = C_BLARGH;
-	blarg.a = 32;
-	blarg.b = 11111111;
-
-	add_components(&world->ecs, entity, &comp, &blarg);
-
-	EntityID entity2 = add_entity(&world->ecs);
-	add_component(&world->ecs, entity2, C_BLARGH, (BaseComponent *) &blarg);
-
-	remove_entity(&world->ecs, entity);
-	remove_entity(&world->ecs, entity2);
-
-	run_system(S_HELLO_WORLD, world, delta);
-
-	id = load_sound(&world->audio, "res/smack.wav");
-	stockhousen = load_sound(&world->audio, "res/stockhausen.wav");
-	play_music(&world->audio, stockhousen, 1.0f, 1.0f, true);
-	world->audio.left = {-1.0f, 0.0f, 0.0f};
-	world->audio.position = { (float32) sin(t / 2.0f), 0.0f, 2.0f};
-	t += delta;
-
-	static bool pressed_jump = false;
-	if (world->input.jump)
-	{
-		if (!pressed_jump)
-		{
-			pressed_jump = true;
-			play_sound(&world->audio, id, 0.5f, 0.5f);
-		}
-	}
-	else
-	{
-		pressed_jump = false;
-	}
-#endif
-
 	float32 rx = AXIS_VAL("xrot") * 3.0f * delta;
 	float32 ry = AXIS_VAL("yrot") * 3.0f * delta;
 
@@ -133,14 +170,10 @@ void draw()
 }
 #endif
 
-Mesh cone;
-
-EntityID e;
 extern "C"
-void step(World *_world, float32 delta)
+void step(float32 delta)
 {
-
-	world = _world;
+	//LOG("DEBUG", "MEEEEEEEEEEEEEEEEEEEEP!");
 	
 	// Initialize GLAD if necessary
 	if (!GL_LOADED)
@@ -149,11 +182,13 @@ void step(World *_world, float32 delta)
 
 		glEnable(GL_DEPTH_TEST);
 
+#if 0
 		GFX::init_matrix_profiles();
 
 		GFX::init_debug();
-		
+#endif
 	}
+#if 0
 
 	if (should_run_tests)
 	{
@@ -369,6 +404,7 @@ void step(World *_world, float32 delta)
 #endif
 	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f) * B_DOWN("forward")); 
 	debug_draw_engine(&world->ecs, &world->phy);
+#endif
 }
 
 

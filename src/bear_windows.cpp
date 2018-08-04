@@ -5,31 +5,35 @@ int win_printf(const char *format, ...);
 #include <windows.h>
 #include <SDL2/SDL.h>
 
-#include "bear_main.h"
+#include "bear_shared.h"
+
+#define DEBUG_LOG(msg) win_printf("[%s] DEBUG: %s\n", __FILE__, msg);
+
+//#include "bear_main.h"
 #include "glad.c"
 
-// Group this up?
-
-typedef void (*StepFunc)(World *, float32);
-typedef void (*SoundFunc)(int16 *, int32);
+GameMemory mem;
+PLT plt;
 
 struct GameHandle
 {
 	StepFunc step;
 	SoundFunc sound;
 
+	ReloadFunc reload;
+	ReplaceFunc replace;
+
+	DestroyFunc destroy;
+
 	// So the sound thread doesn't run when we unload.
 	SDL_mutex *lock;
+	bool first_load;
 
 	int32 access_time;
 	HMODULE lib;
 };
 
 static GameHandle game;
-
-// This is ugly... I know.
-MemoryAllocation __mem[1024];
-
 
 int32 win_printf(const char *format, ...)
 {
@@ -39,6 +43,11 @@ int32 win_printf(const char *format, ...)
 	int len = vsprintf(buffer, format, args);
 	OutputDebugString(buffer);
 	return len;
+}
+
+void win_log(const char *file, int32 line, const char *type, const char *msg)
+{
+	win_printf("[%s:%d] %s  %s\n", file, line, type, msg);
 }
 
 int32 get_file_edit_time(const char *path)
@@ -84,44 +93,77 @@ bool load_libbear(GameHandle *handle)
 	SDL_LockMutex(game.lock);
 	if (game.lib)
 	{
+		game.replace();
 		FreeLibrary(game.lib);
 	}
+
 	CopyFile(path, temp_path, false);
 	game.lib = LoadLibrary(temp_path);
 	if (!game.lib)
 	{
-		win_printf("[DLL-ERROR] %d\n", GetLastError());
 		DEBUG_LOG("Failed to load libgame.so!");
 		return false;
 	}
 	StepFunc step = (StepFunc) GetProcAddress(game.lib, "step");
 	if (!step)
 	{
-		win_printf("[DLL-ERROR] %d\n", GetLastError());
-		DEBUG_LOG("Failed to load game_update!");
-		return false;
+		goto LIB_LOAD_FAIL;
 	}
 	SoundFunc sound = (SoundFunc) GetProcAddress(game.lib, "sound");
 	if (!sound)
 	{
-		win_printf("[DLL-ERROR] %d\n", GetLastError());
-		DEBUG_LOG("Failed to load game_draw!");
-		return false;
+		goto LIB_LOAD_FAIL;
+	}
+	ReloadFunc reload = (ReloadFunc) GetProcAddress(game.lib, "reload");
+	if (!reload)
+	{
+		goto LIB_LOAD_FAIL;
+	}
+	ReplaceFunc replace = (ReplaceFunc) GetProcAddress(game.lib, "replace");
+	if (!replace)
+	{
+		goto LIB_LOAD_FAIL;
+	}
+	DestroyFunc destroy = (DestroyFunc) GetProcAddress(game.lib, "destroy");
+	if (!destroy)
+	{
+		goto LIB_LOAD_FAIL;
 	}
 
-	DEBUG_LOG("Reload!");
+	if (game.first_load)
+	{
+		game.first_load = false;
+		InitFunc init = (InitFunc) GetProcAddress(game.lib, "init");
+		if (!init)
+		{
+			goto LIB_LOAD_FAIL;
+		}
+		init(plt, &mem);
+	}
+
+	DEBUG_LOG("======== Reload! =========");
 	game.access_time = access_time;
 
 	game.step = step;
-
 	game.sound = sound;
-	SDL_UnlockMutex(game.lock);
+	game.reload = reload;
+	game.replace = replace;
+	game.destroy = destroy;
+
+	game.reload(plt, &mem);
 
 	*handle = game;
+	SDL_UnlockMutex(game.lock);
+
 	return true;
+
+LIB_LOAD_FAIL:
+	win_printf("[DLL-ERROR] %d\n", GetLastError());
+	SDL_UnlockMutex(game.lock);
+	return false;
 }
 
-OSFile read_entire_file(const char *path)
+OSFile read_entire_file(const char *path, AllocatorFunc alloc)
 {
 	OSFile file = {};
 	file.timestamp = get_file_edit_time(path);
@@ -139,7 +181,7 @@ OSFile read_entire_file(const char *path)
 	fseek(disk, 0, SEEK_END);
 	file.size = ftell(disk);
 	fseek(disk, 0, SEEK_SET);
-	file.data = malloc_("FILE IO", 0, file.size + 1);
+	file.data = alloc(file.size + 1);
 	fread(file.data, file.size, 1, disk);
 	((uint8 *) file.data)[file.size] = 0; // Null terminate.
 	fclose(disk);
@@ -151,7 +193,7 @@ void free_file(OSFile file)
 {
 	if (file.data)
 	{
-		FREE(file.data);
+		//FREE(file.data);
 		file.data = 0;
 	}
 }
@@ -163,20 +205,24 @@ void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
 	SDL_UnlockMutex(game.lock);
 }
 
+
 int CALLBACK WinMain(
   HINSTANCE hInstance,
   HINSTANCE hPrevInstance,
   LPSTR     lpCmdLine,
   int       nCmdShow)
 {
+	plt.print = win_printf;
+	plt.log = win_log;
+	plt.read_file = read_entire_file;
+#if 0
 	world.plt.malloc = malloc_;
 	world.plt.free = free_;
 	world.plt.realloc = realloc_;
 
 	world.plt.print = win_printf;
-	world.plt.log = debug_log_;
+	world.plt.log = win_log;
 
-	world.plt.read_file = read_entire_file;
 	world.plt.free_file = free_file;
 	world.plt.last_write = get_file_edit_time;
 
@@ -191,8 +237,26 @@ int CALLBACK WinMain(
 	init_ecs(&world);
 
 	init_phy(&world);
+#endif
+
+	mem.static_memory_size = GIGABYTE(1);
+	mem.static_memory = (uint8 *) VirtualAlloc(0, mem.static_memory_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	if (mem.static_memory == nullptr)
+	{
+		win_printf("Failed to allocate game memory, gonna crash now. Sorry.\n");
+		HALT_AND_CATCH_FIRE();
+	}
+
+	mem.temp_memory_size = GIGABYTE(1);
+	mem.temp_memory = (uint8 *) VirtualAlloc(0, mem.temp_memory_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	if (mem.temp_memory == nullptr)
+	{
+		win_printf("Failed to allocate game memory, gonna crash now. Sorry.\n");
+		HALT_AND_CATCH_FIRE();
+	}
 
 	game.lock = SDL_CreateMutex();
+	game.first_load = true;
 	if (load_libbear(&game) == false)
 	{
 		return(-1);
@@ -227,17 +291,7 @@ int CALLBACK WinMain(
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
 
-	SDL_GL_SetSwapInterval(1);
-
-	// I don't think this needs OpenGL...
-	/*
-	if (gladLoadGL() == 0)
-	{
-		DEBUG_LOG("Unable to load OpenGL.");
-		SDL_Quit();
-		return(-1);
-	}
-	*/
+	SDL_GL_SetSwapInterval(0);
 
 	SDL_AudioSpec audio_spec = {};
 	audio_spec.callback = plt_audio_callback;
@@ -253,18 +307,22 @@ int CALLBACK WinMain(
 		return(-1);
 	}
 
+	SDL_PauseAudioDevice(audio_device, 0);
+
+#if 0
 	// Can't be asked to move the camera.
 	world.camera.rotx = -1.0f;
 	world.camera.roty = 5.7f;
 	world.camera.position = {-30.0f, 25.0f, 20.0f};;
 
-	SDL_PauseAudioDevice(audio_device, 1);
-
 	init_input();
+	world.running = true;
+#endif
+
+
 	
 	DEBUG_LOG("Windows launch!");
 
-	world.running = true;
 
 	LARGE_INTEGER counter_frequency = counter_frequency;
 	QueryPerformanceFrequency(&counter_frequency);
@@ -273,27 +331,26 @@ int CALLBACK WinMain(
 	LARGE_INTEGER start;
 	QueryPerformanceCounter(&start);
 	QueryPerformanceCounter(&last_counter);
-	while (world.running)
+	bool running = true;
+	while (running)
 	{
-		
-
 		load_libbear(&game);
 
-		update_input();
+		//update_input();
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT)
 			{
-				world.running = false;
+				running = false;
 			}
 			else
 			{
-				handle_input_event(event);
+				//handle_input_event(event);
 			}
 		}
 		
-		game.step(&world, world.clk.delta);
+		game.step(0.01f /*world.clk.delta */);
 
 		SDL_GL_SwapWindow(window);
 		
@@ -301,23 +358,32 @@ int CALLBACK WinMain(
 		QueryPerformanceCounter(&counter);
 		int64 delta_counter = counter.QuadPart - last_counter.QuadPart;
 		last_counter = counter;
-		world.clk.delta = (float64) delta_counter / (float64) counter_frequency.QuadPart;
-		world.clk.time = (float64) (counter.QuadPart - start.QuadPart) / (float64) counter_frequency.QuadPart;
+		//world.clk.delta = (float64) delta_counter / (float64) counter_frequency.QuadPart;
+		//world.clk.time = (float64) (counter.QuadPart - start.QuadPart) / (float64) counter_frequency.QuadPart;
 	}
 
+#if 0
+	destroy_ecs(&world);
+	destroy_phy(&world);
 	destroy_input();
+
+	// TODO: Move the code into the game.
+	// TODO: Change world to be a void pointer.
+
+	FREE(world.audio.sources);
+	FREE(world.audio.buffers);
+
+	check_for_leaks();
+#endif
+	game.destroy();
+	VirtualFree(mem.temp_memory,   mem.temp_memory_size,   MEM_RELEASE);
+	VirtualFree(mem.static_memory, mem.static_memory_size, MEM_RELEASE);
 	
 	SDL_CloseAudio();
 	SDL_DestroyMutex(game.lock);
 	SDL_Quit();
 
-	FREE(world.audio.sources);
-	FREE(world.audio.buffers);
-
-	destroy_ecs(&world);
-	destroy_phy(&world);
-
-	check_for_leaks();
 	return 0;
 }
+
 

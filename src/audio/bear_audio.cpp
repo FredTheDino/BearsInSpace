@@ -18,7 +18,7 @@ AudioID add_sound_source(Audio *audio, AudioSource source)
 		id.pos = audio->free_source++;
 	}
 
-	audio->max_source = maximum(audio->max_source, (int32) id.pos);
+	audio->max_source = maximum(audio->max_source, (int32) id.pos + 1);
 	source.id = id;
 	audio->sources[id.pos] = source;
 	return id;
@@ -50,9 +50,9 @@ void stop_audio(Audio *audio, AudioID id)
 	audio->free_source = -pos - 1;
 	audio->sources[pos].id = id;
 
-	if (pos == audio->max_source)
+	if (pos == audio->max_source - 1)
 	{
-		while (audio->sources[audio->max_source].id.uid < 0 && 0 <= audio->max_source)
+		while (audio->sources[audio->max_source - 1].id.uid < 0 && 0 < audio->max_source)
 			audio->max_source--;
 	}
 }
@@ -84,7 +84,7 @@ AudioID add_buffer(Audio *audio, AudioBuffer buffer)
 		// We need to append
 		id.pos = audio->max_buffer++;
 	}
-	ASSERT(id.pos < BEAR_MAX_AUDIO_BUFFERS);
+	ASSERT(id.pos < MAX_AUDIO_BUFFERS);
 
 	buffer.id = id;
 	audio->buffers[id.pos] = buffer;
@@ -117,7 +117,7 @@ struct WAVChunk
 
 AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 {
-	OSFile file = world->plt.read_file(path);
+	OSFile file = plt.read_file(path, push_memory_to_temp);
 	uint8 *ptr = (uint8 *) file.data;
 	WAVHeader *header = (WAVHeader *) ptr;
 	ptr += sizeof(WAVHeader);
@@ -159,13 +159,11 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 	buffer.length = chunk->size / (header->bitdepth / 8); // Num samples
 
 	uint32 length = chunk->size;
-	buffer.data8 = MALLOC2(int8, length);
+	buffer.data8 = push_array_to_static(int8, length);
 	int8 *to = buffer.data8;
 	int8 *from = (int8 *) ptr;
 	while (length--)
 		*to++ = *from++;
-
-	world->plt.free_file(file);
 
 	return add_buffer(audio, buffer);
 }
@@ -174,7 +172,7 @@ void free_sound(Audio *audio, AudioID id)
 {
 	// TODO: This should be refactored into a new data structure. 
 	// Since we have this in 3 places. (Add/Remove Entity, Buffer and Source.
-	ASSERT(0 < id.pos && id.pos < BEAR_MAX_AUDIO_BUFFERS);
+	ASSERT(0 < id.pos && id.pos < MAX_AUDIO_BUFFERS);
 	AudioBuffer buffer = audio->buffers[id.pos];
 	if (buffer.id != id) return;
 	
@@ -184,11 +182,11 @@ void free_sound(Audio *audio, AudioID id)
 	audio->free_buffer = -pos - 1;
 	audio->buffers[pos].id = id;
 
-	FREE(audio->buffers[pos].data);
+	pop_memory_from_static(audio->buffers[pos].data);
 
-	if (pos == audio->max_buffer)
+	if (pos == audio->max_buffer - 1)
 	{
-		while (audio->buffers[audio->max_buffer].id.uid < 0 && 0 <= audio->max_buffer)
+		while (audio->buffers[audio->max_buffer - 1].id.uid < 0 && 0 < audio->max_buffer)
 			audio->max_buffer--;
 	}
 }

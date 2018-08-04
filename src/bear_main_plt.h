@@ -1,5 +1,5 @@
-World world;
 
+#if 0
 #define LOG(type, message) debug_log_(__FILE__, __LINE__, type, message)
 #define ERROR_LOG(message) debug_log_(__FILE__, __LINE__, "ERROR", message)
 
@@ -30,4 +30,5 @@ void inline ASSERT_(const char *file_name, const int line_number, const char *ch
 #define FREE(ptr) free_((void *)ptr)
 
 #define REALLOC(ptr, size) realloc_(__FILE__, __LINE__, (void *) ptr, size)
+#endif
 

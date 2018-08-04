@@ -3,7 +3,6 @@ World *world;
 #define ERROR_LOG(message)  world->plt.log(__FILE__, __LINE__, "ERROR", message)
 #define LOG(type, message)	world->plt.log(__FILE__, __LINE__, type, message)
 
-#define PRINT(...)			world->plt.print(__VA_ARGS__)
 
 #define ASSERT(check) ((check) ? (void)0 : assert_(__FILE__, __LINE__, #check))
 void assert_(const char *file, uint32 line, const char *check)

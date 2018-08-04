@@ -5,6 +5,7 @@ set D_FLAGS=-Zi -MT -Od -D__DEBUG
 set R_FLAGS=-MD -O2 
 set C_LINK_FLAGS=/link /LIBPATH:..\lib\win64 SDL2.lib SDL2main.lib 
 set R_LINK_FLAGS=/SUBSYSTEM:windows /RELEASE 
+set EXPORTS=/EXPORT:step /EXPORT:sound /EXPORT:reload /EXPORT:replace /EXPORT:init /EXPORT:destroy 
 
 set ORIGINAL_PATH=%PATH%
 pushd .
@@ -22,7 +23,7 @@ if %IS_RELEASE% == "yes" (
 	cl %C_FLAGS% %R_FLAGS% -Fegame.exe  ..\src\bear_windows.cpp %C_LINK_FLAGS% %R_LINK_FLAGS%
 ) else (
 	del *.pdb
-	cl %C_FLAGS% %D_FLAGS% /LD -Felibbear.dll ..\src\bear_main.cpp /link /PDB:libbear_%RANDOM%.pdb /EXPORT:step /EXPORT:sound -incremental:no
+	cl %C_FLAGS% %D_FLAGS% /LD -Felibbear.dll ..\src\bear_main.cpp /link /PDB:libbear_%RANDOM%.pdb %EXPORTS% -incremental:no
 	cl %C_FLAGS% %D_FLAGS% -Fegame.exe ..\src\bear_windows.cpp %C_LINK_FLAGS%
 )
 
