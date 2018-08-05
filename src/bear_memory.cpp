@@ -1,4 +1,7 @@
 
+#pragma warning( push )
+#pragma warning( disable : 4311 )
+
 inline
 bool neighboring_allocations(MemoryAllocation *a, MemoryAllocation *b)
 {
@@ -6,7 +9,9 @@ bool neighboring_allocations(MemoryAllocation *a, MemoryAllocation *b)
 	return -distance == a->size || distance == b->size;
 }
 
-void pop_memory_from_static(void *ptr)
+#pragma warning( pop ) // Should we pop it? It's kind of an annoying warning.
+
+void static_pop(void *ptr)
 {
 	MemoryAllocation *pop_block = ((MemoryAllocation *) ptr) - 1;
 	pop_block->taken = false;
@@ -62,7 +67,7 @@ void pop_memory_from_static(void *ptr)
 	(*prev_block_ptr) = pop_block;
 }
 
-void *push_memory_to_static(uint64 size)
+void *static_push(uint64 size)
 {
 	if (!mem->static_at)
 		mem->static_at = mem->static_memory;
@@ -115,8 +120,21 @@ void *push_memory_to_static(uint64 size)
 	return ptr;
 }
 
-#define push_struct_to_static(type) (type *) push_memory_to_static(sizeof(type))
-#define push_array_to_static(type, num) (type *) push_memory_to_static(sizeof(type) * num)
+void *static_realloc(void *ptr, uint64 size)
+{
+	uint8 *old_ptr = (uint8 *) ptr;
+	uint8 *new_ptr = (uint8 *) static_push(size);
+	MemoryAllocation * block = ((MemoryAllocation *) ptr) - 1;
+	for (uint8 i = 0; i < block->size; i++)
+	{
+		new_ptr[i] = old_ptr[i];
+	}
+	static_pop(ptr);
+	return (void *) new_ptr;
+}
+
+#define static_push_struct(type) (type *) static_push(sizeof(type))
+#define static_push_array(type, num) (type *) static_push(sizeof(type) * num)
 
 inline
 void reset_temp()
@@ -124,10 +142,12 @@ void reset_temp()
 	mem->temp_at = mem->temp_memory;
 }
 
-void *push_memory_to_temp(uint64 size)
+void *temp_push(uint64 size)
 {
+	if (!mem->temp_at)
+		mem->temp_at = mem->temp_memory;
 	ASSERT(size < mem->temp_memory_size);
-	if (mem->temp_at + size < mem->temp_memory + mem->temp_memory_size)
+	if (mem->temp_at + size > mem->temp_memory + mem->temp_memory_size)
 	{
 		reset_temp();
 	}
@@ -136,8 +156,20 @@ void *push_memory_to_temp(uint64 size)
 	return ptr;
 }
 
-#define push_struct_to_temp(type) (type *) push_memory_to_temp(sizeof(type))
-#define push_array_to_temp(type, num) (type *) push_memory_to_temp(sizeof(type) * num)
+void *temp_realloc(void *ptr, uint64 size)
+{
+	uint8 *old_ptr = (uint8 *) ptr;
+	uint8 *new_ptr = (uint8 *) temp_push(size);
+	MemoryAllocation * block = ((MemoryAllocation *) ptr) - 1;
+	for (uint8 i = 0; i < block->size; i++)
+	{
+		new_ptr[i] = old_ptr[i];
+	}
+	return (void *) new_ptr;
+}
+
+#define temp_push_struct(type) (type *) push_memory_to_temp(sizeof(type))
+#define temp_push_array(type, num) (type *) push_memory_to_temp(sizeof(type) * num)
 
 // TODO:
 // - Test this stuff, make sure this works.

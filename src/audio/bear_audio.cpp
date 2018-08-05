@@ -117,7 +117,7 @@ struct WAVChunk
 
 AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 {
-	OSFile file = plt.read_file(path, push_memory_to_temp);
+	OSFile file = plt.read_file(path, temp_push);
 	uint8 *ptr = (uint8 *) file.data;
 	WAVHeader *header = (WAVHeader *) ptr;
 	ptr += sizeof(WAVHeader);
@@ -159,7 +159,7 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 	buffer.length = chunk->size / (header->bitdepth / 8); // Num samples
 
 	uint32 length = chunk->size;
-	buffer.data8 = push_array_to_static(int8, length);
+	buffer.data8 = static_push_array(int8, length);
 	int8 *to = buffer.data8;
 	int8 *from = (int8 *) ptr;
 	while (length--)
@@ -182,7 +182,7 @@ void free_sound(Audio *audio, AudioID id)
 	audio->free_buffer = -pos - 1;
 	audio->buffers[pos].id = id;
 
-	pop_memory_from_static(audio->buffers[pos].data);
+	static_pop(audio->buffers[pos].data);
 
 	if (pos == audio->max_buffer - 1)
 	{

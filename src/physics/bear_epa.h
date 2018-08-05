@@ -80,8 +80,9 @@ Collision epa(Simplex simplex, Array<Triangle> *triangles, Shape a, Transform ta
 	}
 
 	Collision result = {};
-
-	auto removed_edges = create_array<Edge>(20);
+	
+	//NOTE: Just a random number. Assume we don't go past it.
+	auto removed_edges = temp_array<Edge>(EPA_MAX_ITTERATIONS * 10 * 3); 
 	
 	uint32 closest_triangle = 0;
 	for (uint32 itteration = 0; true; itteration++)
@@ -133,7 +134,6 @@ Collision epa(Simplex simplex, Array<Triangle> *triangles, Shape a, Transform ta
 		}
 		clear(&removed_edges);
 	}
-	delete_array(&removed_edges);
 
 	// Calculate barycentric coordinates, maybe a function?
 	Vec3f contact_point;

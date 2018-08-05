@@ -11,16 +11,22 @@ namespace GFX
 	struct MatrixProfile
 	{
 		string               uniform_name;
+
+		// Note(Ed): This can be a union and an enum. 
+		// And it will take less space.
 		Mat4f               *matrix;
 		Transform           *transform;
 		Camera              *camera;
 	};
 	
+	// Note(Ed): I dislike that this is saved on the stack, 
+	// it shouldn't be since it should be persistent. We don't want
+	// to have to remake it if we reload. PLZ FIX
 	Array<MatrixProfile> matrix_profiles;
 
 	void init_matrix_profiles()
 	{
-		matrix_profiles = create_array<MatrixProfile>(GLOBAL_MATRIX_PROFILES);
+		matrix_profiles = static_array<MatrixProfile>(GLOBAL_MATRIX_PROFILES);
 	}
 
 	void send_profile(ShaderProgram program, MatrixProfile profile)

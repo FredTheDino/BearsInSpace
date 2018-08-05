@@ -7,9 +7,16 @@ int win_printf(const char *format, ...);
 
 #include "bear_shared.h"
 
+#define LOG(type, msg) win_log(__FILE__, __LINE__, type, msg)
+#define PRINT(...) win_printf(__VA_ARGS__)
+int32 win_printf(const char *format, ...);
+void win_log(const char *file, int32 line, const char *type, const char *msg);
+
+#include "bear_array_plt.cpp"
+#include "bear_input.h"
+
 #define DEBUG_LOG(msg) win_printf("[%s] DEBUG: %s\n", __FILE__, msg);
 
-//#include "bear_main.h"
 #include "glad.c"
 
 GameMemory mem;
@@ -35,6 +42,7 @@ struct GameHandle
 
 static GameHandle game;
 
+
 int32 win_printf(const char *format, ...)
 {
 	char buffer[256];
@@ -49,6 +57,7 @@ void win_log(const char *file, int32 line, const char *type, const char *msg)
 {
 	win_printf("[%s:%d] %s  %s\n", file, line, type, msg);
 }
+
 
 int32 get_file_edit_time(const char *path)
 {
@@ -215,29 +224,13 @@ int CALLBACK WinMain(
 	plt.print = win_printf;
 	plt.log = win_log;
 	plt.read_file = read_entire_file;
-#if 0
-	world.plt.malloc = malloc_;
-	world.plt.free = free_;
-	world.plt.realloc = realloc_;
 
-	world.plt.print = win_printf;
-	world.plt.log = win_log;
+	plt.last_write = get_file_edit_time;
 
-	world.plt.free_file = free_file;
-	world.plt.last_write = get_file_edit_time;
+	plt.axis_value = axis_value;
+	plt.button_state = button_state;
 
-	world.plt.axis_value = axis_value;
-	world.plt.button_state = button_state;
-
-	world.__mem = (MemoryAllocation *)(void *)__mem;
-	world.audio = {};
-	world.audio.buffers = MALLOC2(AudioBuffer, BEAR_MAX_AUDIO_BUFFERS);
-	world.audio.sources = MALLOC2(AudioSource, BEAR_MAX_AUDIO_SOURCES);
-
-	init_ecs(&world);
-
-	init_phy(&world);
-#endif
+	init_input();
 
 	mem.static_memory_size = GIGABYTE(1);
 	mem.static_memory = (uint8 *) VirtualAlloc(0, mem.static_memory_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -255,24 +248,12 @@ int CALLBACK WinMain(
 		HALT_AND_CATCH_FIRE();
 	}
 
-	game.lock = SDL_CreateMutex();
-	game.first_load = true;
-	if (load_libbear(&game) == false)
-	{
-		return(-1);
-	}
-	//has_file_changed();
-
 	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
 	{
 		DEBUG_LOG("Unable to initalize SDL.");
 		SDL_Quit();
 		return(-1);
 	}
-
-	//
-	// Display stuff.
-	// 
 	SDL_Window *window = SDL_CreateWindow(
 			"Space Bears",
 			SDL_WINDOWPOS_UNDEFINED,
@@ -291,7 +272,7 @@ int CALLBACK WinMain(
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
 
-	SDL_GL_SetSwapInterval(0);
+	SDL_GL_SetSwapInterval(1);
 
 	SDL_AudioSpec audio_spec = {};
 	audio_spec.callback = plt_audio_callback;
@@ -307,22 +288,16 @@ int CALLBACK WinMain(
 		return(-1);
 	}
 
+	game.lock = SDL_CreateMutex();
+	game.first_load = true;
+	if (load_libbear(&game) == false)
+	{
+		return(-1);
+	}
+
 	SDL_PauseAudioDevice(audio_device, 0);
 
-#if 0
-	// Can't be asked to move the camera.
-	world.camera.rotx = -1.0f;
-	world.camera.roty = 5.7f;
-	world.camera.position = {-30.0f, 25.0f, 20.0f};;
-
-	init_input();
-	world.running = true;
-#endif
-
-
-	
 	DEBUG_LOG("Windows launch!");
-
 
 	LARGE_INTEGER counter_frequency = counter_frequency;
 	QueryPerformanceFrequency(&counter_frequency);
@@ -331,6 +306,7 @@ int CALLBACK WinMain(
 	LARGE_INTEGER start;
 	QueryPerformanceCounter(&start);
 	QueryPerformanceCounter(&last_counter);
+	float64 delta = 0.0f;
 	bool running = true;
 	while (running)
 	{
@@ -346,11 +322,11 @@ int CALLBACK WinMain(
 			}
 			else
 			{
-				//handle_input_event(event);
+				handle_input_event(event);
 			}
 		}
 		
-		game.step(0.01f /*world.clk.delta */);
+		game.step(delta);
 
 		SDL_GL_SwapWindow(window);
 		
@@ -358,14 +334,13 @@ int CALLBACK WinMain(
 		QueryPerformanceCounter(&counter);
 		int64 delta_counter = counter.QuadPart - last_counter.QuadPart;
 		last_counter = counter;
-		//world.clk.delta = (float64) delta_counter / (float64) counter_frequency.QuadPart;
+		delta = (float64) delta_counter / (float64) counter_frequency.QuadPart;
 		//world.clk.time = (float64) (counter.QuadPart - start.QuadPart) / (float64) counter_frequency.QuadPart;
 	}
 
 #if 0
 	destroy_ecs(&world);
 	destroy_phy(&world);
-	destroy_input();
 
 	// TODO: Move the code into the game.
 	// TODO: Change world to be a void pointer.
@@ -376,6 +351,7 @@ int CALLBACK WinMain(
 	check_for_leaks();
 #endif
 	game.destroy();
+	destroy_input();
 	VirtualFree(mem.temp_memory,   mem.temp_memory_size,   MEM_RELEASE);
 	VirtualFree(mem.static_memory, mem.static_memory_size, MEM_RELEASE);
 	

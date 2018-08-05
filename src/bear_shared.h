@@ -45,12 +45,24 @@ struct GameMemory
 
 const uint32 spec_freq = 44100; // Move this.
 
+// Input types
 typedef float64 AxisValue;
 
 enum ButtonState
 {
 	UP = 1, DOWN = 2, PRESSED = 4, RELEASED = 8
 };
+
+enum InputType
+{
+	KEY, MOUSE, CONTROLLER
+};
+
+#define INPUT_MAP_SIZE 256
+#define MAX_AXIS    32
+#define MAX_BUTTONS 32
+#define CONTROLLER_AXIS_THRESHOLD .2
+#define CONTROLLER_AXIS_FACTOR (1.0 / 32767.0)
 
 struct OSFile
 {
@@ -81,7 +93,6 @@ typedef void (*ReplaceFunc)();
 typedef void (*InitFunc)(PLT, void *);
 typedef void (*DestroyFunc)();
 
-
 struct CLK
 {
 	float64 time;
@@ -94,3 +105,22 @@ struct CLK
 		float64 end_time;
 	} debug_timers[1024];
 };
+
+bool str_eq(const char *_a, const char *_b)
+{
+	char *a = (char *) _a;
+	char *b = (char *) _b;
+	bool eq = false;
+	while (*a == *b)
+	{
+		if (*a == '\0')
+		{
+			eq = true;
+			break;
+		}
+		a++;
+		b++;
+	}
+	return eq;
+}
+
