@@ -438,7 +438,7 @@ void step(float32 delta)
 	}
 #endif
 #endif
-	//PRINT("Button state: %d\n", B_STATE("forward"));
+	PRINT("Button state: %d\n", B_STATE("forward"));
 	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
 	debug_draw_engine(&world->ecs, &world->phy);
 }

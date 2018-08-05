@@ -219,7 +219,6 @@ int CALLBACK WinMain(
 	plt.axis_value = axis_value;
 	plt.button_state = button_state;
 
-	init_input();
 
 	mem.static_memory_size = GIGABYTE(1);
 	mem.static_memory = (uint8 *) VirtualAlloc(0, mem.static_memory_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -283,6 +282,8 @@ int CALLBACK WinMain(
 	{
 		return(-1);
 	}
+
+	init_input();
 
 	SDL_PauseAudioDevice(audio_device, 0);
 

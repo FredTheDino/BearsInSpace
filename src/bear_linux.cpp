@@ -198,7 +198,7 @@ int main(int varc, char *varv[])
 		HALT_AND_CATCH_FIRE();
 	}
 
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
 	{
 		LOG("LOAD ERROR", "Unable to initalize SDL.");
 		SDL_Quit();
@@ -245,7 +245,6 @@ int main(int varc, char *varv[])
 		return(-1);
 	}
 
-	
 	init_input();
 
 	game.first_load = true;
