@@ -48,7 +48,7 @@ Array<T> static_array(std::initializer_list<T> list)
 {
 	auto arr = static_array<T>((uint64) list.size());
 	for (auto e : list)
-		append(&arra, e);
+		append(&arr, e);
 	return arr;
 }
 

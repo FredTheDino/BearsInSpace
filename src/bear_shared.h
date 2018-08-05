@@ -124,3 +124,10 @@ bool str_eq(const char *_a, const char *_b)
 	return eq;
 }
 
+uint64 str_len(const char *str)
+{
+	char *end = (char *) str;
+	while (*end != '\0') end++;
+	return (str - end); 
+}
+

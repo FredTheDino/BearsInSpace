@@ -15,8 +15,6 @@ void win_log(const char *file, int32 line, const char *type, const char *msg);
 #include "bear_array_plt.cpp"
 #include "bear_input.h"
 
-#define DEBUG_LOG(msg) win_printf("[%s] DEBUG: %s\n", __FILE__, msg);
-
 #include "glad.c"
 
 GameMemory mem;
@@ -88,6 +86,32 @@ WINDOWS_FILE_ERROR:
 	return -1;
 }
 
+OSFile read_entire_file(const char *path, AllocatorFunc alloc)
+{
+	OSFile file = {};
+	file.timestamp = get_file_edit_time(path);
+	if (file.timestamp == -1)
+	{
+		return file;
+	}
+
+	FILE *disk = fopen(path, "rb");
+	if (!disk)
+	{
+		return file;
+	}
+
+	fseek(disk, 0, SEEK_END);
+	file.size = ftell(disk);
+	fseek(disk, 0, SEEK_SET);
+	file.data = alloc(file.size + 1);
+	fread(file.data, file.size, 1, disk);
+	((uint8 *) file.data)[file.size] = 0; // Null terminate.
+	fclose(disk);
+
+	return file;
+}
+
 bool load_libbear(GameHandle *handle)
 {
 	GameHandle game = *handle;
@@ -110,7 +134,7 @@ bool load_libbear(GameHandle *handle)
 	game.lib = LoadLibrary(temp_path);
 	if (!game.lib)
 	{
-		DEBUG_LOG("Failed to load libgame.so!");
+		LOG("LIB LOAD", "Failed to load libgame.so!");
 		return false;
 	}
 	StepFunc step = (StepFunc) GetProcAddress(game.lib, "step");
@@ -150,7 +174,7 @@ bool load_libbear(GameHandle *handle)
 		init(plt, &mem);
 	}
 
-	DEBUG_LOG("======== Reload! =========");
+	PRINT("======== Reload! =========");
 	game.access_time = access_time;
 
 	game.step = step;
@@ -172,41 +196,6 @@ LIB_LOAD_FAIL:
 	return false;
 }
 
-OSFile read_entire_file(const char *path, AllocatorFunc alloc)
-{
-	OSFile file = {};
-	file.timestamp = get_file_edit_time(path);
-	if (file.timestamp == -1)
-	{
-		return file;
-	}
-
-	FILE *disk = fopen(path, "rb");
-	if (!disk)
-	{
-		return file;
-	}
-
-	fseek(disk, 0, SEEK_END);
-	file.size = ftell(disk);
-	fseek(disk, 0, SEEK_SET);
-	file.data = alloc(file.size + 1);
-	fread(file.data, file.size, 1, disk);
-	((uint8 *) file.data)[file.size] = 0; // Null terminate.
-	fclose(disk);
-
-	return file;
-}
-
-void free_file(OSFile file)
-{
-	if (file.data)
-	{
-		//FREE(file.data);
-		file.data = 0;
-	}
-}
-
 void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
 {
 	SDL_LockMutex(game.lock);
@@ -223,8 +212,8 @@ int CALLBACK WinMain(
 {
 	plt.print = win_printf;
 	plt.log = win_log;
-	plt.read_file = read_entire_file;
 
+	plt.read_file = read_entire_file;
 	plt.last_write = get_file_edit_time;
 
 	plt.axis_value = axis_value;
@@ -250,7 +239,7 @@ int CALLBACK WinMain(
 
 	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
 	{
-		DEBUG_LOG("Unable to initalize SDL.");
+		LOG("INIT", "Unable to initalize SDL.");
 		SDL_Quit();
 		return(-1);
 	}
@@ -283,7 +272,7 @@ int CALLBACK WinMain(
 	auto audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
 	if (!audio_device)
 	{
-		DEBUG_LOG("Unable to open audio device");
+		LOG("INIT", "Unable to open audio device");
 		SDL_Quit();
 		return(-1);
 	}
@@ -297,7 +286,7 @@ int CALLBACK WinMain(
 
 	SDL_PauseAudioDevice(audio_device, 0);
 
-	DEBUG_LOG("Windows launch!");
+	PRINT("Windows launch!");
 
 	LARGE_INTEGER counter_frequency = counter_frequency;
 	QueryPerformanceFrequency(&counter_frequency);

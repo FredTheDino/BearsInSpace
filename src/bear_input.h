@@ -108,7 +108,7 @@ Array<Button> button_array;
 uint8 input_map_hash(string name)
 {
 	// Note(Ed): You can just write 'a', instead of 0x61.
-	return strlen(name) > 1 ? // 0x61 = ascii value for 'a'
+	return str_len(name) > 1 ? // 0x61 = ascii value for 'a'
 		(((((uint8) *name) - 0x61) & 0x0F) << 4) | ((((uint8) name[1]) - 0x61) & 0x0F)
 		: (uint8) *name;
 }
@@ -120,7 +120,7 @@ Array<Axis *> get_axises(string name)
 	if (entry.name == nullptr)
 	{
 		LOG("INPUT ERROR", "Invalid axis name:");
-		LOG("INPUT ERROR", name);
+		LOG("INPUT ERROR", (char *) name);
 		return {};
 	}
 	
@@ -141,7 +141,7 @@ Array<Button *> get_buttons(string name)
 	if (entry.name == nullptr)
 	{
 		LOG("INPUT ERROR", "Invalid button name:");
-		LOG("INPUT ERROR", name);
+		LOG("INPUT ERROR", (char *) name);
 		return {};
 	}
 	
@@ -545,7 +545,7 @@ void open_controllers()
 		}
 		
 		LOG("INPUT", "Found controller:");
-		LOG("INPUT", SDL_GameControllerName(c));
+		LOG("INPUT", (char *) SDL_GameControllerName(c));
 
 		append(&controller_array, c);
 	}

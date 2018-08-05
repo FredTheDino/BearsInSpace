@@ -40,7 +40,7 @@ Collision collision_test(Vec3f inital_direction,
 
 		if (debug_draw)
 		{
-			for (int32 i = 0; i < size(triangles); i++)
+			for (int32 i = 0; i < (int32) size(triangles); i++)
 			{
 				Triangle t = triangles[i];
 				GFX::debug_draw_line(t.a.point, t.b.point, {0.9f, 0.9f, 0.3f});
@@ -277,14 +277,14 @@ void sort_limits(Array<BodyLimit> *_limits)
 	// If you don't randomly change the sorting direction every frame,
 	// this will be VERY performant.
 	Array<BodyLimit> limits = *_limits;
-	for (int32 i = 1; i < size(limits); i++)
+	for (int32 i = 1; i < (int32) size(limits); i++)
 	{
 		BodyLimit i_limit = get(limits, i);
 		for (int32 j = i - 1; 0 <= j; j--)
 		{
 			if (i_limit.min_limit < get(limits, j).min_limit)
 			{
-				for (uint32 copy_index = i; copy_index > j; copy_index--)
+				for (uint32 copy_index = i; copy_index > (uint32) j; copy_index--)
 				{
 					set(limits, copy_index, limits[copy_index - 1]);
 				}
@@ -299,13 +299,13 @@ void sort_limits(Array<BodyLimit> *_limits)
 void find_collisions(ECS *ecs, Physics *engine)
 {
 	for (int32 outer_limit_index = 0; 
-		outer_limit_index < size(engine->body_limits);
+		outer_limit_index < (int32) size(engine->body_limits);
 		outer_limit_index++)
 	{
 		BodyLimit outer_limit = engine->body_limits[outer_limit_index];
 		CBody *a = (CBody *) get_component(ecs, outer_limit.owner, C_BODY);
 		for (int32 inner_limit_index = outer_limit_index + 1; 
-				inner_limit_index < size(engine->body_limits);
+				inner_limit_index < (int32) size(engine->body_limits);
 				inner_limit_index++)
 		{
 			BodyLimit inner_limit = engine->body_limits[inner_limit_index];
@@ -446,7 +446,7 @@ void solve_collisions_randomly(Physics *engine)
 {
 	// Solves them in the order they come in. For now.
 	auto collisions = engine->collisions;
-	for (int32 i = 0; i < size(collisions); i++)
+	for (int32 i = 0; i < (int32) size(collisions); i++)
 	{
 
 		Collision collision = get(collisions, i);

@@ -149,7 +149,6 @@ Collision epa(Simplex simplex, Array<Triangle> *triangles, Shape a, Transform ta
 		float32 ac = dot(a, c);
 		float32 bb = dot(b, b);
 		float32 bc = dot(b, c);
-		float32 cc = dot(c, c);
 
 		float32 det = aa * bb - ab * ab;
 		float32 b_v = (bb * ac - ab * bc) / det;

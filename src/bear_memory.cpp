@@ -1,6 +1,8 @@
 
+#if _WIN32
 #pragma warning( push )
 #pragma warning( disable : 4311 )
+#endif
 
 inline
 bool neighboring_allocations(MemoryAllocation *a, MemoryAllocation *b)
@@ -9,7 +11,9 @@ bool neighboring_allocations(MemoryAllocation *a, MemoryAllocation *b)
 	return -distance == a->size || distance == b->size;
 }
 
+#if _WIN32
 #pragma warning( pop ) // Should we pop it? It's kind of an annoying warning.
+#endif
 
 void static_pop(void *ptr)
 {
@@ -122,6 +126,7 @@ void *static_push(uint64 size)
 
 void *static_realloc(void *ptr, uint64 size)
 {
+	ASSERT(ptr);
 	uint8 *old_ptr = (uint8 *) ptr;
 	uint8 *new_ptr = (uint8 *) static_push(size);
 	MemoryAllocation * block = ((MemoryAllocation *) ptr) - 1;
