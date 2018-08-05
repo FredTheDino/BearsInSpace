@@ -236,6 +236,8 @@ void step(float32 delta)
 	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
 	debug_draw_engine(&world->ecs, &world->phy);
 
+	LOG("TEST", "Hello %s %d", "World", 69);
+
 #if 0
 
 	if (should_run_tests)

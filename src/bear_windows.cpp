@@ -7,7 +7,7 @@ int win_printf(const char *format, ...);
 
 #include "bear_shared.h"
 
-#define LOG(type, msg) win_log(__FILE__, __LINE__, type, msg)
+#define LOG(type, ...) win_printf("[%s:%d] type :", __FILE__, __LINE__, type); win_printf(__VA_ARGS__); win_printf("\n");
 #define PRINT(...) win_printf(__VA_ARGS__)
 int32 win_printf(const char *format, ...);
 void win_log(const char *file, int32 line, const char *type, const char *msg);

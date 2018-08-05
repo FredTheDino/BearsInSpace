@@ -1,7 +1,10 @@
 #pragma once
 
 #define PRINT(...) plt.print(__VA_ARGS__)
-#define LOG(type, msg) plt.log(__FILE__, __LINE__, type, msg)
+#define LOG(type, ...) \
+	plt.print("[%s:%d] type :", __FILE__, __LINE__, type); \
+	plt.print(__VA_ARGS__);\
+	plt.print("\n");
 
 // Array
 #include "bear_array.cpp"
