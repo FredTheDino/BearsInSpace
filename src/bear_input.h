@@ -16,10 +16,10 @@ enum InputType
 
 #define AXIS_VAL(name) world->plt.axis_value(name)
 #define B_STATE(name) world->plt.button_state(name)
-#define B_PRESSED(name) world->plt.button_state(name) == ButtonState::PRESSED
-#define B_RELEASED(name) world->plt.button_state(name) == ButtonState::RELEASED
-#define B_DOWN(name) world->plt.button_state(name) == ButtonState::DOWN
-#define B_UP(name) world->plt.button_state(name) == ButtonState::UP
+#define B_PRESSED(name) (world->plt.button_state(name) == ButtonState::PRESSED)
+#define B_RELEASED(name) (world->plt.button_state(name) == ButtonState::RELEASED)
+#define B_DOWN(name) (world->plt.button_state(name) == ButtonState::DOWN)
+#define B_UP(name) (world->plt.button_state(name) == ButtonState::UP)
 
 #else
 
@@ -186,7 +186,7 @@ AxisValue axis_value(string name)
 		value += a->value;
 	}
 	
-	if (abs(value) < CONTROLLER_AXIS_THRESHOLD)
+	if (absolute(value) < CONTROLLER_AXIS_THRESHOLD)
 		return 0;
 	else
 		return clamp(value, -1.0, 1.0);
@@ -596,6 +596,10 @@ void init_input()
 	
 	bind_axis_controller("up", 0, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 	bind_axis_controller("down", 0, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+
+	bind_button_controller("forward", 0, SDL_CONTROLLER_BUTTON_A);
+	bind_button_controller("left", 0, SDL_CONTROLLER_BUTTON_B);
+	bind_button_controller("right", 0, SDL_CONTROLLER_BUTTON_X);
 }
 
 void destroy_input()

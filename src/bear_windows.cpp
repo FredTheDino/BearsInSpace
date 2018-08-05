@@ -180,12 +180,17 @@ int CALLBACK WinMain(
 	world.plt.free_file = free_file;
 	world.plt.last_write = get_file_edit_time;
 
+	world.plt.axis_value = axis_value;
+	world.plt.button_state = button_state;
+
 	world.__mem = (MemoryAllocation *)(void *)__mem;
 	world.audio = {};
 	world.audio.buffers = MALLOC2(AudioBuffer, BEAR_MAX_AUDIO_BUFFERS);
 	world.audio.sources = MALLOC2(AudioSource, BEAR_MAX_AUDIO_SOURCES);
 
 	init_ecs(&world);
+
+	init_phy(&world);
 
 	game.lock = SDL_CreateMutex();
 	if (load_libbear(&game) == false)
@@ -216,13 +221,13 @@ int CALLBACK WinMain(
 	SDL_RaiseWindow(window);
 	
 	// TODO: Use OpenGL 3.3, or newer. This is just to get hello triangle.
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
 
-	SDL_GL_SetSwapInterval(0);
+	SDL_GL_SetSwapInterval(1);
 
 	// I don't think this needs OpenGL...
 	/*
@@ -248,13 +253,17 @@ int CALLBACK WinMain(
 		return(-1);
 	}
 
-	SDL_PauseAudioDevice(audio_device, 0);
+	// Can't be asked to move the camera.
+	world.camera.rotx = -1.0f;
+	world.camera.roty = 5.7f;
+	world.camera.position = {-30.0f, 25.0f, 20.0f};;
+
+	SDL_PauseAudioDevice(audio_device, 1);
 
 	init_input();
 	
 	DEBUG_LOG("Windows launch!");
 
-<<<<<<< HEAD
 	world.running = true;
 
 	LARGE_INTEGER counter_frequency = counter_frequency;
@@ -265,10 +274,6 @@ int CALLBACK WinMain(
 	QueryPerformanceCounter(&start);
 	QueryPerformanceCounter(&last_counter);
 	while (world.running)
-=======
-	bool running = true;
-	while (running)
->>>>>>> sk
 	{
 		
 
@@ -282,17 +287,9 @@ int CALLBACK WinMain(
 			{
 				world.running = false;
 			}
-<<<<<<< HEAD
-			if (event.type == SDL_KEYDOWN)
-			{
-				world.input.jump = true;
-			}
-			if (event.type == SDL_KEYUP)
-=======
 			else
->>>>>>> sk
 			{
-				handle_input_event(false);
+				handle_input_event(event);
 			}
 		}
 		
@@ -318,6 +315,7 @@ int CALLBACK WinMain(
 	FREE(world.audio.buffers);
 
 	destroy_ecs(&world);
+	destroy_phy(&world);
 
 	check_for_leaks();
 	return 0;

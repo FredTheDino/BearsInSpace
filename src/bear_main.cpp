@@ -27,7 +27,7 @@
 #include "ecs/bear_ecs.cpp"
 
 // Physics
-#include "physics/physics.h"
+#include "physics/bear_physics.cpp"
 
 // Tests
 #include "bear_test.cpp"
@@ -38,10 +38,12 @@ GFX::VertexArray vertex_array;
 GFX::ShaderProgram program;
 GFX::Texture texture;
 Transform transform = create_transform();
-Camera camera = create_camera(create_perspective_projection(M_PI / 2, ASPECT_RATIO, .01f, 100.0f));
+Camera camera;
 
+#if 0
 float32 rotx = 0;
 float32 roty = 0;
+#endif
 float32 speed = 6.0f;
 
 #if 1
@@ -96,19 +98,22 @@ void update(float32 delta)
 
 	if (rx || ry)
 	{
-		rotx -= rx;
-		roty -= ry;
-		camera.transform.rot = toQ(roty, rotx, 0);
+		world->camera.rotx -= rx;
+		world->camera.roty -= ry;
 	}
+	camera.transform.orientation = toQ(world->camera.roty, world->camera.rotx, 0);
+
 	float32 dx = AXIS_VAL("xmove") * speed * delta;
 	float32 dz = AXIS_VAL("zmove") * speed * delta;
 	if (dx || dz)
 	{
-		camera.transform.pos.x += dx * cos(-rotx) - dz * sin(-rotx);
-		camera.transform.pos.z += dz * cos(-rotx) + dx * sin(-rotx);
+		world->camera.position.x += dx * cos(-world->camera.rotx) - dz * sin(-world->camera.rotx);
+		world->camera.position.z += dz * cos(-world->camera.rotx) + dx * sin(-world->camera.rotx);
 	}
 
-	camera.transform.pos.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
+	world->camera.position.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
+
+	camera.transform.position = world->camera.position;
 }
 
 void draw()
@@ -116,17 +121,25 @@ void draw()
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#if 0
+	GFX::debug_draw_point({ .0f, .0f, .0f }, { .5f, .75f, .25f });
+
 	GFX::bind(texture);
 	GFX::draw(renderable);
 
 	GFX::debug_draw_line({ .0f, 1.0f, .0f }, { .0f, 2.0f, .0f }, { 1.0f, .0f, .0f });
 	GFX::debug_draw_point({ .0f, 2.5f, .0f }, { .0f, 1.0f, .0f });
+#endif
 }
 #endif
 
+Mesh cone;
+
+EntityID e;
 extern "C"
 void step(World *_world, float32 delta)
 {
+
 	world = _world;
 	
 	// Initialize GLAD if necessary
@@ -141,16 +154,124 @@ void step(World *_world, float32 delta)
 		GFX::init_debug();
 		
 	}
-		//TODO: REMOVE REST OF THIS IF-STATEMENT
-	update_physics(NULL, 0.0f);
 
 	if (should_run_tests)
 	{
+		{
+			clear_ecs(world);
+
+			{
+				Transform t;
+				t.scale = {2.0f, 3.0f, 1.0f,};
+				t.orientation = toQ({1.0f, 2.0f, 3.0f}, PI * 0.33f);
+				t.position = {1.0f, 1.0f, -1.0f};
+				Vec3f p = {1.0f, 1.0f, 1.0f};
+				Vec3f t_p = t * p;
+				Vec3f rt_p = t / t_p;
+				ASSERT(p == rt_p);
+
+				Mat4f m = {
+					1.0f, 0.0f, 0.0f, 0.0f,
+					1.0f, 1.0f, 0.0f, 0.0f,
+					1.0f, 0.0f, 1.0f, 0.0f,
+					0.0f, 0.0f, 0.0f, 1.0f
+				};
+				p = {1.0f, 0.0f, 0.0f};
+				Vec3f n = m * p;
+				n = n;
+			}
+
+			camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
+
+			if (world->phy.collisions.data == nullptr)
+			{
+				world->phy.collisions = create_array<Collision>(30);
+			}
+
+			Q a = {0.0f, 1.0f, 0.0f, 1.0f};
+			Vec3f p = {1.0f, 0.0f, 0.0f};
+			Vec3f cw = a * p;
+			Vec3f ccw = a / p;
+
+			CTransform transform = {};
+			transform.type = C_TRANSFORM;
+			transform.position = {0.0f, 5.0f, -4.0f};
+			transform.scale = {1.0f, 1.0f, 1.0f};
+			transform.orientation = toQ(1.5f, 1.5f, 0.0f);
+
+			CBody body = {};
+			body.type = C_BODY;
+			body.inverse_mass = 0.1f;
+			body.velocity = {0.0f, -1.0f, 1.0f};
+			body.rotation = {0.0f, 1.0f, 1.0f};
+			body.linear_damping = 0.80f;
+			body.angular_damping = 0.80f;
+			body.shape = make_box(2.0f, 2.0f, 2.0f);
+			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 10.0f));
+
+#if 0 // Box
+			e = add_entity(&world->ecs);
+			add_components(&world->ecs, &world->phy, e, body, transform);
+#endif
+
+#if 1 // Plane
+			transform.type = C_TRANSFORM;
+			transform.position = {-1.0f, 1.0f, 1.0f};
+			transform.orientation = {1.0f, 0.0f, 0.0f, -0.05f};
+
+			body.type = C_BODY;
+			body.inverse_mass = 0.0f;
+			body.velocity = {0.0f, 0.0f, 0.0f};
+			body.rotation = {0.0f, 0.0f, 0.0f};
+			body.linear_damping = 0.0f;
+			body.angular_damping = 0.0f;
+			body.shape = make_box(10.0f, 1.0f, 10.0f);
+			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 0.0f));
+
+			EntityID f = add_entity(&world->ecs);
+			add_components(&world->ecs, &world->phy, f, body, transform);
+#endif
+#if 1 // Cannon ball
+
+			transform.type = C_TRANSFORM;
+			transform.position = {-0.0f, 3.0f, -0.0f};
+
+			cone = load_mesh("res/monkey.obj");
+			if (cone.valid)
+
+			body.type = C_BODY;
+			body.inverse_mass = 1.0f;
+			body.velocity = {0.0f, 0.0f, 0.0f};
+			body.rotation = {0.0f, 0.0f, 2.0f};
+			body.linear_damping = 1.0f;
+			body.angular_damping = 0.99f;
+			body.shape = make_mesh(cone.positions, cone.stride, cone.indicies);
+			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 1.0f));
+
+			EntityID g = add_entity(&world->ecs);
+			add_components(&world->ecs, &world->phy, g, body, transform);
+#endif
+#if 0
+
+			transform.type = C_TRANSFORM;
+			transform.pos = {0.0f, 0.0f, 0.0f};
+
+			body.type = C_BODY;
+			body.mass = 0.0f;
+			body.velocity = {0.0f, 0.0f, 0.0f};
+			body.shape = make_box(15.0f, 3.0f, 50.0f);
+
+			EntityID h = add_entity(&world->ecs);
+			add_components(&world->ecs, &world->phy, h, body, transform);
+#endif
+		}
+
 		run_tests();
 #if 1
 		// Test code.
 		Mesh mesh = load_mesh("res/monkey.obj");
 		free_mesh(mesh);
+
 		
 		// Shader program
 		Array<GFX::ShaderInfo> shader_info = {
@@ -210,17 +331,44 @@ void step(World *_world, float32 delta)
 
 		// View matrix
 		GFX::add_matrix_profile("m_view", &camera);
-		camera.transform.pos.z = 1;
+		camera.transform.position.z = 1;
+
+		run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
 #endif
 	}
-
-	// Draw
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-
 	
 	update(delta);
 	draw();
+#if 0
+	if (B_DOWN("forward"))
+	{
+		CBody *body = (CBody *) get_component(&world->ecs, e, C_BODY);
+		Vec3f offset = {-0.0f, -1.0f, 0.0f};
+		Vec3f impulse = {0.0f, 1.0f, 0.0f};
+		impulse *= delta * 25.0f;
+		relative_impulse(body, impulse, offset);
+	}
+
+	if (B_DOWN("left"))
+	{
+		CBody *body = (CBody *) get_component(&world->ecs, e, C_BODY);
+		Vec3f offset = {-0.0f, -0.0f, -1.0f};
+		Vec3f impulse = {0.0f, 1.0f, 0.0f};
+		impulse *= delta * 25.0f;
+		relative_impulse(body, impulse, offset);
+	}
+
+	if (B_DOWN("right"))
+	{
+		CBody *body = (CBody *) get_component(&world->ecs, e, C_BODY);
+		Vec3f offset = {-0.0f, -0.0f, 1.0f};
+		Vec3f impulse = {0.0f, 1.0f, 0.0f};
+		impulse *= delta * 25.0f;
+		relative_impulse(body, impulse, offset);
+	}
+#endif
+	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f) * B_DOWN("forward")); 
+	debug_draw_engine(&world->ecs, &world->phy);
 }
 
 

@@ -1,5 +1,8 @@
 #pragma once
 
+struct Q;
+Q normalize(Q q);
+
 struct Q
 {
 	union 
@@ -8,13 +11,18 @@ struct Q
 		{
 			float32 x, y, z, w;
 		};
+		struct
+		{
+			Vec3f v;
+			float32 w;
+		};
 		float32 _[4];
 	};
 
 
 	Q operator- ()
 	{
-		return {-x, -y, -z, -w};
+		return {-x, -y, -z, w};
 	}
 
 	Q operator+ (Q q)
@@ -62,6 +70,10 @@ struct Q
 
 	Q operator* (Q o)
 	{
+		Q result;
+		result.v = cross(v, o.v) + o.v * w + v * o.w;
+		result.w = w * o.w - dot(v, o.v);
+		/*
 		return
 		{
 			w * o.x + x * o.w + y * o.z - z * o.y,
@@ -69,18 +81,41 @@ struct Q
 			w * o.z + x * o.y - y * o.x + z * o.w,
 			w * o.w - x * o.x - y * o.y + z * o.z,
 		};
-		/*return 
-		{
-			x * o.x - y * o.y - z * o.z - w * o.w,
-			y * o.x + x * o.y - w * o.z + z * o.w,
-			z * o.x + w * o.y + x * o.z - y * o.w,
-			w * o.x - z * o.y + y * o.z + x * o.w
-		};*/
+		*/
+		return result;
 	}
 
 	void operator*= (Q o)
 	{
 		*this = (*this) * (o);
+	}
+
+	Q operator/ (Q o)
+	{
+		return (*this) * (-o);
+	}
+
+	void operator/= (Q o)
+	{
+		*this = (*this) / o;
+	}
+
+	Vec3f operator* (Vec3f v)
+	{
+		Q p = {v.x, v.y, v.z, 0.0f};
+		Q q = (*this);
+		Q tmp = q * p;
+		tmp = tmp * -q;
+		return {tmp.x, tmp.y, tmp.z};
+	}
+
+	Vec3f operator/ (Vec3f v)
+	{
+		Q p = {v.x, v.y, v.z, 0.0f};
+		Q q = -(*this);
+		Q tmp = q * p;
+		tmp = tmp * -q;
+		return {tmp.x, tmp.y, tmp.z};
 	}
 };
 
@@ -130,6 +165,15 @@ Q toQ(float32 roll, float32 pitch, float32 yaw)
 	};
 }
 
+Q toQ(Vec3f axis, float32 angle)
+{
+	float32 theta = angle / 2.0f;
+	Q result;
+	result.v = axis * sin(theta);
+	result.w = (float32) cos(theta);
+	result = normalize(result);
+	return result;
+}
 
 Vec3f to_euler(Q q)
 {
@@ -141,7 +185,7 @@ Vec3f to_euler(Q q)
 	float32 sinp = 2.0f * (q.w * q.y - q.z * q.x);
 	float32 pitch;
 	if (fabs(sinp) >= 1.0f)
-		pitch = copysign(M_PI / 2.0f, sinp);
+		pitch = copysign(PI / 2.0f, sinp);
 	else
 		pitch = asin(sinp);
 	

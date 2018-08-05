@@ -154,6 +154,9 @@ int main(int varc, char *varv[])
 	world.plt.button_state = button_state;
 
 	world.__mem = (MemoryAllocation *)(void *)__mem;
+	world.audio = {};
+	world.audio.buffers = MALLOC2(AudioBuffer, BEAR_MAX_AUDIO_BUFFERS);
+	world.audio.sources = MALLOC2(AudioSource, BEAR_MAX_AUDIO_SOURCES);
 
 	if (!load_libgame(&game))
 	{
@@ -186,7 +189,7 @@ int main(int varc, char *varv[])
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
-	SDL_GL_SetSwapInterval(0);
+	SDL_GL_SetSwapInterval(1);
 
 	if (gladLoadGL() == 0)
 	{
@@ -264,6 +267,9 @@ int main(int varc, char *varv[])
 	
 	SDL_CloseAudio();
 	SDL_Quit();
+
+	FREE(world.audio.sources);
+	FREE(world.audio.buffers);
 
 	destroy_ecs(&world);
 

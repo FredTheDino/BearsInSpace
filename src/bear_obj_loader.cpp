@@ -6,6 +6,7 @@ struct Mesh
 	Array<Vec3f> normals;
 	Array<Vec2f> uvs;
 	Array<int32> indicies;
+	uint32 stride;
 };
 
 int32 eat_int(char **ptr)
@@ -139,12 +140,18 @@ Mesh load_mesh(OSFile file)
 			ptr++;
 			ptr++;
 			// f, we're reading faces.
+			uint32 sum_data = 0;
 			while (*ptr != '\n' && *ptr != '\0')
 			{
 				if (*ptr >= '0' && *ptr <= '9')
+				{
 					append(&mesh.indicies, eat_int(&ptr));
+					sum_data++;
+				}
 				ptr++;
 			}
+			ASSERT(sum_data % 3 == 0);
+			mesh.stride = sum_data / 3;
 		}
 		while (*ptr != '\n' && *ptr != '\0') ptr++;
 	}

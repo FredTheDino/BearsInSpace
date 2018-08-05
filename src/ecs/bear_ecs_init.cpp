@@ -21,8 +21,8 @@ void init_ecs(World *world)
 	cs[id] = { sizeof(type), inital_size, 0, plt->malloc("ECS_INIT", id, sizeof(type) * inital_size) };
 
 	// Entries go here. (Order doesn't matter)
-	COMP_ENTRY(C_POSITION, Position);
-	COMP_ENTRY(C_BLARGH, Blargh);
+	COMP_ENTRY(C_TRANSFORM, CTransform);
+	COMP_ENTRY(C_BODY, CBody);
 
 	// Entries end here.
 
@@ -46,24 +46,5 @@ void destroy_ecs(World *world)
 	}
 
 	plt->free(ecs->entities);
-}
-
-void s_hello_world(World *world, float32 delta)
-{
-	world->plt.print("Delta is %.2f\n", delta);
-}
-
-void run_system(SystemType type_id, World *world, float32 delta)
-{
-	ASSERT(type_id < NUM_SYSTEMS);
-	switch (type_id)
-	{
-#define SYSTEM_ENTRY(id, func_name) case id: func_name(world, delta); break;
-
-		SYSTEM_ENTRY(S_HELLO_WORLD, s_hello_world);
-
-	default:
-		ASSERT(!"Unknown systemtype!");
-	}
 }
 

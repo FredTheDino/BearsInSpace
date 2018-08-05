@@ -5,8 +5,10 @@
 #include "glad.h"
 
 #include "bear_types.h"
+#include "bear_array.h"
 #include "audio/bear_audio.h"
 #include "ecs/bear_ecs.h"
+#include "physics/bear_physics.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -63,6 +65,17 @@ struct World
 		bool jump;
 	} input;
 
+	// Graphics related things
+	struct
+	{
+		float32 rotx;
+		float32 roty;
+		Vec3f position;
+	} camera;
+
+	// Physics
+	Physics phy;
+
 	// A clock for timing.
 	CLK clk;
 
@@ -97,6 +110,7 @@ struct World
 #endif
 
 #include "ecs/bear_ecs_init.cpp"
+#include "physics/bear_physics_init.cpp"
 
-#include "bear_array.h"
+#include "bear_array.cpp"
 #include "bear_input.h"
