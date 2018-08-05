@@ -12,6 +12,9 @@
 // Math
 #include "math/bear_math.h"
 
+// Utility
+#include "bear_utility.h"
+
 // GFX
 #include "glad.c"
 #include "bear_obj_loader.cpp"
@@ -117,7 +120,7 @@ void draw()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	GFX::bind(texture);
-	GFX::draw(renderable);
+	GFX::draw(renderable, GL_QUADS);
 
 	GFX::debug_draw_line({ .0f, 1.0f, .0f }, { .0f, 2.0f, .0f }, { 1.0f, .0f, .0f });
 	GFX::debug_draw_point({ .0f, 2.5f, .0f }, { .0f, 1.0f, .0f });
@@ -148,57 +151,38 @@ void step(World *_world, float32 delta)
 	{
 		run_tests();
 #if 1
-		// Test code.
-		Mesh mesh = load_mesh("res/monkey.obj");
-		free_mesh(mesh);
 		
 		// Shader program
 		Array<GFX::ShaderInfo> shader_info = {
-			{ GL_VERTEX_SHADER, "src/shader/simple.vert" },
-			{ GL_FRAGMENT_SHADER, "src/shader/simple.frag" }
+			{ GL_VERTEX_SHADER, "src/shader/obj.vert" },
+			{ GL_FRAGMENT_SHADER, "src/shader/obj.frag" }
 		};
 
 		program = GFX::create_shader_program(shader_info);
 		delete_array(&shader_info);
-
-		texture = GFX::create_texture("res/test2.png");
 		
 		// Vertex buffer
-		Array<float32> data_vb = {
-			-.5f, .0f, .5f, .0f, .0f,
-			-.5f, .0f, -.5f, 2.0f, .0f,
-			.5f, .0f, -.5f, .0f, .0f,
-			.5f, .0f, .5f, 2.0f, .0f,
-			.0f, 1.0f, .0f, .5f, 2.0f
-		};
+		Mesh mesh = load_mesh("res/monkey.obj");
+		Array<float32> data_vb = to_float32(mesh.positions);
 		
 		vertex_buffer = GFX::create_vertex_buffer(data_vb);
 		delete_array(&data_vb);
 
 		// Index buffer
-		Array<uint32> data_ib = {
-			0, 4, 3,
-			1, 4, 0,
-			2, 4, 1,
-			3, 4, 2
-		};
-
-		GFX::IndexBuffer index_buffer = GFX::create_index_buffer(data_ib);
-		
-		delete_array(&data_ib);
+		GFX::IndexBuffer index_buffer = GFX::create_index_buffer(mesh.indices);
 		
 		// Vertex array
 		Array<GFX::VertexAttribute> attributes = {
-			{ vertex_buffer, 0, 3, GL_FLOAT, false, 5 << 2, (void *) 0 },
-			{ vertex_buffer, 1, 2, GL_FLOAT, false, 5 << 2, (void *) (3 << 2) }
+			{ vertex_buffer, 0, 3, GL_FLOAT },
 		};
 		vertex_array = GFX::create_vertex_array(attributes, index_buffer);
 		delete_array(&attributes);
 
 		// Renderable
 		renderable.vertex_array = vertex_array;
-		renderable.num_vertices = 12;
+		renderable.num_vertices = size(mesh.indices);
 		renderable.program = program;
+		free_mesh(mesh);
 		
 		// Model matrix
 		renderable.matrix_profiles = create_array<GFX::MatrixProfile>(1);
