@@ -232,6 +232,10 @@ void step(float32 delta)
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	PRINT("Button state: %d\n", B_STATE("forward"));
+	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+	debug_draw_engine(&world->ecs, &world->phy);
+
 #if 0
 
 	if (should_run_tests)
@@ -438,9 +442,6 @@ void step(float32 delta)
 	}
 #endif
 #endif
-	PRINT("Button state: %d\n", B_STATE("forward"));
-	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
-	debug_draw_engine(&world->ecs, &world->phy);
 }
 
 
