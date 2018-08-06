@@ -149,7 +149,7 @@ void reload(PLT _plt, GameMemory *_mem)
 	body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 10.0f));
 
 	EntityID e = add_entity(&world->ecs);
-	add_components(&world->ecs, &world->phy, e, body, transform);
+	add_components(&world->ecs, &world->phy, e, &body, &transform);
 
 	transform.type = C_TRANSFORM;
 	transform.position = {-1.0f, 1.0f, 1.0f};
@@ -165,7 +165,7 @@ void reload(PLT _plt, GameMemory *_mem)
 	body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 0.0f));
 
 	EntityID f = add_entity(&world->ecs);
-	add_components(&world->ecs, &world->phy, f, body, transform);
+	add_components(&world->ecs, &world->phy, f, &body, &transform);
 }
 
 // Exit APP

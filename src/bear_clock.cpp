@@ -1,8 +1,9 @@
 #include "bear_clock.h"
 
+const char *main_clock = "Main Clock";
 void reset_debug_clock()
 {
-	DebugCLK clock = {"Main Clock", plt.get_time(), 0.0};
+	DebugCLK clock = {(char *) main_clock, plt.get_time(), 0.0};
 	world->clk.clocks[0] = clock;
 	world->clk.num_clocks = 1;
 }
