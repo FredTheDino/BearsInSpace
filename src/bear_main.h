@@ -1,116 +1,69 @@
 #pragma once
-#include <stdlib.h>
-#include <stdio.h>
-#include <cstring>
-#include "glad.h"
 
-#include "bear_types.h"
-#include "bear_array.h"
+#define PRINT(...) plt.print(__VA_ARGS__)
+#define LOG(type, ...) \
+	plt.print("[%s:%d] type :", __FILE__, __LINE__, type); \
+	plt.print(__VA_ARGS__);\
+	plt.print("\n");
+
+// Array
+#include "bear_array.cpp"
+
+// Math
+#include "math/bear_math.h"
+
+// Audio
 #include "audio/bear_audio.h"
+
+// ECS
 #include "ecs/bear_ecs.h"
+
+// Physics
 #include "physics/bear_physics.h"
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
-#define ASPECT_RATIO ((float32) WINDOW_WIDTH) / WINDOW_HEIGHT
+// Clocks
+#include "bear_clock.h"
 
-struct OSFile
+// TODO: This can also be done a lot better.
+namespace GFX
 {
-	int32 timestamp;
-	uint64 size;
-	void *data;
+	struct MatrixProfile;
 };
 
-typedef float64 AxisValue;
-
-enum ButtonState
-{
-	UP = 1, DOWN = 2, PRESSED = 4, RELEASED = 8
-};
-
-struct PLT
-{
-	void *(*malloc)	(string, uint32, uint64);
-	void  (*free)	(void *);
-	void *(*realloc)(string, uint32, void *, uint64);
-
-	void  (*log)	(string, int32, string, string);
-	int32 (*print)	(string, ...); 
-
-	OSFile (*read_file)	(string);
-	void (*free_file)	(OSFile);
-	int32 (*last_write) (string);
-
-	AxisValue (*axis_value) (string);
-	ButtonState (*button_state) (string);
-};
-
-struct CLK
-{
-	float64 time;
-	float32 delta;
-};
-
-struct MemoryAllocation
-{
-	const char *file;
-	uint32 line;
-	void *ptr;
-};
 
 struct World
 {
-	struct Input
-	{
-		bool jump;
-	} input;
-
-	// Graphics related things
-	struct
-	{
-		float32 rotx;
-		float32 roty;
-		Vec3f position;
-	} camera;
-
+	// Audio, so the world can feel the beats.
+	Audio audio;
+	
+	// The ECS, all storage in one place.
+	ECS ecs;
+	
 	// Physics
 	Physics phy;
 
-	// A clock for timing.
+	// A clock
 	CLK clk;
 
-	// Platform functions.
-	PLT plt;
+	// GFX, maybe create a struct for this?
+	// Maybe we should restructure this.
+	Array<GFX::MatrixProfile> matrix_profiles;
 
-	// The ECS, all storage in one place.
-	ECS ecs;
-
-	// Audio, so the world can feel the beats.
-	Audio audio;
-
-	bool running;
-
-	// TODO: Remove in reloase
-	uint32 __mem_length = 0;
-	MemoryAllocation *__mem;
 };
 
-// A way to crash so we can bug track.
-#define HALT_AND_CATCH_FIRE() ((int *)(void *)0)[0] = 1
-
-#ifdef BEAR_GAME
-
-#include "bear_main_game.h"
-
-#else
-
-#include "bear_main_plt.h"
-#include "bear_memory.h"
-
+#if 0
+Audio 	*world_audio;
+ECS 	*world_ecs;
+Physics *world_phy;
+CLK 	*world_clk;
 #endif
 
-#include "ecs/bear_ecs_init.cpp"
-#include "physics/bear_physics_init.cpp"
+Array<GFX::MatrixProfile> *world_matrix_profiles;
 
-#include "bear_array.cpp"
-#include "bear_input.h"
+#define AXIS_VAL(name) (plt.axis_value(name))
+#define B_STATE(name) (plt.button_state(name))
+#define B_PRESSED(name) (plt.button_state(name) == ButtonState::PRESSED)
+#define B_RELEASED(name) (plt.button_state(name) == ButtonState::RELEASED)
+#define B_DOWN(name) (plt.button_state(name) == ButtonState::DOWN)
+#define B_UP(name) (plt.button_state(name) == ButtonState::UP)
+

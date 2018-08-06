@@ -105,3 +105,9 @@ struct Physics
 
 bool add_body(Physics *phy, EntityID owner);
 
+void init_phy(Physics *phy)
+{
+	phy->body_limits = static_array<BodyLimit>(50);
+	phy->collisions = static_array<Collision>(30);
+}
+

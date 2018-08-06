@@ -14,7 +14,7 @@ struct Q
 		struct
 		{
 			Vec3f v;
-			float32 w;
+			// float32 w; This W should be in the same place no matter what...
 		};
 		float32 _[4];
 	};

@@ -1,28 +1,17 @@
 #include "bear_array.h"
+#include <stdlib.h>
 
 // Functions
 template <typename T>
-Array<T> static_array(uint64 limit)
+Array<T> create_array(uint64 limit)
 {
 	Array<T> arr;
-	arr.data = (T *) static_push(sizeof(T) * limit);
+	arr.data = (T *) malloc(sizeof(T) * limit);
 	arr.limit = limit;
 	arr.size = 0;
 	arr.alloc_type = AT_STATIC;
 	return arr;
 }
-
-template <typename T>
-Array<T> temp_array(uint64 limit)
-{
-	Array<T> arr;
-	arr.data = (T *) temp_push(sizeof(T) * limit);
-	arr.limit = limit;
-	arr.size = 0;
-	arr.alloc_type = AT_TEMP;
-	return arr;
-}
-
 
 template <typename T>
 void append(Array<T> *arr, T val)
@@ -56,10 +45,6 @@ template <typename T>
 void prepend(Array<T> *arr, T val)
 {
 	ASSERT(arr->size <= arr->limit);
-	// NOTE: If we did this reallocation more 
-	// manually, we wouldn't have to move the memory twice.
-	// This will cause a major speed improvement. Effectively 
-	// doubeling the speed of this function.
 	if (arr->size == arr->limit)
 		relimit(arr, arr->limit * 2);
 
@@ -80,14 +65,7 @@ void relimit(Array<T> *arr, uint64 limit)
 		return;
 	}
 	
-	if (arr->alloc_type == AT_STATIC)
-	{
-		arr->data = (T *) static_realloc(arr->data, sizeof(T) * limit);
-	}
-	else
-	{
-		arr->data = (T *) temp_realloc(arr->data, sizeof(T) * limit);
-	}
+	arr->data = (T *) realloc(arr->data, sizeof(T) * limit);
 	
 	arr->limit = limit;
 	if (arr->size > arr->limit)
@@ -180,7 +158,7 @@ void delete_array(Array<T> *arr)
 	ASSERT(arr->alloc_type == AT_STATIC);
 	if (arr->data)
 	{
-		static_pop(arr->data);
+		free(arr->data);
 		arr->data = 0;
 	}
 }

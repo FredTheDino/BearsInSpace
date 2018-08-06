@@ -2,26 +2,26 @@
 // This file should _NOT HAVE ANY_ platform specific code,
 // that code should be placed on the platform layer.
 
+struct GameMemory;
+GameMemory *mem;
 
-#define BEAR_GAME
+#include "bear_shared.h"
+#include "bear_memory.cpp"
+
+PLT plt;
+
 #include "bear_main.h"
-
-// Misc
-#include "bear_array.h"
-
-// Math
-#include "math/bear_math.h"
-
-// GFX
-#include "glad.c"
-#include "bear_obj_loader.cpp"
-
-#include "bear_gfx.h"
-#define GL_LOADED glClear
+World *world;
 
 // Audio
 #include "audio/bear_audio.cpp"
 #include "audio/bear_mixer.cpp"
+
+// GFX
+#include "glad.c"
+#define GL_LOADED glClear
+#include "bear_obj_loader.cpp"
+#include "bear_gfx.h"
 
 // ECS
 #include "ecs/bear_ecs.cpp"
@@ -29,9 +29,19 @@
 // Physics
 #include "physics/bear_physics.cpp"
 
+// Clocks
+#include "bear_clock.cpp"
+
+#if 0
 // Tests
 #include "bear_test.cpp"
+#endif
 
+
+#include "glad.c"
+#define GL_LOADED glClear
+
+#if 1
 GFX::Renderable renderable;
 GFX::VertexBuffer vertex_buffer;
 GFX::VertexArray vertex_array;
@@ -39,126 +49,169 @@ GFX::ShaderProgram program;
 GFX::Texture texture;
 Transform transform = create_transform();
 Camera camera;
+#endif
 
 #if 0
 float32 rotx = 0;
 float32 roty = 0;
-#endif
-float32 speed = 6.0f;
-
-#if 1
-void update(float32 delta)
-{
-#if 0
-	// Temporary test code.
-	EntityID entity = add_entity(&world->ecs);
-	Position comp;
-	comp.type = C_POSITION;
-	comp.position = {1.0f, 2.0f, 3.0f};
-
-	Blargh blarg;
-	blarg.type = C_BLARGH;
-	blarg.a = 32;
-	blarg.b = 11111111;
-
-	add_components(&world->ecs, entity, &comp, &blarg);
-
-	EntityID entity2 = add_entity(&world->ecs);
-	add_component(&world->ecs, entity2, C_BLARGH, (BaseComponent *) &blarg);
-
-	remove_entity(&world->ecs, entity);
-	remove_entity(&world->ecs, entity2);
-
-	run_system(S_HELLO_WORLD, world, delta);
-
-	id = load_sound(&world->audio, "res/smack.wav");
-	stockhousen = load_sound(&world->audio, "res/stockhausen.wav");
-	play_music(&world->audio, stockhousen, 1.0f, 1.0f, true);
-	world->audio.left = {-1.0f, 0.0f, 0.0f};
-	world->audio.position = { (float32) sin(t / 2.0f), 0.0f, 2.0f};
-	t += delta;
-
-	static bool pressed_jump = false;
-	if (world->input.jump)
-	{
-		if (!pressed_jump)
-		{
-			pressed_jump = true;
-			play_sound(&world->audio, id, 0.5f, 0.5f);
-		}
-	}
-	else
-	{
-		pressed_jump = false;
-	}
-#endif
-
-	float32 rx = AXIS_VAL("xrot") * 3.0f * delta;
-	float32 ry = AXIS_VAL("yrot") * 3.0f * delta;
-
-	if (rx || ry)
-	{
-		world->camera.rotx -= rx;
-		world->camera.roty -= ry;
-	}
-	camera.transform.orientation = toQ(world->camera.roty, world->camera.rotx, 0);
-
-	float32 dx = AXIS_VAL("xmove") * speed * delta;
-	float32 dz = AXIS_VAL("zmove") * speed * delta;
-	if (dx || dz)
-	{
-		world->camera.position.x += dx * cos(-world->camera.rotx) - dz * sin(-world->camera.rotx);
-		world->camera.position.z += dz * cos(-world->camera.rotx) + dx * sin(-world->camera.rotx);
-	}
-
-	world->camera.position.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
-
-	camera.transform.position = world->camera.position;
-}
-
-void draw()
-{
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-#if 0
-	GFX::debug_draw_point({ .0f, .0f, .0f }, { .5f, .75f, .25f });
-
-	GFX::bind(texture);
-	GFX::draw(renderable);
-
-	GFX::debug_draw_line({ .0f, 1.0f, .0f }, { .0f, 2.0f, .0f }, { 1.0f, .0f, .0f });
-	GFX::debug_draw_point({ .0f, 2.5f, .0f }, { .0f, 1.0f, .0f });
-#endif
-}
-#endif
 
 Mesh cone;
+float32 speed = 6.0f;
+#endif
 
-EntityID e;
-extern "C"
-void step(World *_world, float32 delta)
+
+AudioID buffer;
+
+#if 0
+inline
+void setup_pointers()
 {
+	world = (World *) ((MemoryAllocation *) mem->static_memory + 1);
+	world_audio = &world->audio;
+	world_ecs = &world->ecs;
+	world_phy = &world->phy;
+	world_matrix_profiles = &world->matrix_profiles;
+}
+#endif
 
-	world = _world;
-	
-	// Initialize GLAD if necessary
+// Enter APP
+extern "C"
+void init(PLT _plt, GameMemory *_mem)
+{
+	mem = _mem;
+	plt = _plt;
+	world = static_push_struct(World); // This must allways be the first allocation.
+
 	if (!GL_LOADED)
 	{
-		gladLoadGL();
-
+		auto error = gladLoadGL();
+		ASSERT(error);
 		glEnable(GL_DEPTH_TEST);
 
 		GFX::init_matrix_profiles();
-
 		GFX::init_debug();
 		
 	}
+	
 
+	init_ecs(&world->ecs);
+	init_phy(&world->phy);
+
+	buffer = load_sound(&world->audio, "res/stockhausen.wav");
+
+
+	camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
+	camera.transform.position = {-30.0f, 25.0f, 20.0f};
+	camera.transform.orientation = toQ(5.7f, -1.0f, 0);
+	GFX::add_matrix_profile("m_view", &camera);
+	// TODO: This is ugly as fuck.
+	world->matrix_profiles = GFX::matrix_profiles;
+}
+
+// Reload the library.
+extern "C"
+void reload(PLT _plt, GameMemory *_mem)
+{
+	if (!world)
+	{
+		mem = _mem;
+		plt = _plt;
+	}
+
+	// TODO: This is ugly as fuck.
+	GFX::matrix_profiles = world->matrix_profiles;
+
+	if (!GL_LOADED)
+	{
+		gladLoadGL();
+		glEnable(GL_DEPTH_TEST);
+	}
+
+	//play_sound(&world->audio, buffer, 1.0f, 1.0f);
+	// How the fk does the graphics work?
+
+	clear_ecs(&world->ecs, &world->phy);
+
+	CTransform transform = {};
+	transform.type = C_TRANSFORM;
+	transform.position = {0.0f, 5.0f, -4.0f};
+	transform.scale = {1.0f, 1.0f, 1.0f};
+	transform.orientation = toQ(1.5f, 1.5f, 0.0f);
+
+	CBody body = {};
+	body.type = C_BODY;
+	body.inverse_mass = 0.1f;
+	body.velocity = {0.0f, -1.0f, 1.0f};
+	body.rotation = {0.0f, 1.0f, 1.0f};
+	body.linear_damping = 0.80f;
+	body.angular_damping = 0.80f;
+	body.shape = make_box(2.0f, 2.0f, 2.0f);
+	body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 10.0f));
+
+	EntityID e = add_entity(&world->ecs);
+	add_components(&world->ecs, &world->phy, e, &body, &transform);
+
+	transform.type = C_TRANSFORM;
+	transform.position = {-1.0f, 1.0f, 1.0f};
+	transform.orientation = {1.0f, 0.0f, 0.0f, -0.05f};
+
+	body.type = C_BODY;
+	body.inverse_mass = 0.0f;
+	body.velocity = {0.0f, 0.0f, 0.0f};
+	body.rotation = {0.0f, 0.0f, 0.0f};
+	body.linear_damping = 0.0f;
+	body.angular_damping = 0.0f;
+	body.shape = make_box(10.0f, 1.0f, 10.0f);
+	body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 0.0f));
+
+	EntityID f = add_entity(&world->ecs);
+	add_components(&world->ecs, &world->phy, f, &body, &transform);
+}
+
+// Exit APP
+extern "C"
+void destroy()
+{
+	PRINT("Destroy!\n");
+}
+
+// Exit the library
+extern "C"
+void replace()
+{
+	// TODO: This is ugly as fuck.
+	world->matrix_profiles = GFX::matrix_profiles;
+	PRINT("Replace!\n");
+}
+
+
+extern "C"
+void step(float32 delta)
+{
+	//LOG("DEBUG", "MEEEEEEEEEEEEEEEEEEEEP!");
+	reset_debug_clock();
+
+
+	auto phy_clock = start_debug_clock("Physics Step");
+	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+	stop_debug_clock(phy_clock);
+
+	phy_clock = start_debug_clock("Physics Draw");
+
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	debug_draw_engine(&world->ecs, &world->phy);
+
+	stop_debug_clock(phy_clock);
+
+	display_clocks();
+}
+
+#if 0
+	// Step
 	if (should_run_tests)
 	{
 		{
-			clear_ecs(world);
 
 			{
 				Transform t;
@@ -180,18 +233,10 @@ void step(World *_world, float32 delta)
 				Vec3f n = m * p;
 				n = n;
 			}
-
 			camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
+			
 
-			if (world->phy.collisions.data == nullptr)
-			{
-				world->phy.collisions = create_array<Collision>(30);
-			}
-
-			Q a = {0.0f, 1.0f, 0.0f, 1.0f};
-			Vec3f p = {1.0f, 0.0f, 0.0f};
-			Vec3f cw = a * p;
-			Vec3f ccw = a / p;
+			clear_ecs(world);
 
 			CTransform transform = {};
 			transform.type = C_TRANSFORM;
@@ -209,7 +254,7 @@ void step(World *_world, float32 delta)
 			body.shape = make_box(2.0f, 2.0f, 2.0f);
 			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 10.0f));
 
-#if 0 // Box
+#if 1 // Box
 			e = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, e, body, transform);
 #endif
@@ -231,7 +276,7 @@ void step(World *_world, float32 delta)
 			EntityID f = add_entity(&world->ecs);
 			add_components(&world->ecs, &world->phy, f, body, transform);
 #endif
-#if 1 // Cannon ball
+#if 0 // Cannon ball
 
 			transform.type = C_TRANSFORM;
 			transform.position = {-0.0f, 3.0f, -0.0f};
@@ -267,7 +312,7 @@ void step(World *_world, float32 delta)
 		}
 
 		run_tests();
-#if 1
+#if 0
 		// Test code.
 		Mesh mesh = load_mesh("res/monkey.obj");
 		free_mesh(mesh);
@@ -337,9 +382,9 @@ void step(World *_world, float32 delta)
 #endif
 	}
 	
+#if 0
 	update(delta);
 	draw();
-#if 0
 	if (B_DOWN("forward"))
 	{
 		CBody *body = (CBody *) get_component(&world->ecs, e, C_BODY);
@@ -367,8 +412,48 @@ void step(World *_world, float32 delta)
 		relative_impulse(body, impulse, offset);
 	}
 #endif
-	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f) * B_DOWN("forward")); 
-	debug_draw_engine(&world->ecs, &world->phy);
+#endif
+
+#if 0
+// Old update.
+void update(float32 delta)
+{
+	float32 rx = AXIS_VAL("xrot") * 3.0f * delta;
+	float32 ry = AXIS_VAL("yrot") * 3.0f * delta;
+
+	if (rx || ry)
+	{
+		world->camera.rotx -= rx;
+		world->camera.roty -= ry;
+	}
+	camera.transform.orientation = toQ(world->camera.roty, world->camera.rotx, 0);
+
+	float32 dx = AXIS_VAL("xmove") * speed * delta;
+	float32 dz = AXIS_VAL("zmove") * speed * delta;
+	if (dx || dz)
+	{
+		world->camera.position.x += dx * cos(-world->camera.rotx) - dz * sin(-world->camera.rotx);
+		world->camera.position.z += dz * cos(-world->camera.rotx) + dx * sin(-world->camera.rotx);
+	}
+
+	world->camera.position.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
+
+	camera.transform.position = world->camera.position;
 }
 
+void draw()
+{
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#if 0
+	GFX::debug_draw_point({ .0f, .0f, .0f }, { .5f, .75f, .25f });
+
+	GFX::bind(texture);
+	GFX::draw(renderable);
+
+	GFX::debug_draw_line({ .0f, 1.0f, .0f }, { .0f, 2.0f, .0f }, { 1.0f, .0f, .0f });
+	GFX::debug_draw_point({ .0f, 2.5f, .0f }, { .0f, 1.0f, .0f });
+#endif
+}
+#endif

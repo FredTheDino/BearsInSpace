@@ -3,6 +3,8 @@
 #include "bear_gjk.h"
 #include "bear_epa.h"
 
+//#define DEBUG_DRAW_PHYSCIS 1
+
 Collision collision_test(Vec3f inital_direction, 
 		CBody *a,
 		CBody *b,
@@ -30,7 +32,7 @@ Collision collision_test(Vec3f inital_direction,
 		GFX::debug_draw_point(center, {0.0f, 1.0f, 0.5f});
 	}
 
-	Array<Triangle> triangles = create_array<Triangle>(10);
+	Array<Triangle> triangles = temp_array<Triangle>(100);
 	Collision collision = epa(simplex, &triangles, a->shape, *a->_transform, b->shape, *b->_transform);
 	if (collision.depth > 0.0f)
 	{
@@ -40,7 +42,7 @@ Collision collision_test(Vec3f inital_direction,
 
 		if (debug_draw)
 		{
-			for (int32 i = 0; i < size(triangles); i++)
+			for (int32 i = 0; i < (int32) size(triangles); i++)
 			{
 				Triangle t = triangles[i];
 				GFX::debug_draw_line(t.a.point, t.b.point, {0.9f, 0.9f, 0.3f});
@@ -55,8 +57,6 @@ Collision collision_test(Vec3f inital_direction,
 			GFX::debug_draw_point(collision.contact_point, {1.0f, 1.0f, 1.0f});
 		}
 	}
-
-	delete_array(&triangles);
 
 	return collision;
 }
@@ -279,14 +279,14 @@ void sort_limits(Array<BodyLimit> *_limits)
 	// If you don't randomly change the sorting direction every frame,
 	// this will be VERY performant.
 	Array<BodyLimit> limits = *_limits;
-	for (int32 i = 1; i < size(limits); i++)
+	for (int32 i = 1; i < (int32) size(limits); i++)
 	{
 		BodyLimit i_limit = get(limits, i);
 		for (int32 j = i - 1; 0 <= j; j--)
 		{
 			if (i_limit.min_limit < get(limits, j).min_limit)
 			{
-				for (uint32 copy_index = i; copy_index > j; copy_index--)
+				for (uint32 copy_index = i; copy_index > (uint32) j; copy_index--)
 				{
 					set(limits, copy_index, limits[copy_index - 1]);
 				}
@@ -301,13 +301,13 @@ void sort_limits(Array<BodyLimit> *_limits)
 void find_collisions(ECS *ecs, Physics *engine)
 {
 	for (int32 outer_limit_index = 0; 
-		outer_limit_index < size(engine->body_limits);
+		outer_limit_index < (int32) size(engine->body_limits);
 		outer_limit_index++)
 	{
 		BodyLimit outer_limit = engine->body_limits[outer_limit_index];
 		CBody *a = (CBody *) get_component(ecs, outer_limit.owner, C_BODY);
 		for (int32 inner_limit_index = outer_limit_index + 1; 
-				inner_limit_index < size(engine->body_limits);
+				inner_limit_index < (int32) size(engine->body_limits);
 				inner_limit_index++)
 		{
 			BodyLimit inner_limit = engine->body_limits[inner_limit_index];
@@ -415,10 +415,12 @@ void relative_impulse(CBody *body, Vec3f impulse, Vec3f rel)
 	body->velocity += impulse * body->inverse_mass;
 	body->rotation += body->inverse_inertia * cross(rel, impulse);
 
+#ifdef DEBUG_DRAW_PHYSCIS
 	GFX::debug_draw_line(
 			body->_transform->position + rel,
 			body->_transform->position + rel + impulse,
 			{1.0f, 0.55f, 0.33f});
+#endif
 }
 
 void impulse_at_relative_position(CBody *body, Vec3f impulse, Vec3f rel)
@@ -426,10 +428,12 @@ void impulse_at_relative_position(CBody *body, Vec3f impulse, Vec3f rel)
 	body->velocity += impulse * body->inverse_mass;
 	body->rotation += body->inverse_inertia * cross(rel, impulse);
 
+#ifdef DEBUG_DRAW_PHYSCIS 
 	GFX::debug_draw_line(
 			body->_transform->position + rel,
 			body->_transform->position + rel + impulse,
 			{1.0f, 0.55f, 0.33f});
+#endif
 }
 
 void impulse_at(CBody *body, Vec3f impulse, Vec3f at)
@@ -438,30 +442,33 @@ void impulse_at(CBody *body, Vec3f impulse, Vec3f at)
 	body->velocity += impulse * body->inverse_mass;
 	body->rotation += body->inverse_inertia * cross(rel, impulse);
 
+#ifdef DEBUG_DRAW_PHYSCIS
 	GFX::debug_draw_line(
 			body->_transform->position + at,
 			body->_transform->position + at + impulse,
 			{1.0f, 0.55f, 0.33f});
+#endif
 }
 
 void solve_collisions_randomly(Physics *engine)
 {
 	// Solves them in the order they come in. For now.
 	auto collisions = engine->collisions;
-	for (int32 i = 0; i < size(collisions); i++)
+	for (int32 i = 0; i < (int32) size(collisions); i++)
 	{
 
 		Collision collision = get(collisions, i);
 		float32 restitution = 0.5f;
-		float32 friction = 0.3f;
 		float32 min_velocity = 0.05f;
 		CBody *a = collision.a;
 		CBody *b = collision.b;
 
+#ifdef DEBUG_DRAW_PHYSCIS
 		GFX::debug_draw_line(
 				collision.contact_point, 
 				collision.contact_point + collision.normal, 
 				{0.5f, 0.33f, 0.77f});
+#endif
 
 		Vec3f a_relative;
 		if (a)
@@ -578,78 +585,8 @@ void solve_collisions_randomly(Physics *engine)
 				restitution = 0.0f;
 			float32 desired_delta_velocity = -contact_velocity.x * (1.0f + restitution);
 
-#if 1
 			float32 j = desired_delta_velocity / delta_vel;
 			impulse = collision.normal * j;
-
-#else
-			Mat4f delta_vel_world = {};
-			Mat4f impulse_to_torque = create_skew_symmetric(a_relative);
-			if (a)
-			{
-				Mat4f impulse_to_torque = create_skew_symmetric(a_relative);
-				Mat4f vel_world = impulse_to_torque;
-				vel_world *= a->inverse_inertia;
-				vel_world *= impulse_to_torque;
-				vel_world *= -1.0f;
-				delta_vel_world = vel_world;
-			}
-
-			if (b)
-			{
-				Mat4f impulse_to_torque = create_skew_symmetric(b_relative);
-				Mat4f vel_world = impulse_to_torque;
-				vel_world *= b->inverse_inertia;
-				vel_world *= impulse_to_torque;
-				vel_world *= -1.0f;
-				delta_vel_world += vel_world;
-			}
-			// Do a change of basis to convert into contact coordinates.
-			delta_vel_world = (to_contact * delta_vel_world) * to_world;
-
-			if (a)
-			{
-				delta_vel_world._00 += a->inverse_mass;
-				delta_vel_world._11 += a->inverse_mass;
-				delta_vel_world._22 += a->inverse_mass;
-			}
-
-			if (b)
-			{
-				delta_vel_world._00 += b->inverse_mass;
-				delta_vel_world._11 += b->inverse_mass;
-				delta_vel_world._22 += b->inverse_mass;
-			}
-
-			Mat4f impulse_matrix = inverse(delta_vel_world);
-
-			Vec3f velocity_to_kill = {
-				desired_delta_velocity,
-				-contact_velocity.y,
-				-contact_velocity.z
-			};
-
-			Vec3f impulse_contact = impulse_matrix * velocity_to_kill;
-
-			float32 planar_impulse = sqrt(
-					impulse_contact.y * impulse_contact.y + 
-					impulse_contact.z + impulse_contact.z);
-
-			if (impulse_contact.x * friction < planar_impulse)
-			{
-				impulse_contact.y /= planar_impulse;
-				impulse_contact.z /= planar_impulse;
-
-				float32 divisor = delta_vel_world.__[0] +
-					delta_vel_world.__[1] * friction * impulse_contact.y +
-					delta_vel_world.__[2] * friction * impulse_contact.z;
-
-				impulse_contact.x = desired_delta_velocity / divisor;
-				impulse_contact.y *= friction * impulse_contact.x;
-				impulse_contact.z *= friction * impulse_contact.z;
-			}
-			impulse = to_world * impulse_contact;
-#endif
 
 		}
 
@@ -759,7 +696,7 @@ void update_physics(ECS *ecs, Physics *engine, float32 world_delta)
 	{
 		time_accumulator -= delta;
 
-		Vec3f gravity = {0.0f, -100.0f * delta, 0.0f};
+		Vec3f gravity = {0.0f, -50.0f * delta, 0.0f};
 		Vec3f sort_direction = {0.0f, 0.0f, 1.0f};
 		for (uint32 i = 0; i < size(engine->body_limits); i++)
 		{

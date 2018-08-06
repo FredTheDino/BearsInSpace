@@ -20,7 +20,7 @@ namespace GFX
 		program.id = glCreateProgram();
 
 		uint32 num_shaders = (uint32) size(shader_info);
-		Array<uint32> shader_ids = create_array<uint32>(num_shaders);
+		Array<uint32> shader_ids = temp_array<uint32>(num_shaders);
 
 		for (uint32 i = 0; i < num_shaders; i++)
 		{
@@ -31,10 +31,9 @@ namespace GFX
 			append(&shader_ids, shader_id);
 
 			// Shader source
-			OSFile file = world->plt.read_file(info.path);
+			OSFile file = plt.read_file(info.path, temp_push);
 			int32 len_src = (uint32) file.size;
 			glShaderSource(shader_id, 1, (string *) &file.data, &len_src);
-			world->plt.free_file(file);
 
 			// Compile shader
 			glCompileShader(shader_id);
@@ -51,15 +50,13 @@ namespace GFX
 				glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &len);
 
 				// Get info log
-				Array<int8> log = create_array<int8>(len);
+				Array<int8> log = temp_array<int8>(len);
 				glGetShaderInfoLog(shader_id, len, &len, data_ptr(log));
 				
-				ERROR_LOG("=======================");
-				ERROR_LOG("Failed to compile shader!");
-				ERROR_LOG(data_ptr(log));
-				ERROR_LOG("=======================");
-			
-				delete_array(&log);
+				LOG("SHADER ERROR", "=======================");
+				LOG("SHADER ERROR", "Failed to compile shader!");
+				LOG("SHADER ERROR", data_ptr(log));
+				LOG("SHADER ERROR", "=======================");
 
 				ASSERT(false);
 			}
@@ -83,15 +80,14 @@ namespace GFX
 			glGetProgramiv(program.id, GL_INFO_LOG_LENGTH, &len);
 
 			// Get info log
-			Array<int8> log = create_array<int8>(len);
+			Array<int8> log = temp_array<int8>(len);
 			glGetProgramInfoLog(program.id, len, &len, data_ptr(log));
 
-			ERROR_LOG("=======================");
-			ERROR_LOG("Failed to link program!");
-			ERROR_LOG(data_ptr(log));
-			ERROR_LOG("=======================");
+			LOG("SHADER ERROR", "=======================");
+			LOG("SHADER ERROR", "Failed to link program!");
+			LOG("SHADER ERROR", data_ptr(log));
+			LOG("SHADER ERROR", "=======================");
 			
-			delete_array(&log);
 
 			ASSERT(false);
 		}
@@ -111,15 +107,13 @@ namespace GFX
 			glGetProgramiv(program.id, GL_INFO_LOG_LENGTH, &len);
 
 			// Get info log
-			Array<int8> log = create_array<int8>(len);
+			Array<int8> log = temp_array<int8>(len);
 			glGetProgramInfoLog(program.id, len, &len, data_ptr(log));
 
-			ERROR_LOG("=======================");
-			ERROR_LOG("Program validation failed!");
-			ERROR_LOG(data_ptr(log));
-			ERROR_LOG("=======================");
-			
-			delete_array(&log);
+			LOG("SHADER ERROR", "=======================");
+			LOG("SHADER ERROR", "Program validation failed!");
+			LOG("SHADER ERROR", data_ptr(log));
+			LOG("SHADER ERROR", "=======================");
 
 			ASSERT(false);
 		}
@@ -130,8 +124,6 @@ namespace GFX
 			glDetachShader(program.id, shader_ids[i]);
 			glDeleteShader(shader_ids[i]);
 		}
-
-		delete_array(&shader_ids);
 
 		return program;
 	}

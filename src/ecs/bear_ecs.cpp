@@ -1,4 +1,5 @@
 #include "bear_ecs.h"
+#include <stdarg.h>
 
 Entity* get_entity(ECS *ecs, EntityID id)
 {
@@ -118,7 +119,7 @@ bool add_component(ECS *ecs, EntityID id, ComponentType type, BaseComponent *com
 	if (entry.max_length == entry.length || entry.max_length == 0)
 	{
 		entry.max_length += 50;
-		void *tmp = REALLOC(entry.c, entry.component_size * entry.max_length);
+		void *tmp = static_realloc(entry.c, entry.component_size * entry.max_length);
 		if (!tmp) return false;
 		entry.c = tmp;
 	}
@@ -151,22 +152,27 @@ bool add_body_component(ECS *ecs, Physics *phy, EntityID id, BaseComponent *comp
 }
 
 // NOTE(Ed): Only call this from the macro. The list __HAS TO BE NULL TERMINATED__!
-#define add_components(ecs, id, ...) add_components_(ecs, id, __VA_ARGS__, NULL)
+
+#define add_components(ecs, id, ...) add_components_(ecs, id, __VA_ARGS__, 0)
 void add_components_(ECS *ecs, Physics *phy, EntityID id, ...)
 {
 	va_list args;
 	va_start(args, id);
 	while (true)
 	{
-		BaseComponent *component = va_arg(args, BaseComponent *);
+		BaseComponent* component = va_arg(args, BaseComponent *);
 		if (!component) break;
+		ASSERT(component->type > 0);
+		ASSERT(component->type < NUM_COMPONENTS);
 		if (component->type == C_BODY)
-			if (phy)
-				add_body_component(ecs, phy, id, component);
-			else	
-				DEBUG_LOG("Adding Body component without giving in physics engine\n");
+		{
+			ASSERT(phy);
+			add_body_component(ecs, phy, id, component);
+		}
 		else
+		{
 			add_component(ecs, id, component->type, component);
+		}
 	}
 	va_end(args);
 }
@@ -243,7 +249,7 @@ EntityID add_entity(ECS *ecs)
 	if (ecs->allocated_entities <= id._index)
 	{
 		int32 new_allocation_size = ecs->allocated_entities	* 2;
-		Entity *ptr = (Entity *) REALLOC(ecs->entities, new_allocation_size);
+		Entity *ptr = (Entity *) static_realloc(ecs->entities, new_allocation_size);
 		if (!ptr) return {-1, -1};
 		ecs->entities = ptr;
 		ecs->allocated_entities = new_allocation_size;
@@ -288,25 +294,25 @@ void remove_entity(ECS *ecs, EntityID id)
 	}
 }
 
-void clear_ecs(World *world)
+void clear_ecs(ECS *ecs, Physics *phy)
 {
-	clear(&world->phy.body_limits);
+	clear(&phy->body_limits);
 
-	world->ecs.free_entity = 0;
-	world->ecs.max_entity = -1;
+	ecs->free_entity = 0;
+	ecs->max_entity = -1;
 
 	for (int32 i = 0; i < NUM_COMPONENTS; i++)
 	{
-		world->ecs.component_types[i].length = 0;
+		ecs->component_types[i].length = 0;
 	}
 }
 
 void s_hello_world(World *world, float32 delta)
 {
-	world->plt.print("Delta is %.2f\n", delta);
+	plt.print("Delta is %.2f\n", delta);
 }
 
-void update_physics(ECS *ecs, Physics *, float32);
+void update_physics(ECS *, Physics *, float32);
 
 void run_system(SystemType type_id, World *world, float32 delta)
 {
@@ -322,4 +328,39 @@ void run_system(SystemType type_id, World *world, float32 delta)
 		ASSERT(!"Unknown systemtype!");
 	}
 }
+
+void init_ecs(ECS *ecs)
+{
+	const int32 inital_size = 50;
+
+	ecs->entities = static_push_array(Entity, inital_size);
+	ASSERT(ecs->entities); // TODO(Ed): We assume we manage to get some memory.
+	ecs->uid_counter = 0;
+	ecs->free_entity = 0;
+	ecs->max_entity = 0;
+	ecs->allocated_entities = inital_size;
+
+	ECSEntry *cs = ecs->component_types;
+	for (uint32 i = 0; i < NUM_COMPONENTS; i++)
+	{
+		cs[i] = {};
+	}
+
+#define COMP_ENTRY(id, type)\
+	cs[id] = { sizeof(type), inital_size, 0, static_push_array(type, inital_size) };
+
+	// Entries go here. (Order doesn't matter)
+
+	COMP_ENTRY(C_TRANSFORM, CTransform);
+	COMP_ENTRY(C_BODY, CBody);
+
+	// Entries end here.
+
+	for (uint32 i = 0; i < NUM_COMPONENTS; i++)
+	{
+		if (cs[i].c)
+			continue;
+		plt.print("[%s] ECS: No Initalization for component type %u. Please check 'init_ecs' \n",  __FILE__, i);
+	}
+};
 

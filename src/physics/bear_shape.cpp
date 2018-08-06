@@ -84,7 +84,7 @@ Vec3f support(Vec3f direction, Shape shape)
 			}
 			break;
 		default:
-			PRINT("[PHYSICS] Unsupported ShapeID %d\n", shape.id);
+			plt.print("[PHYSICS] Unsupported ShapeID %d\n", shape.id);
 			point = {};
 			break;
 	};
