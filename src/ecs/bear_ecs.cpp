@@ -153,7 +153,7 @@ bool add_body_component(ECS *ecs, Physics *phy, EntityID id, BaseComponent *comp
 
 // NOTE(Ed): Only call this from the macro. The list __HAS TO BE NULL TERMINATED__!
 
-#define add_components(ecs, id, comps...) add_components_(ecs, id, comps, 0)
+#define add_components(ecs, id, ...) add_components_(ecs, id, __VA_ARGS__, 0)
 void add_components_(ECS *ecs, Physics *phy, EntityID id, ...)
 {
 	va_list args;
