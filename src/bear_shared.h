@@ -77,8 +77,9 @@ struct PLT
 	void  (*log)	(string, int32, string, string);
 	int32 (*print)	(string, ...); 
 
+	float64 (*get_time) (void);
+
 	OSFile (*read_file)	(string, AllocatorFunc);
-	void (*free_file)	(OSFile);
 	int32 (*last_write) (string);
 
 	AxisValue (*axis_value) (string);
@@ -92,19 +93,6 @@ typedef void (*ReloadFunc)(PLT, void *);
 typedef void (*ReplaceFunc)();
 typedef void (*InitFunc)(PLT, void *);
 typedef void (*DestroyFunc)();
-
-struct CLK
-{
-	float64 time;
-	float32 delta;
-
-	struct 
-	{
-		char *file;
-		float64 start_time;
-		float64 end_time;
-	} debug_timers[1024];
-};
 
 bool str_eq(const char *_a, const char *_b)
 {

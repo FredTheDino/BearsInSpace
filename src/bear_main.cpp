@@ -29,6 +29,9 @@ World *world;
 // Physics
 #include "physics/bear_physics.cpp"
 
+// Clocks
+#include "bear_clock.cpp"
+
 #if 0
 // Tests
 #include "bear_test.cpp"
@@ -59,6 +62,7 @@ float32 speed = 6.0f;
 
 AudioID buffer;
 
+#if 0
 inline
 void setup_pointers()
 {
@@ -68,6 +72,7 @@ void setup_pointers()
 	world_phy = &world->phy;
 	world_matrix_profiles = &world->matrix_profiles;
 }
+#endif
 
 // Enter APP
 extern "C"
@@ -87,13 +92,12 @@ void init(PLT _plt, GameMemory *_mem)
 		GFX::init_debug();
 		
 	}
-	setup_pointers();
 	
 
-	init_ecs(world_ecs);
-	init_phy(world_phy);
+	init_ecs(&world->ecs);
+	init_phy(&world->phy);
 
-	buffer = load_sound(world_audio, "res/stockhausen.wav");
+	buffer = load_sound(&world->audio, "res/stockhausen.wav");
 
 
 	camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
@@ -112,7 +116,6 @@ void reload(PLT _plt, GameMemory *_mem)
 	{
 		mem = _mem;
 		plt = _plt;
-		setup_pointers();
 	}
 
 	// TODO: This is ugly as fuck.
@@ -127,7 +130,7 @@ void reload(PLT _plt, GameMemory *_mem)
 	//play_sound(&world->audio, buffer, 1.0f, 1.0f);
 	// How the fk does the graphics work?
 
-	clear_ecs(world_ecs, world_phy);
+	clear_ecs(&world->ecs, &world->phy);
 
 	CTransform transform = {};
 	transform.type = C_TRANSFORM;
@@ -181,65 +184,31 @@ void replace()
 	PRINT("Replace!\n");
 }
 
-#if 0
-void update(float32 delta)
-{
-	float32 rx = AXIS_VAL("xrot") * 3.0f * delta;
-	float32 ry = AXIS_VAL("yrot") * 3.0f * delta;
-
-	if (rx || ry)
-	{
-		world->camera.rotx -= rx;
-		world->camera.roty -= ry;
-	}
-	camera.transform.orientation = toQ(world->camera.roty, world->camera.rotx, 0);
-
-	float32 dx = AXIS_VAL("xmove") * speed * delta;
-	float32 dz = AXIS_VAL("zmove") * speed * delta;
-	if (dx || dz)
-	{
-		world->camera.position.x += dx * cos(-world->camera.rotx) - dz * sin(-world->camera.rotx);
-		world->camera.position.z += dz * cos(-world->camera.rotx) + dx * sin(-world->camera.rotx);
-	}
-
-	world->camera.position.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
-
-	camera.transform.position = world->camera.position;
-}
-
-void draw()
-{
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-#if 0
-	GFX::debug_draw_point({ .0f, .0f, .0f }, { .5f, .75f, .25f });
-
-	GFX::bind(texture);
-	GFX::draw(renderable);
-
-	GFX::debug_draw_line({ .0f, 1.0f, .0f }, { .0f, 2.0f, .0f }, { 1.0f, .0f, .0f });
-	GFX::debug_draw_point({ .0f, 2.5f, .0f }, { .0f, 1.0f, .0f });
-#endif
-}
-#endif
 
 extern "C"
 void step(float32 delta)
 {
 	//LOG("DEBUG", "MEEEEEEEEEEEEEEEEEEEEP!");
+	reset_debug_clock();
+
+
+	auto phy_clock = start_debug_clock("Physics Step");
+	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+	stop_debug_clock(phy_clock);
+
+	phy_clock = start_debug_clock("Physics Draw");
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	PRINT("Button state: %d\n", B_STATE("forward"));
-	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
 	debug_draw_engine(&world->ecs, &world->phy);
 
-	LOG("TEST", "Hello %s %d", "World", 69);
+	stop_debug_clock(phy_clock);
+
+	display_clocks();
+}
 
 #if 0
-
+	// Step
 	if (should_run_tests)
 	{
 		{
@@ -444,6 +413,47 @@ void step(float32 delta)
 	}
 #endif
 #endif
+
+#if 0
+// Old update.
+void update(float32 delta)
+{
+	float32 rx = AXIS_VAL("xrot") * 3.0f * delta;
+	float32 ry = AXIS_VAL("yrot") * 3.0f * delta;
+
+	if (rx || ry)
+	{
+		world->camera.rotx -= rx;
+		world->camera.roty -= ry;
+	}
+	camera.transform.orientation = toQ(world->camera.roty, world->camera.rotx, 0);
+
+	float32 dx = AXIS_VAL("xmove") * speed * delta;
+	float32 dz = AXIS_VAL("zmove") * speed * delta;
+	if (dx || dz)
+	{
+		world->camera.position.x += dx * cos(-world->camera.rotx) - dz * sin(-world->camera.rotx);
+		world->camera.position.z += dz * cos(-world->camera.rotx) + dx * sin(-world->camera.rotx);
+	}
+
+	world->camera.position.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
+
+	camera.transform.position = world->camera.position;
 }
 
+void draw()
+{
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+#if 0
+	GFX::debug_draw_point({ .0f, .0f, .0f }, { .5f, .75f, .25f });
+
+	GFX::bind(texture);
+	GFX::draw(renderable);
+
+	GFX::debug_draw_line({ .0f, 1.0f, .0f }, { .0f, 2.0f, .0f }, { 1.0f, .0f, .0f });
+	GFX::debug_draw_point({ .0f, 2.5f, .0f }, { .0f, 1.0f, .0f });
+#endif
+}
+#endif

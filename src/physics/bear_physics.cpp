@@ -3,6 +3,8 @@
 #include "bear_gjk.h"
 #include "bear_epa.h"
 
+//#define DEBUG_DRAW_PHYSCIS 1
+
 Collision collision_test(Vec3f inital_direction, 
 		CBody *a,
 		CBody *b,
@@ -413,10 +415,12 @@ void relative_impulse(CBody *body, Vec3f impulse, Vec3f rel)
 	body->velocity += impulse * body->inverse_mass;
 	body->rotation += body->inverse_inertia * cross(rel, impulse);
 
+#ifdef DEBUG_DRAW_PHYSCIS
 	GFX::debug_draw_line(
 			body->_transform->position + rel,
 			body->_transform->position + rel + impulse,
 			{1.0f, 0.55f, 0.33f});
+#endif
 }
 
 void impulse_at_relative_position(CBody *body, Vec3f impulse, Vec3f rel)
@@ -424,10 +428,12 @@ void impulse_at_relative_position(CBody *body, Vec3f impulse, Vec3f rel)
 	body->velocity += impulse * body->inverse_mass;
 	body->rotation += body->inverse_inertia * cross(rel, impulse);
 
+#ifdef DEBUG_DRAW_PHYSCIS 
 	GFX::debug_draw_line(
 			body->_transform->position + rel,
 			body->_transform->position + rel + impulse,
 			{1.0f, 0.55f, 0.33f});
+#endif
 }
 
 void impulse_at(CBody *body, Vec3f impulse, Vec3f at)
@@ -436,10 +442,12 @@ void impulse_at(CBody *body, Vec3f impulse, Vec3f at)
 	body->velocity += impulse * body->inverse_mass;
 	body->rotation += body->inverse_inertia * cross(rel, impulse);
 
+#ifdef DEBUG_DRAW_PHYSCIS
 	GFX::debug_draw_line(
 			body->_transform->position + at,
 			body->_transform->position + at + impulse,
 			{1.0f, 0.55f, 0.33f});
+#endif
 }
 
 void solve_collisions_randomly(Physics *engine)
@@ -456,10 +464,12 @@ void solve_collisions_randomly(Physics *engine)
 		CBody *a = collision.a;
 		CBody *b = collision.b;
 
+#ifdef DEBUG_DRAW_PHYSCIS
 		GFX::debug_draw_line(
 				collision.contact_point, 
 				collision.contact_point + collision.normal, 
 				{0.5f, 0.33f, 0.77f});
+#endif
 
 		Vec3f a_relative;
 		if (a)
@@ -576,78 +586,8 @@ void solve_collisions_randomly(Physics *engine)
 				restitution = 0.0f;
 			float32 desired_delta_velocity = -contact_velocity.x * (1.0f + restitution);
 
-#if 1
 			float32 j = desired_delta_velocity / delta_vel;
 			impulse = collision.normal * j;
-
-#else
-			Mat4f delta_vel_world = {};
-			Mat4f impulse_to_torque = create_skew_symmetric(a_relative);
-			if (a)
-			{
-				Mat4f impulse_to_torque = create_skew_symmetric(a_relative);
-				Mat4f vel_world = impulse_to_torque;
-				vel_world *= a->inverse_inertia;
-				vel_world *= impulse_to_torque;
-				vel_world *= -1.0f;
-				delta_vel_world = vel_world;
-			}
-
-			if (b)
-			{
-				Mat4f impulse_to_torque = create_skew_symmetric(b_relative);
-				Mat4f vel_world = impulse_to_torque;
-				vel_world *= b->inverse_inertia;
-				vel_world *= impulse_to_torque;
-				vel_world *= -1.0f;
-				delta_vel_world += vel_world;
-			}
-			// Do a change of basis to convert into contact coordinates.
-			delta_vel_world = (to_contact * delta_vel_world) * to_world;
-
-			if (a)
-			{
-				delta_vel_world._00 += a->inverse_mass;
-				delta_vel_world._11 += a->inverse_mass;
-				delta_vel_world._22 += a->inverse_mass;
-			}
-
-			if (b)
-			{
-				delta_vel_world._00 += b->inverse_mass;
-				delta_vel_world._11 += b->inverse_mass;
-				delta_vel_world._22 += b->inverse_mass;
-			}
-
-			Mat4f impulse_matrix = inverse(delta_vel_world);
-
-			Vec3f velocity_to_kill = {
-				desired_delta_velocity,
-				-contact_velocity.y,
-				-contact_velocity.z
-			};
-
-			Vec3f impulse_contact = impulse_matrix * velocity_to_kill;
-
-			float32 planar_impulse = sqrt(
-					impulse_contact.y * impulse_contact.y + 
-					impulse_contact.z + impulse_contact.z);
-
-			if (impulse_contact.x * friction < planar_impulse)
-			{
-				impulse_contact.y /= planar_impulse;
-				impulse_contact.z /= planar_impulse;
-
-				float32 divisor = delta_vel_world.__[0] +
-					delta_vel_world.__[1] * friction * impulse_contact.y +
-					delta_vel_world.__[2] * friction * impulse_contact.z;
-
-				impulse_contact.x = desired_delta_velocity / divisor;
-				impulse_contact.y *= friction * impulse_contact.x;
-				impulse_contact.z *= friction * impulse_contact.z;
-			}
-			impulse = to_world * impulse_contact;
-#endif
 
 		}
 

@@ -21,11 +21,15 @@
 // Physics
 #include "physics/bear_physics.h"
 
+// Clocks
+#include "bear_clock.h"
+
 // TODO: This can also be done a lot better.
 namespace GFX
 {
 	struct MatrixProfile;
 };
+
 
 struct World
 {
@@ -38,13 +42,21 @@ struct World
 	// Physics
 	Physics phy;
 
+	// A clock
+	CLK clk;
+
 	// GFX, maybe create a struct for this?
 	// Maybe we should restructure this.
 	Array<GFX::MatrixProfile> matrix_profiles;
+
 };
+
+#if 0
 Audio 	*world_audio;
 ECS 	*world_ecs;
 Physics *world_phy;
+CLK 	*world_clk;
+#endif
 
 Array<GFX::MatrixProfile> *world_matrix_profiles;
 

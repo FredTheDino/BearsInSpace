@@ -79,6 +79,20 @@ OSFile read_entire_file(const char *path, AllocatorFunc alloc)
 	return file;
 }
 
+struct timespec _spec;
+uint64 start_time;
+uint64 last_time;
+uint64 current_time;
+
+#define SPEC_TO_SEC(s) ((s).tv_sec * 1000000000) + (s).tv_nsec
+#define NSEC_TO_SEC (0.000000001)
+
+float64 get_time()
+{
+	clock_gettime(CLOCK_MONOTONIC, &_spec);
+	return (start_time - SPEC_TO_SEC(_spec)) * NSEC_TO_SEC;
+}
+
 bool load_libgame(GameHandle *handle)
 {
 	const char *path = "./bin/libbear.so";
@@ -180,6 +194,7 @@ int main(int varc, char *varv[])
 
 	plt.read_file = read_entire_file;
 	plt.last_write = get_file_edit_time;
+	plt.get_time = get_time;
 
 	plt.axis_value = axis_value;
 	plt.button_state = button_state;
@@ -260,13 +275,7 @@ int main(int varc, char *varv[])
 	
 	PRINT("Linux launch!");
 
-#define SPEC_TO_SEC(s) ((s).tv_sec * 1000000000) + (s).tv_nsec
-#define NSEC_TO_SEC (0.000000001f)
 
-	struct timespec _spec;
-	uint64 start_time;
-	uint64 last_time;
-	uint64 current_time;
 	
 	clock_gettime(CLOCK_MONOTONIC, &_spec);
 	start_time = SPEC_TO_SEC(_spec);
@@ -299,7 +308,6 @@ int main(int varc, char *varv[])
 		// Timing
 		clock_gettime(CLOCK_MONOTONIC, &_spec);
 		current_time = SPEC_TO_SEC(_spec);
-		//world.clk.time  = (float64) (current_time - start_time) * NSEC_TO_SEC;
 		delta = (float32) (current_time - last_time) * NSEC_TO_SEC;
 		last_time = current_time;
 	}

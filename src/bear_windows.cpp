@@ -56,6 +56,14 @@ void win_log(const char *file, int32 line, const char *type, const char *msg)
 	win_printf("[%s:%d] %s  %s\n", file, line, type, msg);
 }
 
+float64 counter_frequency;
+LARGE_INTEGER start;
+float64 win_get_time()
+{
+	LARGE_INTEGER curr;
+	QueryPerformanceCounter(&curr);
+	return (curr.QuadPart - start.QuadPart) / counter_frequency;
+}
 
 int32 get_file_edit_time(const char *path)
 {
@@ -215,6 +223,8 @@ int CALLBACK WinMain(
 
 	plt.read_file = read_entire_file;
 	plt.last_write = get_file_edit_time;
+	
+	plt.get_time = win_get_time;
 
 	plt.axis_value = axis_value;
 	plt.button_state = button_state;
@@ -260,7 +270,7 @@ int CALLBACK WinMain(
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
 
-	SDL_GL_SetSwapInterval(1);
+	SDL_GL_SetSwapInterval(0);
 
 	SDL_AudioSpec audio_spec = {};
 	audio_spec.callback = plt_audio_callback;
@@ -289,13 +299,15 @@ int CALLBACK WinMain(
 
 	PRINT("Windows launch!");
 
-	LARGE_INTEGER counter_frequency = counter_frequency;
-	QueryPerformanceFrequency(&counter_frequency);
+	LARGE_INTEGER int_counter_frequency;
+	QueryPerformanceFrequency(&int_counter_frequency);
+	counter_frequency = (float64) int_counter_frequency.QuadPart;
+
+
 	LARGE_INTEGER counter;
 	LARGE_INTEGER last_counter;
-	LARGE_INTEGER start;
-	QueryPerformanceCounter(&start);
 	QueryPerformanceCounter(&last_counter);
+	QueryPerformanceCounter(&start);
 	float64 delta = 0.0f;
 	bool running = true;
 	while (running)
@@ -324,8 +336,7 @@ int CALLBACK WinMain(
 		QueryPerformanceCounter(&counter);
 		int64 delta_counter = counter.QuadPart - last_counter.QuadPart;
 		last_counter = counter;
-		delta = (float64) delta_counter / (float64) counter_frequency.QuadPart;
-		//world.clk.time = (float64) (counter.QuadPart - start.QuadPart) / (float64) counter_frequency.QuadPart;
+		delta = (float64) delta_counter / counter_frequency;
 	}
 
 #if 0
