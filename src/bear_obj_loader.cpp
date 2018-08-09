@@ -6,6 +6,7 @@ struct Mesh
 	Array<Vec3f> normals;
 	Array<Vec2f> uvs;
 	Array<uint32> indices;
+	uint32 stride;
 };
 
 int32 eat_int(char **ptr)
@@ -74,7 +75,7 @@ Mesh load_mesh(OSFile file)
 	}
 	
 	// Read in the positions to get an idea for the size.
-	mesh.positions	= create_array<Vec3f>(100);
+	mesh.positions	= static_array<Vec3f>(100);
 	
 	char *ptr = (char *) file.data;
 	char *end = &ptr[file.size - 1];
@@ -99,9 +100,9 @@ Mesh load_mesh(OSFile file)
 	}
 	// Now we kinda know the size of the other arrays.
 	// Just randomly choosen 2
-	mesh.normals	= create_array<Vec3f>(mesh.positions.size * 2);
-	mesh.uvs		= create_array<Vec2f>(mesh.positions.size * 2);
-	mesh.indices	= create_array<uint32>(mesh.positions.size * 2);
+	mesh.normals	= static_array<Vec3f>(mesh.positions.size * 2);
+	mesh.uvs		= static_array<Vec2f>(mesh.positions.size * 2);
+	mesh.indices	= static_array<uint32>(mesh.positions.size * 2);
 	
 	// Reset the ptr.
 	ptr = (char *) file.data;
@@ -139,12 +140,18 @@ Mesh load_mesh(OSFile file)
 			ptr++;
 			ptr++;
 			// f, we're reading faces.
+			uint32 sum_data = 0;
 			while (*ptr != '\n' && *ptr != '\0')
 			{
 				if (*ptr >= '0' && *ptr <= '9')
+				{
 					append(&mesh.indices, (uint32) eat_int(&ptr));
+					sum_data++;
+				}
 				ptr++;
 			}
+			ASSERT(sum_data % 3 == 0);
+			mesh.stride = sum_data / 3;
 		}
 		while (*ptr != '\n' && *ptr != '\0') ptr++;
 	}
@@ -153,9 +160,8 @@ Mesh load_mesh(OSFile file)
 
 Mesh load_mesh(const char *file_name)
 {
-	OSFile file = world->plt.read_file(file_name);
+	OSFile file = plt.read_file(file_name, temp_push);
 	Mesh mesh = load_mesh(file);
-	world->plt.free_file(file);
 	return mesh;
 }
 

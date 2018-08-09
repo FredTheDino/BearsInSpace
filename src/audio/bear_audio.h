@@ -1,13 +1,8 @@
 #pragma once
-typedef int16 SND;
-
-const uint32 spec_freq = 44100; // Move this.
-
-// TODO(Ed): I need a floor and ceil function.
 // TODO(Ed): We need to support OGG files for all those HUGE music files, eventually.
 
-#define BEAR_MAX_AUDIO_BUFFERS 512
-#define BEAR_MAX_AUDIO_SOURCES 64
+#define MAX_AUDIO_BUFFERS 512
+#define MAX_AUDIO_SOURCES 64
 
 struct AudioID
 {
@@ -62,11 +57,11 @@ struct Audio
 	int16 uid_counter;
 
 	int32 free_buffer;
-	int32 max_buffer = -1;
-	AudioBuffer *buffers;
+	int32 max_buffer;
+	AudioBuffer buffers[MAX_AUDIO_BUFFERS];
 
 	int32 free_source;
-	int32 max_source = -1;
-	AudioSource *sources;
+	int32 max_source;
+	AudioSource sources[MAX_AUDIO_SOURCES];
 };
 

@@ -5,6 +5,8 @@ enum SystemType
 	// Types
 	S_HELLO_WORLD,
 
+	S_PHYSICS,
+
 	// Length
 	NUM_SYSTEMS,
 };
@@ -15,18 +17,22 @@ enum ComponentType
 	C_POSITION,
 	C_BLARGH,
 
+	// Physics
+	C_BODY,
+	C_TRANSFORM,
+
 	// Length
 	NUM_COMPONENTS,
 };
 
 struct EntityID
 {
-	int32 pos;
-	int32 uid;
+	int32 _index;
+	int32 _uid;
 
 	bool operator== (EntityID o)
 	{
-		return pos == o.pos && uid == o.uid;
+		return _index == o._index && _uid == o._uid;
 	}
 
 	bool operator!= (EntityID o)
@@ -41,8 +47,8 @@ struct EntityID
 		BaseComponent base;\
 		struct \
 		{\
-			int32 pos;\
-			int32 uid;\
+			int32 _index;\
+			int32 _uid;\
 			ComponentType type;\
 		};\
 	};\
@@ -51,19 +57,6 @@ struct BaseComponent
 {
 	EntityID owner;
 	ComponentType type;
-};
-
-struct Position
-{
-	COMPONENT
-	Vec3f position;
-};
-
-struct Blargh
-{
-	COMPONENT
-	int32 b;
-	int32 a;
 };
 
 struct Entity
@@ -91,4 +84,5 @@ struct ECS
 	int32 allocated_entities;
 	Entity *entities;
 };
+
 

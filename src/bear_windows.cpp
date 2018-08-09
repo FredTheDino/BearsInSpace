@@ -5,30 +5,40 @@ int win_printf(const char *format, ...);
 #include <windows.h>
 #include <SDL2/SDL.h>
 
-#include "bear_main.h"
+#include "bear_shared.h"
+
+#define LOG(type, ...) win_printf("[%s:%d] type :", __FILE__, __LINE__, type); win_printf(__VA_ARGS__); win_printf("\n");
+#define PRINT(...) win_printf(__VA_ARGS__)
+int32 win_printf(const char *format, ...);
+void win_log(const char *file, int32 line, const char *type, const char *msg);
+
+#include "bear_array_plt.cpp"
+#include "bear_input.h"
+
 #include "glad.c"
 
-// Group this up?
-
-typedef void (*StepFunc)(World *, float32);
-typedef void (*SoundFunc)(int16 *, int32);
+GameMemory mem;
+PLT plt;
 
 struct GameHandle
 {
 	StepFunc step;
 	SoundFunc sound;
 
+	ReloadFunc reload;
+	ReplaceFunc replace;
+
+	DestroyFunc destroy;
+
 	// So the sound thread doesn't run when we unload.
 	SDL_mutex *lock;
+	bool first_load;
 
 	int32 access_time;
 	HMODULE lib;
 };
 
 static GameHandle game;
-
-// This is ugly... I know.
-MemoryAllocation __mem[1024];
 
 
 int32 win_printf(const char *format, ...)
@@ -39,6 +49,20 @@ int32 win_printf(const char *format, ...)
 	int len = vsprintf(buffer, format, args);
 	OutputDebugString(buffer);
 	return len;
+}
+
+void win_log(const char *file, int32 line, const char *type, const char *msg)
+{
+	win_printf("[%s:%d] %s  %s\n", file, line, type, msg);
+}
+
+float64 counter_frequency;
+LARGE_INTEGER start;
+float64 win_get_time()
+{
+	LARGE_INTEGER curr;
+	QueryPerformanceCounter(&curr);
+	return (curr.QuadPart - start.QuadPart) / counter_frequency;
 }
 
 int32 get_file_edit_time(const char *path)
@@ -70,58 +94,7 @@ WINDOWS_FILE_ERROR:
 	return -1;
 }
 
-bool load_libbear(GameHandle *handle)
-{
-	GameHandle game = *handle;
-	const char *path = "bin/libbear.dll";
-	const char *temp_path = "bin/libbear_temp.dll";
-	int32 access_time = get_file_edit_time(path);
-	if (access_time == game.access_time)
-	{
-		return false;
-	}
-
-	SDL_LockMutex(game.lock);
-	if (game.lib)
-	{
-		FreeLibrary(game.lib);
-	}
-	CopyFile(path, temp_path, false);
-	game.lib = LoadLibrary(temp_path);
-	if (!game.lib)
-	{
-		win_printf("[DLL-ERROR] %d\n", GetLastError());
-		DEBUG_LOG("Failed to load libgame.so!");
-		return false;
-	}
-	StepFunc step = (StepFunc) GetProcAddress(game.lib, "step");
-	if (!step)
-	{
-		win_printf("[DLL-ERROR] %d\n", GetLastError());
-		DEBUG_LOG("Failed to load game_update!");
-		return false;
-	}
-	SoundFunc sound = (SoundFunc) GetProcAddress(game.lib, "sound");
-	if (!sound)
-	{
-		win_printf("[DLL-ERROR] %d\n", GetLastError());
-		DEBUG_LOG("Failed to load game_draw!");
-		return false;
-	}
-
-	DEBUG_LOG("Reload!");
-	game.access_time = access_time;
-
-	game.step = step;
-
-	game.sound = sound;
-	SDL_UnlockMutex(game.lock);
-
-	*handle = game;
-	return true;
-}
-
-OSFile read_entire_file(const char *path)
+OSFile read_entire_file(const char *path, AllocatorFunc alloc)
 {
 	OSFile file = {};
 	file.timestamp = get_file_edit_time(path);
@@ -139,7 +112,7 @@ OSFile read_entire_file(const char *path)
 	fseek(disk, 0, SEEK_END);
 	file.size = ftell(disk);
 	fseek(disk, 0, SEEK_SET);
-	file.data = malloc_("FILE IO", 0, file.size + 1);
+	file.data = alloc(file.size + 1);
 	fread(file.data, file.size, 1, disk);
 	((uint8 *) file.data)[file.size] = 0; // Null terminate.
 	fclose(disk);
@@ -147,13 +120,88 @@ OSFile read_entire_file(const char *path)
 	return file;
 }
 
-void free_file(OSFile file)
+bool load_libbear(GameHandle *handle)
 {
-	if (file.data)
+	GameHandle game = *handle;
+	const char *path = "bin/libbear.dll";
+	const char *temp_path = "bin/libbear_temp.dll";
+	int32 access_time = get_file_edit_time(path);
+	if (access_time == game.access_time)
 	{
-		FREE(file.data);
-		file.data = 0;
+		return false;
 	}
+
+	SDL_LockMutex(game.lock);
+	if (game.lib)
+	{
+		game.replace();
+		FreeLibrary(game.lib);
+	}
+
+	CopyFile(path, temp_path, false);
+	game.lib = LoadLibrary(temp_path);
+	if (!game.lib)
+	{
+		LOG("LIB LOAD", "Failed to load libgame.so!");
+		return false;
+	}
+	StepFunc step = (StepFunc) GetProcAddress(game.lib, "step");
+	if (!step)
+	{
+		goto LIB_LOAD_FAIL;
+	}
+	SoundFunc sound = (SoundFunc) GetProcAddress(game.lib, "sound");
+	if (!sound)
+	{
+		goto LIB_LOAD_FAIL;
+	}
+	ReloadFunc reload = (ReloadFunc) GetProcAddress(game.lib, "reload");
+	if (!reload)
+	{
+		goto LIB_LOAD_FAIL;
+	}
+	ReplaceFunc replace = (ReplaceFunc) GetProcAddress(game.lib, "replace");
+	if (!replace)
+	{
+		goto LIB_LOAD_FAIL;
+	}
+	DestroyFunc destroy = (DestroyFunc) GetProcAddress(game.lib, "destroy");
+	if (!destroy)
+	{
+		goto LIB_LOAD_FAIL;
+	}
+
+	if (game.first_load)
+	{
+		game.first_load = false;
+		InitFunc init = (InitFunc) GetProcAddress(game.lib, "init");
+		if (!init)
+		{
+			goto LIB_LOAD_FAIL;
+		}
+		init(plt, &mem);
+	}
+
+	PRINT("======== Reload! =========");
+	game.access_time = access_time;
+
+	game.step = step;
+	game.sound = sound;
+	game.reload = reload;
+	game.replace = replace;
+	game.destroy = destroy;
+
+	game.reload(plt, &mem);
+
+	*handle = game;
+	SDL_UnlockMutex(game.lock);
+
+	return true;
+
+LIB_LOAD_FAIL:
+	win_printf("[DLL-ERROR] %d\n", GetLastError());
+	SDL_UnlockMutex(game.lock);
+	return false;
 }
 
 void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
@@ -163,47 +211,47 @@ void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
 	SDL_UnlockMutex(game.lock);
 }
 
+
 int CALLBACK WinMain(
   HINSTANCE hInstance,
   HINSTANCE hPrevInstance,
   LPSTR     lpCmdLine,
   int       nCmdShow)
 {
-	world.plt.malloc = malloc_;
-	world.plt.free = free_;
-	world.plt.realloc = realloc_;
+	plt.print = win_printf;
+	plt.log = win_log;
 
-	world.plt.print = win_printf;
-	world.plt.log = debug_log_;
+	plt.read_file = read_entire_file;
+	plt.last_write = get_file_edit_time;
+	
+	plt.get_time = win_get_time;
 
-	world.plt.read_file = read_entire_file;
-	world.plt.free_file = free_file;
-	world.plt.last_write = get_file_edit_time;
+	plt.axis_value = axis_value;
+	plt.button_state = button_state;
 
-	world.__mem = (MemoryAllocation *)(void *)__mem;
-	world.audio = {};
-	world.audio.buffers = MALLOC2(AudioBuffer, BEAR_MAX_AUDIO_BUFFERS);
-	world.audio.sources = MALLOC2(AudioSource, BEAR_MAX_AUDIO_SOURCES);
 
-	init_ecs(&world);
-
-	game.lock = SDL_CreateMutex();
-	if (load_libbear(&game) == false)
+	mem.static_memory_size = GIGABYTE(1);
+	mem.static_memory = (uint8 *) VirtualAlloc(0, mem.static_memory_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	if (mem.static_memory == nullptr)
 	{
-		return(-1);
+		win_printf("Failed to allocate game memory, gonna crash now. Sorry.\n");
+		HALT_AND_CATCH_FIRE();
 	}
-	//has_file_changed();
+
+	mem.temp_memory_size = GIGABYTE(1);
+	mem.temp_memory = (uint8 *) VirtualAlloc(0, mem.temp_memory_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	if (mem.temp_memory == nullptr)
+	{
+		win_printf("Failed to allocate game memory, gonna crash now. Sorry.\n");
+		HALT_AND_CATCH_FIRE();
+	}
 
 	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
 	{
-		DEBUG_LOG("Unable to initalize SDL.");
+		LOG("INIT", "Unable to initalize SDL.");
 		SDL_Quit();
 		return(-1);
 	}
-
-	//
-	// Display stuff.
-	// 
 	SDL_Window *window = SDL_CreateWindow(
 			"Space Bears",
 			SDL_WINDOWPOS_UNDEFINED,
@@ -216,23 +264,13 @@ int CALLBACK WinMain(
 	SDL_RaiseWindow(window);
 	
 	// TODO: Use OpenGL 3.3, or newer. This is just to get hello triangle.
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
 
 	SDL_GL_SetSwapInterval(0);
-
-	// I don't think this needs OpenGL...
-	/*
-	if (gladLoadGL() == 0)
-	{
-		DEBUG_LOG("Unable to load OpenGL.");
-		SDL_Quit();
-		return(-1);
-	}
-	*/
 
 	SDL_AudioSpec audio_spec = {};
 	audio_spec.callback = plt_audio_callback;
@@ -243,60 +281,54 @@ int CALLBACK WinMain(
 	auto audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
 	if (!audio_device)
 	{
-		DEBUG_LOG("Unable to open audio device");
+		LOG("INIT", "Unable to open audio device");
 		SDL_Quit();
 		return(-1);
 	}
 
-	SDL_PauseAudioDevice(audio_device, 0);
+	game.lock = SDL_CreateMutex();
+	game.first_load = true;
+	if (load_libbear(&game) == false)
+	{
+		return(-1);
+	}
 
 	init_input();
-	
-	DEBUG_LOG("Windows launch!");
 
-<<<<<<< HEAD
-	world.running = true;
+	SDL_PauseAudioDevice(audio_device, 0);
 
-	LARGE_INTEGER counter_frequency = counter_frequency;
-	QueryPerformanceFrequency(&counter_frequency);
+	PRINT("Windows launch!");
+
+	LARGE_INTEGER int_counter_frequency;
+	QueryPerformanceFrequency(&int_counter_frequency);
+	counter_frequency = (float64) int_counter_frequency.QuadPart;
+
+
 	LARGE_INTEGER counter;
 	LARGE_INTEGER last_counter;
-	LARGE_INTEGER start;
-	QueryPerformanceCounter(&start);
 	QueryPerformanceCounter(&last_counter);
-	while (world.running)
-=======
+	QueryPerformanceCounter(&start);
+	float64 delta = 0.0f;
 	bool running = true;
 	while (running)
->>>>>>> sk
 	{
-		
-
 		load_libbear(&game);
 
-		update_input();
+		//update_input();
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT)
 			{
-				world.running = false;
+				running = false;
 			}
-<<<<<<< HEAD
-			if (event.type == SDL_KEYDOWN)
-			{
-				world.input.jump = true;
-			}
-			if (event.type == SDL_KEYUP)
-=======
 			else
->>>>>>> sk
 			{
-				handle_input_event(false);
+				handle_input_event(event);
 			}
 		}
 		
-		game.step(&world, world.clk.delta);
+		game.step(delta);
 
 		SDL_GL_SwapWindow(window);
 		
@@ -304,22 +336,31 @@ int CALLBACK WinMain(
 		QueryPerformanceCounter(&counter);
 		int64 delta_counter = counter.QuadPart - last_counter.QuadPart;
 		last_counter = counter;
-		world.clk.delta = (float64) delta_counter / (float64) counter_frequency.QuadPart;
-		world.clk.time = (float64) (counter.QuadPart - start.QuadPart) / (float64) counter_frequency.QuadPart;
+		delta = (float64) delta_counter / counter_frequency;
 	}
 
+#if 0
+	destroy_ecs(&world);
+	destroy_phy(&world);
+
+	// TODO: Move the code into the game.
+	// TODO: Change world to be a void pointer.
+
+	FREE(world.audio.sources);
+	FREE(world.audio.buffers);
+
+	check_for_leaks();
+#endif
+	game.destroy();
 	destroy_input();
+	VirtualFree(mem.temp_memory,   mem.temp_memory_size,   MEM_RELEASE);
+	VirtualFree(mem.static_memory, mem.static_memory_size, MEM_RELEASE);
 	
 	SDL_CloseAudio();
 	SDL_DestroyMutex(game.lock);
 	SDL_Quit();
 
-	FREE(world.audio.sources);
-	FREE(world.audio.buffers);
-
-	destroy_ecs(&world);
-
-	check_for_leaks();
 	return 0;
 }
+
 

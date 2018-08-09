@@ -10,7 +10,7 @@ in vec2 pass_tex_coords;
 
 void main()
 {
-	vec4 temp = texture2D(t_sampler, pass_tex_coords);
+	vec4 temp = texture(t_sampler, pass_tex_coords);
 
 	out_color = temp;
 }

@@ -1,14 +1,20 @@
 #include "bear_ecs.h"
+#include <stdarg.h>
 
 Entity* get_entity(ECS *ecs, EntityID id)
 {
-	if ((id.pos > ecs->max_entity) ||
-		(0 > id.pos) ||
-		(0 > id.uid)) return NULL;
-	Entity *e = &ecs->entities[id.pos];
+	if ((id._index > ecs->max_entity) ||
+		(0 > id._index) ||
+		(0 > id._uid)) return NULL;
+	Entity *e = &ecs->entities[id._index];
 	if (e->id == id)
 		return e;
 	return NULL;
+}
+
+ECSEntry get_all_components_of_type(ECS *ecs, ComponentType type)
+{
+	return ecs->component_types[type];
 }
 
 inline
@@ -102,9 +108,9 @@ bool add_component(ECS *ecs, EntityID id, ComponentType type, BaseComponent *com
 {
 	// NOTE(Ed): This is SUPER risqué. But you should ONLY pass in components. 
 	// All of which have this as a first field. So it should be safe.
-	ASSERT(id.pos <= ecs->max_entity);
-	ASSERT(0 <= id.pos);
-	ASSERT(0 <= id.uid);
+	ASSERT(id._index <= ecs->max_entity);
+	ASSERT(0 <= id._index);
+	ASSERT(0 <= id._uid);
 	ASSERT(type < NUM_COMPONENTS);
 	ASSERT(0 <= type);
 
@@ -118,7 +124,7 @@ bool add_component(ECS *ecs, EntityID id, ComponentType type, BaseComponent *com
 	if (entry.max_length == entry.length || entry.max_length == 0)
 	{
 		entry.max_length += 50;
-		void *tmp = REALLOC(entry.c, entry.component_size * entry.max_length);
+		void *tmp = static_realloc(entry.c, entry.component_size * entry.max_length);
 		if (!tmp) return false;
 		entry.c = tmp;
 	}
@@ -130,6 +136,7 @@ bool add_component(ECS *ecs, EntityID id, ComponentType type, BaseComponent *com
 
 	entity->components[type] = component_id;
 	ecs->component_types[type] = entry;
+
 	return true;
 }
 
@@ -138,17 +145,39 @@ bool add_component(ECS *ecs, EntityID id, BaseComponent *component)
 	return add_component(ecs, id, component->type, component);
 }
 
+bool add_body_component(ECS *ecs, Physics *phy, EntityID id, BaseComponent *component)
+{
+	ASSERT(component->type == C_BODY);
+	bool success = add_component(ecs, id, C_BODY, component);
+	if (success)
+	{
+		success = add_body(phy, id);
+	}
+	return success;
+}
+
 // NOTE(Ed): Only call this from the macro. The list __HAS TO BE NULL TERMINATED__!
-#define add_components(ecs, id, ...) add_components_(ecs, id, __VA_ARGS__, NULL)
-void add_components_(ECS *ecs, EntityID id, ...)
+
+#define add_components(ecs, id, ...) add_components_(ecs, id, __VA_ARGS__, 0)
+void add_components_(ECS *ecs, Physics *phy, EntityID id, ...)
 {
 	va_list args;
 	va_start(args, id);
 	while (true)
 	{
-		BaseComponent *component = va_arg(args, BaseComponent *);
+		BaseComponent* component = va_arg(args, BaseComponent *);
 		if (!component) break;
-		add_component(ecs, id, component->type, component);
+		ASSERT(component->type > 0);
+		ASSERT(component->type < NUM_COMPONENTS);
+		if (component->type == C_BODY)
+		{
+			ASSERT(phy);
+			add_body_component(ecs, phy, id, component);
+		}
+		else
+		{
+			add_component(ecs, id, component->type, component);
+		}
 	}
 	va_end(args);
 }
@@ -208,30 +237,30 @@ EntityID add_entity(ECS *ecs)
 	// TODO: This should be refactored into a new data structure. 
 	// Since we have this in 3 places. (Add/Remove Entity, Buffer and Source.
 	EntityID id;
-	id.uid = ecs->uid_counter++;
+	id._uid = ecs->uid_counter++;
 	if (ecs->uid_counter < 0)
 		ecs->uid_counter = 1;
 
 	if (ecs->free_entity < 0)
 	{
-		id.pos = -ecs->free_entity - 1;
-		ecs->free_entity = ecs->entities[id.pos].id.pos;
+		id._index = -ecs->free_entity - 1;
+		ecs->free_entity = ecs->entities[id._index].id._index;
 	}
 	else
 	{
-		id.pos = ecs->free_entity++;
+		id._index = ecs->free_entity++;
 	}
 
-	if (ecs->allocated_entities <= id.pos)
+	if (ecs->allocated_entities <= id._index)
 	{
 		int32 new_allocation_size = ecs->allocated_entities	* 2;
-		Entity *ptr = (Entity *) REALLOC(ecs->entities, new_allocation_size);
+		Entity *ptr = (Entity *) static_realloc(ecs->entities, new_allocation_size);
 		if (!ptr) return {-1, -1};
 		ecs->entities = ptr;
 		ecs->allocated_entities = new_allocation_size;
 	}
 
-	ecs->max_entity = maximum(ecs->max_entity, (int32) id.pos);
+	ecs->max_entity = maximum(ecs->max_entity, (int32) id._index);
 
 	Entity entity = {id};
 
@@ -240,7 +269,7 @@ EntityID add_entity(ECS *ecs)
 		entity.components[i] = -1;
 	}
 
-	ecs->entities[id.pos] = entity;
+	ecs->entities[id._index] = entity;
 	return id;
 }
 
@@ -248,7 +277,7 @@ void remove_entity(ECS *ecs, EntityID id)
 {
 	// TODO: This should be refactored into a new data structure. 
 	// Since we have this in 3 places. (Add/Remove Entity, Buffer and Source.
-	Entity *entity = &ecs->entities[id.pos];
+	Entity *entity = &ecs->entities[id._index];
 	if (!(entity->id == id)) return;
 	
 	// Remove components
@@ -257,15 +286,86 @@ void remove_entity(ECS *ecs, EntityID id)
 		remove_component(ecs, entity, (ComponentType) i);
 	}
 	
-	int32 pos = id.pos;
-	id.pos = ecs->free_entity;
-	id.uid = -1;
+	int32 pos = id._index;
+	id._index = ecs->free_entity;
+	id._uid = -1;
 	ecs->free_entity = -pos - 1;
 	ecs->entities[pos].id = id;
 
 	if (pos == ecs->max_entity)
 	{
-		while (ecs->entities[ecs->max_entity].id.uid < 0 && 0 <= ecs->max_entity)
+		while (ecs->entities[ecs->max_entity].id._uid < 0 && 0 <= ecs->max_entity)
 			ecs->max_entity--;
 	}
 }
+
+void clear_ecs(ECS *ecs, Physics *phy)
+{
+	clear(&phy->body_limits);
+
+	ecs->free_entity = 0;
+	ecs->max_entity = -1;
+
+	for (int32 i = 0; i < NUM_COMPONENTS; i++)
+	{
+		ecs->component_types[i].length = 0;
+	}
+}
+
+void s_hello_world(World *world, float32 delta)
+{
+	plt.print("Delta is %.2f\n", delta);
+}
+
+void update_physics(ECS *, Physics *, float32);
+
+void run_system(SystemType type_id, World *world, float32 delta)
+{
+	ASSERT(type_id < NUM_SYSTEMS);
+	switch (type_id)
+	{
+#define SYSTEM_ENTRY(id, func_call) case id: (func_call); break;
+
+		SYSTEM_ENTRY(S_HELLO_WORLD, s_hello_world(world, delta));
+		SYSTEM_ENTRY(S_PHYSICS, update_physics(&world->ecs, &world->phy, delta));
+
+	default:
+		ASSERT(!"Unknown systemtype!");
+	}
+}
+
+void init_ecs(ECS *ecs)
+{
+	const int32 inital_size = 50;
+
+	ecs->entities = static_push_array(Entity, inital_size);
+	ASSERT(ecs->entities); // TODO(Ed): We assume we manage to get some memory.
+	ecs->uid_counter = 0;
+	ecs->free_entity = 0;
+	ecs->max_entity = 0;
+	ecs->allocated_entities = inital_size;
+
+	ECSEntry *cs = ecs->component_types;
+	for (uint32 i = 0; i < NUM_COMPONENTS; i++)
+	{
+		cs[i] = {};
+	}
+
+#define COMP_ENTRY(id, type)\
+	cs[id] = { sizeof(type), inital_size, 0, static_push_array(type, inital_size) };
+
+	// Entries go here. (Order doesn't matter)
+
+	COMP_ENTRY(C_TRANSFORM, CTransform);
+	COMP_ENTRY(C_BODY, CBody);
+
+	// Entries end here.
+
+	for (uint32 i = 0; i < NUM_COMPONENTS; i++)
+	{
+		if (cs[i].c)
+			continue;
+		plt.print("[%s] ECS: No Initalization for component type %u. Please check 'init_ecs' \n",  __FILE__, i);
+	}
+};
+
