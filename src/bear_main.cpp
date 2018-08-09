@@ -88,8 +88,6 @@ void init(PLT _plt, GameMemory *_mem)
 		ASSERT(error);
 		glEnable(GL_DEPTH_TEST);
 
-		GFX::init_matrix_profiles();
-		GFX::init_debug();
 		
 	}
 	
@@ -100,12 +98,8 @@ void init(PLT _plt, GameMemory *_mem)
 	buffer = load_sound(&world->audio, "res/stockhausen.wav");
 
 
-	camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
-	camera.transform.position = {-30.0f, 25.0f, 20.0f};
-	camera.transform.orientation = toQ(5.7f, -1.0f, 0);
-	GFX::add_matrix_profile("m_view", &camera);
 	// TODO: This is ugly as fuck.
-	world->matrix_profiles = GFX::matrix_profiles;
+	//world->matrix_profiles = GFX::matrix_profiles;
 }
 
 // Reload the library.
@@ -116,16 +110,25 @@ void reload(PLT _plt, GameMemory *_mem)
 	{
 		mem = _mem;
 		plt = _plt;
+		world = (World *) ((MemoryAllocation *) mem->static_memory + 1);
 	}
 
 	// TODO: This is ugly as fuck.
-	GFX::matrix_profiles = world->matrix_profiles;
+	// GFX::matrix_profiles = world->matrix_profiles;
 
 	if (!GL_LOADED)
 	{
 		gladLoadGL();
 		glEnable(GL_DEPTH_TEST);
 	}
+
+	GFX::init_matrix_profiles();
+	GFX::init_debug();
+	camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
+	camera.transform.position = {-30.0f, 25.0f, 20.0f};
+	camera.transform.orientation = toQ(5.7f, -1.0f, 0);
+	GFX::add_matrix_profile("m_view", &camera);
+
 
 	//play_sound(&world->audio, buffer, 1.0f, 1.0f);
 	// How the fk does the graphics work?
@@ -180,7 +183,7 @@ extern "C"
 void replace()
 {
 	// TODO: This is ugly as fuck.
-	world->matrix_profiles = GFX::matrix_profiles;
+	// world->matrix_profiles = GFX::matrix_profiles;
 	PRINT("Replace!\n");
 }
 
@@ -191,6 +194,19 @@ void step(float32 delta)
 	//LOG("DEBUG", "MEEEEEEEEEEEEEEEEEEEEP!");
 	reset_debug_clock();
 
+	float32 planar_speed = 15.0f * delta;
+	float32 vertical_speed = 15.0f * delta;
+	float32 rotational_speed = 1.5f * delta;
+	Vec3f movement = {};
+	movement.x = AXIS_VAL("xmove") * planar_speed;
+	movement.z = AXIS_VAL("zmove") * planar_speed;
+	movement = camera.transform.orientation * movement;
+	movement.y += (AXIS_VAL("up") - AXIS_VAL("down")) * vertical_speed;
+	camera.transform.position += movement;
+	camera.transform.orientation = 
+		toQ(0.0f, -AXIS_VAL("xrot") * rotational_speed, 0.0f) *
+		camera.transform.orientation *
+		toQ(-AXIS_VAL("yrot") * rotational_speed, 0.0f, 0.0f);
 
 	auto phy_clock = start_debug_clock("Physics Step");
 	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 

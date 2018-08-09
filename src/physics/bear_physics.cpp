@@ -459,6 +459,7 @@ void solve_collisions_randomly(Physics *engine)
 
 		Collision collision = get(collisions, i);
 		float32 restitution = 0.5f;
+		float32 friction = 0.3f;
 		float32 min_velocity = 0.05f;
 		CBody *a = collision.a;
 		CBody *b = collision.b;
@@ -606,9 +607,9 @@ void solve_collisions_randomly(Physics *engine)
 void debug_draw_engine(ECS *ecs, Physics *engine)
 {
 
-	GFX::debug_draw_line({}, {5.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f});
-	GFX::debug_draw_line({}, {0.0f, 5.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
-	GFX::debug_draw_line({}, {0.0f, 0.0f, 5.0f}, {0.0f, 0.0f, 1.0f});
+	GFX::debug_draw_line({}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f});
+	GFX::debug_draw_line({}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+	GFX::debug_draw_line({}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f});
 
 	uint32 grid_dim = 8;
 	for (uint32 grid = 1; grid < grid_dim * 2.0f; grid++)

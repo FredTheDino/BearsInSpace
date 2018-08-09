@@ -33,6 +33,11 @@ BaseComponent *get_component(ECS *ecs, EntityID id, ComponentType type)
 	return (BaseComponent *) get_component(ecs, entity, type);
 }
 
+ECSEntry get_all_components(ECS *ecs, ComponentType type)
+{
+	return ecs->component_types[type];
+}
+
 #define get_smallest_type(ecs, ...) get_fastest_type_list(ecs, sizeof((ComponentType []) {__VA_ARGS__}), {__VA_ARGS__})
 int32 get_smallest_type_list(ECS *ecs, int32 num, ComponentType types[])
 {

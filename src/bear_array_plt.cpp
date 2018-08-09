@@ -153,6 +153,28 @@ void clear(Array<T> *arr)
 }
 
 template <typename T>
+int32 find(Array<T> arr, T obj)
+{
+	for (uint64 i = 0; i < size(arr); i++)
+	{
+		if (obj == get(arr, i))
+			return i;
+	}
+	return -1;
+}
+
+template <typename T>
+int32 find(Array<T> *arr, T obj)
+{
+	for (uint64 i = 0; i < size(arr); i++)
+	{
+		if (obj == get(arr, i))
+			return i;
+	}
+	return -1;
+}
+
+template <typename T>
 void delete_array(Array<T> *arr)
 {
 	ASSERT(arr->alloc_type == AT_STATIC);

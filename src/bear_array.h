@@ -17,9 +17,11 @@ struct Array
 	uint64 size;	// current number of elements
 	AllocationType alloc_type;
 
+	/*
 	T operator[] (uint64 index)
 	{
 		return get(*this, index);
 	}
+	*/
 };
 
