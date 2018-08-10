@@ -188,7 +188,7 @@ void step(float32 delta)
 
 
 	auto phy_clock = start_debug_clock("Physics Step");
-	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f));
 	stop_debug_clock(phy_clock);
 
 	phy_clock = start_debug_clock("Physics Draw");
