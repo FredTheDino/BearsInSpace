@@ -14,9 +14,7 @@ enum SystemType
 enum ComponentType
 {
 	// Types
-	C_POSITION,
-	C_BLARGH,
-
+	
 	// Physics
 	C_BODY,
 	C_TRANSFORM,
@@ -57,19 +55,6 @@ struct BaseComponent
 {
 	EntityID owner;
 	ComponentType type;
-};
-
-struct Position
-{
-	COMPONENT
-	Vec3f position;
-};
-
-struct Blargh
-{
-	COMPONENT
-	int32 b;
-	int32 a;
 };
 
 struct Entity

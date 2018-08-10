@@ -24,6 +24,12 @@
 // Clocks
 #include "bear_clock.h"
 
+// Graphics
+#include "gfx/bear_vertex_array.h"
+#include "gfx/bear_vertex_buffer.h"
+#include "gfx/bear_shader_program.h"
+#include "gfx/bear_frame_buffer.h"
+
 // TODO: This can also be done a lot better.
 namespace GFX
 {
@@ -45,20 +51,15 @@ struct World
 	// A clock
 	CLK clk;
 
-	// GFX, maybe create a struct for this?
-	// Maybe we should restructure this.
+	// Holds global matrix profiles
 	Array<GFX::MatrixProfile> matrix_profiles;
-
+	
+	// Graphics output
+	GFX::FrameBuffer output_buffer;
+	GFX::VertexBuffer output_vb;
+	GFX::VertexArray output_quad;
+	GFX::ShaderProgram output_program;
 };
-
-#if 0
-Audio 	*world_audio;
-ECS 	*world_ecs;
-Physics *world_phy;
-CLK 	*world_clk;
-#endif
-
-Array<GFX::MatrixProfile> *world_matrix_profiles;
 
 #define AXIS_VAL(name) (plt.axis_value(name))
 #define B_STATE(name) (plt.button_state(name))

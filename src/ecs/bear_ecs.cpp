@@ -12,6 +12,11 @@ Entity* get_entity(ECS *ecs, EntityID id)
 	return NULL;
 }
 
+ECSEntry get_all_components_of_type(ECS *ecs, ComponentType type)
+{
+	return ecs->component_types[type];
+}
+
 inline
 int8 *get_component(const ECSEntry entry, const int32 index)
 {
@@ -162,7 +167,7 @@ void add_components_(ECS *ecs, Physics *phy, EntityID id, ...)
 	{
 		BaseComponent* component = va_arg(args, BaseComponent *);
 		if (!component) break;
-		ASSERT(component->type > 0);
+		ASSERT(component->type >= 0);
 		ASSERT(component->type < NUM_COMPONENTS);
 		if (component->type == C_BODY)
 		{
