@@ -20,7 +20,7 @@ World *world;
 // GFX
 #include "glad.c"
 #define GL_LOADED glClear
-#include "bear_obj_loader.cpp"
+//#include "bear_obj_loader.cpp"
 #include "bear_gfx.h"
 
 // ECS
@@ -31,6 +31,9 @@ World *world;
 
 // Clocks
 #include "bear_clock.cpp"
+
+// Assets
+#include "bear_asset_loader.h"
 
 #if 0
 // Tests
@@ -95,7 +98,7 @@ void init(PLT _plt, GameMemory *_mem)
 	init_ecs(&world->ecs);
 	init_phy(&world->phy);
 
-	buffer = load_sound(&world->audio, "res/stockhausen.wav");
+	//buffer = load_sound(&world->audio, "res/stockhausen.wav");
 
 
 	// TODO: This is ugly as fuck.
@@ -112,6 +115,8 @@ void reload(PLT _plt, GameMemory *_mem)
 		plt = _plt;
 		world = (World *) ((MemoryAllocation *) mem->static_memory + 1);
 	}
+
+	start_asset_loader();
 
 	// TODO: This is ugly as fuck.
 	// GFX::matrix_profiles = world->matrix_profiles;

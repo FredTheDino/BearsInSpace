@@ -120,6 +120,20 @@ OSFile read_entire_file(const char *path, AllocatorFunc alloc)
 	return file;
 }
 
+void win_random_read(const char *path, void *to, uint32 start_byte, uint32 read_length)
+{
+	FILE *disk = fopen(path, "rb");
+	if (!disk)
+	{
+		*((uint8 *) to) = 0;
+		return;
+	}
+
+	fseek(disk, start_byte, SEEK_SET);
+	fread(to, read_length, 1, disk);
+	fclose(disk);
+}
+
 bool load_libbear(GameHandle *handle)
 {
 	GameHandle game = *handle;
@@ -222,6 +236,7 @@ int CALLBACK WinMain(
 	plt.log = win_log;
 
 	plt.read_file = read_entire_file;
+	plt.random_file_read = win_random_read;
 	plt.last_write = get_file_edit_time;
 	
 	plt.get_time = win_get_time;

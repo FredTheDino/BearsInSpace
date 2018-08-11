@@ -7,6 +7,12 @@ enum AssetType
 	BAT_FONT,
 };
 
+struct AssetTag
+{
+	char upper[32];
+	char lower[32];
+};
+
 // First in file
 struct AssetFileHeader
 {
@@ -18,7 +24,7 @@ struct AssetFileHeader
 	// The current version of the file format. So we 
 	// don't load something we can't support
 	uint32 version; 
-	uint32 num_headers;
+	uint32 num_assets;
 };
 
 struct Vertex
@@ -33,6 +39,7 @@ struct Asset
 {
 	AssetType type;
 	// TODO: Tag goes here.
+	AssetTag tag;
 	uint64 data_size;
 	union
 	{
@@ -75,14 +82,4 @@ struct FileData
 	AssetType type;
 };
 
-Array<FileData> initalize_endings()
-{
-	auto endings = create_array<FileData>(50);
-#define FILE_ENDING(type, ending) append(&endings, {(char *) (ending), type})
-	FILE_ENDING(BAT_IMAGE, "png");
-	FILE_ENDING(BAT_SOUND, "wav");
-	FILE_ENDING(BAT_MESH, "obj");
-	FILE_ENDING(BAT_FONT, "ttf");
-	return endings;
-}
 

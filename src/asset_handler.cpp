@@ -30,6 +30,14 @@ char *copy_string_to_storage(char *str)
 	return out;
 }
 
+void copy_until(char *to, char *from, char until='\0')
+{
+	while (*from != until)
+	{
+		*to++ = *from++;
+	}
+	*to = '\0';
+}
 
 bool ends_with(const char *src, const char *ending)
 {
@@ -50,6 +58,16 @@ bool ends_with(const char *src, const char *ending)
 	return false;
 }
 
+Array<FileData> initalize_endings()
+{
+	auto endings = create_array<FileData>(50);
+#define FILE_ENDING(type, ending) append(&endings, {(char *) (ending), type})
+	FILE_ENDING(BAT_IMAGE, "png");
+	FILE_ENDING(BAT_SOUND, "wav");
+	FILE_ENDING(BAT_MESH, "obj");
+	FILE_ENDING(BAT_FONT, "ttf");
+	return endings;
+}
 
 
 void keep_writing(FILE *file, void *data, uint64 len)
@@ -88,6 +106,14 @@ int main(int arg_len, char *args)
 		Asset header;
 		header.type = data.type;
 
+		char *file_path_ptr = file_path;
+		while (*file_path_ptr != '/') file_path_ptr++;
+		file_path_ptr++;
+		copy_until(header.tag.upper, file_path_ptr, '.');
+		while (*file_path_ptr != '.') file_path_ptr++;
+		file_path_ptr++;
+		copy_until(header.tag.lower, file_path_ptr, '.');
+
 		switch (data.type) 
 		{
 			case (BAT_IMAGE):
@@ -95,24 +121,20 @@ int main(int arg_len, char *args)
 					header.data = (void *) stbi_load(file_path, 
 							&header.image.width, &header.image.height, 
 							&header.image.color_depth, 0);
-					header.type = BAT_IMAGE;
 					header.data_size = header.image.width * header.image.height * header.image.color_depth;
 					printf("%s (image), %dx%dx%d, size: %d\n", file_path, 
 							header.image.width, header.image.height, header.image.color_depth, header.data_size);
-					append(&assets, header);
 					break;
 				}
 			case (BAT_SOUND):
 				{
 					AudioBuffer buffer = load_wav(file_path, malloc);
 					header.data = (void *) buffer.data;
-					header.type = BAT_SOUND;
 					header.sound.channels = buffer.channels;
 					header.sound.bitdepth = buffer.bitdepth;
 					header.sound.sample_rate = buffer.sample_rate;
 					header.sound.num_samples = buffer.num_samples;
 					header.data_size = header.sound.num_samples * header.sound.bitdepth / 8;
-					append(&assets, header);
 					printf("%s (sound) chl %d, bit %d, rate %d, num %d\n", 
 						file_path, header.sound.channels, header.sound.bitdepth, header.sound.sample_rate, 
 						header.sound.num_samples);
@@ -195,31 +217,28 @@ int main(int arg_len, char *args)
 						}
 					}
 					free_mesh(mesh);
-					Asset header;
-					header.type = BAT_MESH;
 					header.mesh.num_verticies = size(out_verticies);
 					header.mesh.verticies = out_verticies.data;
 					header.mesh.num_indicies = size(out_indicies);
 					header.mesh.indicies = out_indicies.data;
-					append(&assets, header);
-					printf("%s V %d, I %d\n", file_path, header.mesh.num_verticies, header.mesh.num_indicies);
 					break;
 				}
 			default:
 				printf("ERROR Unsupported type %d\n", data.type);
 		}
+		append(&assets, header);
 	}
 
 	AssetFileHeader file_header;
 	file_header.file_code = 0x42454152;
 	file_header.version = 1;
-	file_header.num_headers = size(assets);
+	file_header.num_assets = size(assets);
 
 	FILE *disk = fopen("res/data.bear", "wb");
 	keep_writing(disk, &file_header, sizeof(file_header));
 
 	// Skipp this part of the header.
-	fseek(disk, sizeof(Asset) * file_header.num_headers, SEEK_CUR);
+	fseek(disk, sizeof(Asset) * file_header.num_assets, SEEK_CUR);
 	for (uint32 i = 0; i < size(assets); i++)
 	{
 		Asset asset = get(assets, i);
@@ -227,8 +246,11 @@ int main(int arg_len, char *args)
 		ASSERT(offset > 0);
 		if (asset.type == BAT_MESH)
 		{
-			keep_writing(disk, asset.mesh.verticies, sizeof(*asset.mesh.verticies) * asset.mesh.num_verticies);
-			keep_writing(disk, asset.mesh.indicies, sizeof(*asset.mesh.indicies) * asset.mesh.num_indicies);
+			uint64 vert_size = sizeof(*asset.mesh.verticies) * asset.mesh.num_verticies;
+			uint64 indi_size = sizeof(*asset.mesh.indicies) * asset.mesh.num_indicies;
+			keep_writing(disk, asset.mesh.verticies, vert_size);
+			keep_writing(disk, asset.mesh.indicies, indi_size);
+			asset.data_size = vert_size + indi_size;
 			free(asset.mesh.verticies);
 			free(asset.mesh.indicies);
 		}
@@ -241,7 +263,7 @@ int main(int arg_len, char *args)
 		set(assets, i, asset);
 	}
 	fseek(disk, sizeof(AssetFileHeader), SEEK_SET);
-	fwrite(assets.data, sizeof(Asset), file_header.num_headers, disk);
+	fwrite(assets.data, sizeof(Asset), file_header.num_assets, disk);
 
 	fclose(disk);
 
@@ -277,7 +299,9 @@ void find_files_in_folder(const char *_dir)
 		if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
 			// This is a directory.
-			continue;
+			if (*ffd.cFileName == '.')
+				continue;
+			find_files_in_folder(ffd.cFileName);
 		}
 		else
 		{
@@ -299,6 +323,8 @@ void find_files_in_folder(const char *_dir)
 }
 
 #else // Linux.
+
+#error
 
 #endif
 

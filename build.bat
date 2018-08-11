@@ -23,8 +23,8 @@ if %IS_RELEASE% == "yes" (
 	cl %C_FLAGS% %R_FLAGS% -Fegame.exe  ..\src\bear_windows.cpp %C_LINK_FLAGS% %R_LINK_FLAGS%
 ) else (
 	del *.pdb
-	rem cl %C_FLAGS% %D_FLAGS% /LD -Felibbear.dll ..\src\bear_main.cpp /link /PDB:libbear_%RANDOM%.pdb %EXPORTS% -incremental:no
-	rem cl %C_FLAGS% %D_FLAGS% -Fegame.exe ..\src\bear_windows.cpp %C_LINK_FLAGS%
+	cl %C_FLAGS% %D_FLAGS% /LD -Felibbear.dll ..\src\bear_main.cpp /link /PDB:libbear_%RANDOM%.pdb %EXPORTS% -incremental:no
+	cl %C_FLAGS% %D_FLAGS% -Fegame.exe ..\src\bear_windows.cpp %C_LINK_FLAGS%
 	cl -std:c++14 -Zi -Od -Feasset_manager.exe ..\src\asset_handler.cpp
 )
 

@@ -167,7 +167,7 @@ void add_components_(ECS *ecs, Physics *phy, EntityID id, ...)
 	{
 		BaseComponent* component = va_arg(args, BaseComponent *);
 		if (!component) break;
-		ASSERT(component->type > 0);
+		ASSERT(component->type >= 0);
 		ASSERT(component->type < NUM_COMPONENTS);
 		if (component->type == C_BODY)
 		{
