@@ -1,11 +1,16 @@
 // This is the windows specific CPP file. Compile this and 
 // you'll compile the game for windows. It's as easy as that.
+
+// TODO: Clean this file, a lot.
 int win_printf(const char *format, ...);
+
+bool running = true;
 
 #include <windows.h>
 #include <SDL2/SDL.h>
 
 #include "bear_shared.h"
+#include "bear_sdl_threads_plt.h"
 
 #define LOG(type, ...) win_printf("[%s:%d] type :", __FILE__, __LINE__, type); win_printf(__VA_ARGS__); win_printf("\n");
 #define PRINT(...) win_printf(__VA_ARGS__)
@@ -225,7 +230,6 @@ void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
 	SDL_UnlockMutex(game.lock);
 }
 
-
 int CALLBACK WinMain(
   HINSTANCE hInstance,
   HINSTANCE hPrevInstance,
@@ -238,12 +242,13 @@ int CALLBACK WinMain(
 	plt.read_file = read_entire_file;
 	plt.random_file_read = win_random_read;
 	plt.last_write = get_file_edit_time;
+
+	plt.submit_work = send_work;
 	
 	plt.get_time = win_get_time;
 
 	plt.axis_value = axis_value;
 	plt.button_state = button_state;
-
 
 	mem.static_memory_size = GIGABYTE(1);
 	mem.static_memory = (uint8 *) VirtualAlloc(0, mem.static_memory_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -275,6 +280,8 @@ int CALLBACK WinMain(
 			WINDOW_HEIGHT,
 			SDL_WINDOW_OPENGL
 			);
+
+	create_sdl_threads();
 
 	SDL_RaiseWindow(window);
 	
@@ -324,7 +331,6 @@ int CALLBACK WinMain(
 	QueryPerformanceCounter(&last_counter);
 	QueryPerformanceCounter(&start);
 	float64 delta = 0.0f;
-	bool running = true;
 	while (running)
 	{
 		load_libbear(&game);
@@ -354,24 +360,13 @@ int CALLBACK WinMain(
 		delta = (float64) delta_counter / counter_frequency;
 	}
 
-#if 0
-	destroy_ecs(&world);
-	destroy_phy(&world);
-
-	// TODO: Move the code into the game.
-	// TODO: Change world to be a void pointer.
-
-	FREE(world.audio.sources);
-	FREE(world.audio.buffers);
-
-	check_for_leaks();
-#endif
 	game.destroy();
 	destroy_input();
 	VirtualFree(mem.temp_memory,   mem.temp_memory_size,   MEM_RELEASE);
 	VirtualFree(mem.static_memory, mem.static_memory_size, MEM_RELEASE);
 	
 	SDL_CloseAudio();
+	delete_sdl_threads();
 	SDL_DestroyMutex(game.lock);
 	SDL_Quit();
 

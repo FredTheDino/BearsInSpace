@@ -117,6 +117,7 @@ void reload(PLT _plt, GameMemory *_mem)
 	}
 
 	start_asset_loader();
+	load_asset(0);
 
 	// TODO: This is ugly as fuck.
 	// GFX::matrix_profiles = world->matrix_profiles;
@@ -197,6 +198,7 @@ extern "C"
 void step(float32 delta)
 {
 	//LOG("DEBUG", "MEEEEEEEEEEEEEEEEEEEEP!");
+	update_assets();
 	reset_debug_clock();
 
 	float32 planar_speed = 15.0f * delta;

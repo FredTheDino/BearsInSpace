@@ -41,13 +41,8 @@ struct Asset
 	// TODO: Tag goes here.
 	AssetTag tag;
 	uint64 data_size;
-	union
-	{
-		// This is for when you load the file
-		uint64 data_offset; // Counted from start of the file. (Should it be?)
-		// This is when it's stored in memory
-		void *data;
-	};
+	uint64 data_offset;
+	void *data;
 	union
 	{
 		struct 

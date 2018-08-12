@@ -77,7 +77,11 @@ struct OSFile
 // from both threads.
 //
 
-typedef void * Thread;
+struct Work
+{
+	void (*func)(void *);
+	void *args;
+};
 
 typedef void *(*AllocatorFunc)(uint64);
 struct PLT
@@ -85,9 +89,7 @@ struct PLT
 	void  (*log)	(string, int32, string, string);
 	int32 (*print)	(string, ...); 
 
-	Thread (*create_thread)(void (*func)(void *), void *args);
-	void (*join_thread)(Thread);
-	void (*kill_thread)(Thread);
+	int32 (*submit_work)(Work); // 0 if it fails
 
 	float64 (*get_time) (void);
 
