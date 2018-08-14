@@ -225,6 +225,24 @@ void step(float32 delta)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	debug_draw_engine(&world->ecs, &world->phy);
 
+	GFX::Renderable renderable = {}; 
+	renderable.matrix_profiles = temp_array<GFX::MatrixProfile>(1);
+	renderable.vertex_array = default_mesh.mesh_vao;
+	renderable.num_vertices = 12 * 3;
+	renderable.program = program;
+
+	Transform transform = create_transform();
+	transform.position.y = 3.0f;
+
+	GFX::MatrixProfile transform_profile = {};
+	transform_profile.uniform_name = "m_model";
+	transform_profile.transform = &transform;
+
+	append(&renderable.matrix_profiles, transform_profile);
+
+	GFX::bind(default_image.texture);
+	GFX::draw(renderable);
+	
 	stop_debug_clock(phy_clock);
 
 	display_clocks();

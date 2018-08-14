@@ -93,7 +93,7 @@ int main(int arg_len, char *args)
 	const char *resource_dir = "res"; // Pass in this value.
 	find_files_in_folder(resource_dir);
 
-	auto assets = create_array<Asset>(50);
+	auto assets = create_array<AssetHeader>(50);
 	printf("files found:\n");
 	for (uint32 i = 0; i < size(files); i++)
 	{
@@ -103,7 +103,7 @@ int main(int arg_len, char *args)
 		char file_path[100];
 		sprintf(file_path, "%s/%s", resource_dir, data.file_name);
 
-		Asset header;
+		AssetHeader header;
 		header.type = data.type;
 
 		char *file_path_ptr = file_path;
@@ -234,14 +234,15 @@ int main(int arg_len, char *args)
 	file_header.version = 1;
 	file_header.num_assets = size(assets);
 
+	remove("res/data.bear");
 	FILE *disk = fopen("res/data.bear", "wb");
 	keep_writing(disk, &file_header, sizeof(file_header));
 
 	// Skipp this part of the header.
-	fseek(disk, sizeof(Asset) * file_header.num_assets, SEEK_CUR);
+	fseek(disk, sizeof(AssetHeader) * file_header.num_assets, SEEK_CUR);
 	for (uint32 i = 0; i < size(assets); i++)
 	{
-		Asset asset = get(assets, i);
+		AssetHeader asset = get(assets, i);
 		int64 offset = ftell(disk);
 		ASSERT(offset > 0);
 		if (asset.type == BAT_MESH)
@@ -263,7 +264,7 @@ int main(int arg_len, char *args)
 		set(assets, i, asset);
 	}
 	fseek(disk, sizeof(AssetFileHeader), SEEK_SET);
-	fwrite(assets.data, sizeof(Asset), file_header.num_assets, disk);
+	ASSERT(fwrite(assets.data, sizeof(AssetHeader), file_header.num_assets, disk));
 
 	fclose(disk);
 
@@ -324,7 +325,7 @@ void find_files_in_folder(const char *_dir)
 
 #else // Linux.
 
-#error
+#error // Not yet implemented.
 
 #endif
 

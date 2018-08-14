@@ -134,8 +134,15 @@ void win_random_read(const char *path, void *to, uint32 start_byte, uint32 read_
 		return;
 	}
 
+	fseek(disk, start_byte, SEEK_END);
+	size_t size = ftell(disk);
+
 	fseek(disk, start_byte, SEEK_SET);
-	fread(to, read_length, 1, disk);
+	size_t red = fread(to, read_length, 1, disk);
+	if (!red)
+	{
+		HALT_AND_CATCH_FIRE();
+	}
 	fclose(disk);
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#pragma pack( push, 1 )
 
 struct Vec2f;
 struct Vec3f;
@@ -324,3 +325,6 @@ Vec3f toVec3f(Vec4f v)
 {
 	return {v.x, v.y, v.z};
 }
+
+#pragma pack( pop )
+

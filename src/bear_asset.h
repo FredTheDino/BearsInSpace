@@ -27,15 +27,17 @@ struct AssetFileHeader
 	uint32 num_assets;
 };
 
+#pragma pack( push, 1 )
 struct Vertex
 {
 	float32 x, y, z;
 	float32 nx, ny, nz;
 	float32 u, v;
 };
+#pragma pack( pop )
 
 // List of these is after the file header
-struct Asset
+struct AssetHeader
 {
 	AssetType type;
 	// TODO: Tag goes here.
