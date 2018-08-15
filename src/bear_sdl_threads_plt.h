@@ -28,10 +28,17 @@ void create_sdl_threads()
 void delete_sdl_threads()
 {
 	int32 _;
+	SDL_LockMutex(queue_lock);
+	for (uint32 i = 0; i < NUM_THREADS; i++)
+	{
+		SDL_CondSignal(queue_cond);
+	}
+	SDL_UnlockMutex(queue_lock);
 	for (uint32 i = 0; i < NUM_THREADS; i++)
 	{
 		SDL_WaitThread(threads[i], &_);
 	}
+
 	SDL_DestroyCond(queue_cond);
 	SDL_DestroyMutex(queue_lock);
 }
@@ -51,7 +58,7 @@ int32 send_work(Work work)
 	return 1;
 }
 
-static int32 worker_thread(void *_)
+int32 worker_thread(void *_)
 {
 	while (running)
 	{
@@ -59,6 +66,11 @@ static int32 worker_thread(void *_)
 		while (num_work_orders == 0)
 		{
 			SDL_CondWait(queue_cond, queue_lock);
+			if (!running)
+			{
+				SDL_UnlockMutex(queue_lock);
+				return 1;
+			}
 		}
 		Work order = work_queue[next_work_order++];
 		next_work_order %= MAX_NUM_WORK;

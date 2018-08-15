@@ -459,7 +459,6 @@ void solve_collisions_randomly(Physics *engine)
 
 		Collision collision = get(collisions, i);
 		float32 restitution = 0.5f;
-		float32 friction = 0.3f;
 		float32 min_velocity = 0.05f;
 		CBody *a = collision.a;
 		CBody *b = collision.b;

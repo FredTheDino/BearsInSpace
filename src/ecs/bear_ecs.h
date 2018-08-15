@@ -13,10 +13,6 @@ enum SystemType
 
 enum ComponentType
 {
-	// Types
-	C_POSITION,
-	C_BLARGH,
-
 	// Physics
 	C_BODY,
 	C_TRANSFORM,

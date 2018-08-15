@@ -90,10 +90,7 @@ void init(PLT _plt, GameMemory *_mem)
 		auto error = gladLoadGL();
 		ASSERT(error);
 		glEnable(GL_DEPTH_TEST);
-
-		
 	}
-	
 
 	init_ecs(&world->ecs);
 	init_phy(&world->phy);
@@ -132,6 +129,7 @@ void reload(PLT _plt, GameMemory *_mem)
 	GFX::init_debug();
 	camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
 	camera.transform.position = {-30.0f, 25.0f, 20.0f};
+	camera.transform.position *= 0.75f;
 	camera.transform.orientation = toQ(5.7f, -1.0f, 0);
 	GFX::add_matrix_profile("m_view", &camera);
 	
@@ -148,6 +146,7 @@ void reload(PLT _plt, GameMemory *_mem)
 
 	clear_ecs(&world->ecs, &world->phy);
 
+#if 0 
 	CTransform transform = {};
 	transform.type = C_TRANSFORM;
 	transform.position = {0.0f, 5.0f, -4.0f};
@@ -182,6 +181,7 @@ void reload(PLT _plt, GameMemory *_mem)
 
 	EntityID f = add_entity(&world->ecs);
 	add_components(&world->ecs, &world->phy, f, &body, &transform);
+#endif
 }
 
 // Exit APP
@@ -223,7 +223,7 @@ void step(float32 delta)
 		toQ(-AXIS_VAL("yrot") * rotational_speed, 0.0f, 0.0f);
 
 	auto phy_clock = start_debug_clock("Physics Step");
-	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+	//run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
 	stop_debug_clock(phy_clock);
 
 	phy_clock = start_debug_clock("Physics Draw");
@@ -234,11 +234,16 @@ void step(float32 delta)
 
 	GFX::Renderable renderable = {}; 
 	renderable.matrix_profiles = temp_array<GFX::MatrixProfile>(1);
-	renderable.vertex_array = default_mesh.mesh_vao;
-	renderable.num_vertices = 36;
+	AssetID asset_id = get_asset_id(BAT_MESH, "test", "ico");
+	renderable.vertex_array = get_asset(asset_id).mesh_vao;
+	renderable.num_vertices = am.headers[asset_id].mesh.num_indicies;
 	renderable.program = program;
 
 	Transform transform = create_transform();
+	static float32 t = 0.0f;
+	t += delta;
+	transform.orientation = toQ(t * 0.3f, t * 0.5f, 0);
+	transform.scale *= 4.0f;
 	transform.position.y = 3.0f;
 
 	GFX::MatrixProfile transform_profile = {};
@@ -252,7 +257,7 @@ void step(float32 delta)
 	
 	stop_debug_clock(phy_clock);
 
-	display_clocks();
+	//display_clocks();
 }
 
 #if 0

@@ -84,7 +84,7 @@ void unload_asset(uint32 asset_id)
 }
 
 // Returns the first, -1 if not found.
-AssetID get_asset_id(AssetType type, char *upper=0, char *lower=0)
+AssetID get_asset_id(AssetType type, const char *upper=0, const char *lower=0)
 {
 	// Maybe we should use a hash later.
 	for (uint32 i = 0; i < am.file_header.num_assets; i++)
@@ -104,7 +104,7 @@ AssetID get_asset_id(AssetType type, char *upper=0, char *lower=0)
 Asset get_asset(int32 asset_id)
 {
 	ASSERT(asset_id >= 0);
-	ASSERT(asset_id < am.file_header.num_assets);
+	ASSERT(asset_id < (int32) am.file_header.num_assets);
 
 	if (am.loaded_states[asset_id] == BAS_LOADED)
 	{
@@ -137,7 +137,7 @@ Asset get_asset(int32 asset_id)
 	}
 }
 
-Asset get_asset(AssetType type, char *upper=0, char *lower=0)
+Asset get_asset(AssetType type, const char *upper=0, const char *lower=0)
 {
 	return get_asset(get_asset_id(type, upper, lower));
 }
@@ -216,10 +216,13 @@ void start_asset_loader()
 	am.loaded_states = static_push_array(AssetState, am.file_header.num_assets);
 	for (uint32 i = 0; i < am.file_header.num_assets; i++)
 	{
+		PRINT("LOADED: %s.%s\n", am.headers[i].tag.lower, am.headers[i].tag.upper);
 		am.loaded_states[i] = BAS_UNLOADED;
 	}
 
 	am.assets = static_push_array(Asset, am.file_header.num_assets);
+
+	PRINT("Size of HEADER: %d\n", sizeof(AssetHeader));
 
 	// Default assets:
 	AssetID mesh_id = get_asset_id(BAT_MESH, "default", "mesh");

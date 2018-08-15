@@ -1,3 +1,4 @@
+#pragma pack( push, 1 ) // If we don't have this, compilers can padd things like they want.
 enum AssetType
 {
 	// Bear Asset Type. I'm a genious.
@@ -27,14 +28,12 @@ struct AssetFileHeader
 	uint32 num_assets;
 };
 
-#pragma pack( push, 1 )
 struct Vertex
 {
 	float32 x, y, z;
 	float32 nx, ny, nz;
 	float32 u, v;
 };
-#pragma pack( pop )
 
 // List of these is after the file header
 struct AssetHeader
@@ -68,6 +67,8 @@ struct AssetHeader
 		// TODO Font.
 	};
 };
+
+#pragma pack( pop )
 
 struct FileData
 {

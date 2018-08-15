@@ -318,8 +318,35 @@ void find_files_in_folder(const char *_dir)
 }
 
 #else // Linux.
+#include <dirent.h>
 
-#error // Not yet implemented.
+void find_files_in_folder(const char *_dir)
+{
+	struct dirent *de;
+	DIR *dir = opendir(_dir);
+	if (dir == 0)
+	{
+		printf("Failed to open dir '%s'\n", _dir);
+		return;
+	}
+
+	while ((de = readdir(dir)) != 0)
+	{
+		char *file_name = de->d_name;
+		for (uint32 i = 0; i < size(endings); i++)
+		{
+			FileData ending = get(endings, i);
+			if (ends_with(file_name, ending.file_ending))
+			{
+				char *ptr = copy_string_to_storage(file_name);
+				FileData data = {ptr, ending.type};
+				append(&files, data);
+			}
+		}
+	}
+
+	closedir(dir);
+}
 
 #endif
 

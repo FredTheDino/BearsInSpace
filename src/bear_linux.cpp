@@ -14,6 +14,9 @@ void linux_log(string file, int32 line, string type, string msg)
 	printf("[%s:%d] %s %s\n", file, line, type, msg);
 }
 
+bool running = true;
+
+#include "bear_sdl_threads_plt.h"
 #include "bear_array_plt.cpp"
 #include "bear_input.h"
 
@@ -77,6 +80,24 @@ OSFile read_entire_file(const char *path, AllocatorFunc alloc)
 	fclose(disk);
 
 	return file;
+}
+
+void linux_random_read(const char *path, void *to, uint32 start_byte, uint32 read_length)
+{
+	FILE *disk = fopen(path, "rb");
+	if (!disk)
+	{
+		*((uint8 *) to) = 0;
+		return;
+	}
+
+	fseek(disk, start_byte, SEEK_SET);
+	size_t red = fread(to, read_length, 1, disk);
+	if (!red)
+	{
+		HALT_AND_CATCH_FIRE();
+	}
+	fclose(disk);
 }
 
 struct timespec _spec;
@@ -194,6 +215,9 @@ int main(int varc, char *varv[])
 
 	plt.read_file = read_entire_file;
 	plt.last_write = get_file_edit_time;
+	plt.random_file_read = linux_random_read;
+
+	plt.submit_work = send_work;
 	plt.get_time = get_time;
 
 	plt.axis_value = axis_value;
@@ -206,12 +230,14 @@ int main(int varc, char *varv[])
 		HALT_AND_CATCH_FIRE();
 	}
 
+
 	mem.temp_memory_size = GIGABYTE(1);
 	mem.temp_memory = (uint8 *) malloc(mem.temp_memory_size);
 	if (!mem.temp_memory)
 	{
 		HALT_AND_CATCH_FIRE();
 	}
+
 
 	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -228,6 +254,8 @@ int main(int varc, char *varv[])
 			WINDOW_HEIGHT,
 			SDL_WINDOW_OPENGL
 			);
+
+	create_sdl_threads();
 
 	SDL_RaiseWindow(window);
 	
@@ -282,7 +310,6 @@ int main(int varc, char *varv[])
 	last_time = SPEC_TO_SEC(_spec);
 	float32 delta = 0.0f; 
 
-	bool running = true;
 	while (running)
 	{
 		load_libgame(&game);
@@ -314,10 +341,14 @@ int main(int varc, char *varv[])
 
 	destroy_input();
 	game.destroy();
-	SDL_DestroyMutex(game.lock);
-	
+
 	SDL_CloseAudio();
+	delete_sdl_threads();
+	SDL_DestroyMutex(game.lock);
 	SDL_Quit();
+
+	free(mem.static_memory);
+	free(mem.temp_memory);
 
 	return 0;
 }
