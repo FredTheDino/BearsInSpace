@@ -47,7 +47,7 @@ struct Camera
 
 Transform create_transform()
 {
-	return { { 0, 0, 0 }, { 1, 1, 1 }, { 0, 0, 0, 1 } };
+	return { { 0, 0, 0 }, { 1, 1, 1 }, { 1, 0, 0, 0 } };
 }
 
 Camera create_camera(Mat4f projection)

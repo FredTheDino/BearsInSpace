@@ -117,7 +117,7 @@ void reload(PLT _plt, GameMemory *_mem)
 	}
 
 	start_asset_loader();
-	load_asset(0);
+	//load_asset(0);
 
 	// TODO: This is ugly as fuck.
 	// GFX::matrix_profiles = world->matrix_profiles;
@@ -134,6 +134,13 @@ void reload(PLT _plt, GameMemory *_mem)
 	camera.transform.position = {-30.0f, 25.0f, 20.0f};
 	camera.transform.orientation = toQ(5.7f, -1.0f, 0);
 	GFX::add_matrix_profile("m_view", &camera);
+	
+	Array<GFX::ShaderInfo> shader_info = temp_array<GFX::ShaderInfo>({
+		{ GL_VERTEX_SHADER, "src/shader/simple.vert" },
+		{ GL_FRAGMENT_SHADER, "src/shader/simple.frag" }
+	});
+
+	program = GFX::create_shader_program(shader_info);
 
 
 	//play_sound(&world->audio, buffer, 1.0f, 1.0f);
@@ -228,7 +235,7 @@ void step(float32 delta)
 	GFX::Renderable renderable = {}; 
 	renderable.matrix_profiles = temp_array<GFX::MatrixProfile>(1);
 	renderable.vertex_array = default_mesh.mesh_vao;
-	renderable.num_vertices = 12 * 3;
+	renderable.num_vertices = 36;
 	renderable.program = program;
 
 	Transform transform = create_transform();

@@ -47,7 +47,7 @@ float32 eat_float(char **ptr)
 	{
 		char *dot_pos = ++p;
 		int32 decimals = eat_int(&p);
-		f += (float32) decimals / (float32) pow( (float32) 10.0f, (int32) (p - dot_pos) - 1);
+		f += (float32) decimals / (float32) pow( (float32) 10.0f, (int32) (p - dot_pos));
 	}
 	*ptr = p;
 	return negative ? -f : f;

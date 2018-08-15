@@ -49,11 +49,12 @@ void _read_in_asset(void *_arg)
 
 void load_asset(int32 asset_id)
 {
+	ASSERT(asset_id >= 0);
 	AssetState *state = am.loaded_states + asset_id;
 	
 	if (*state == BAS_UNLOADED)
 	{
-		*state = BAS_LOADED;
+		*state = BAS_LOADING;
 
 		AssetHeader *header = &am.headers[asset_id];
 		uint64 alloc_size = header->data_size + sizeof(AssetLoadCommand);
@@ -163,7 +164,7 @@ void update_assets() // Create the assets here since this is called on the main 
 						header->mesh.indicies = (uint32 *) (data + (sizeof(Vertex) * header->mesh.num_verticies));
 						GFX::VertexBuffer buffer = GFX::create_vertex_buffer(
 							(float32 *) header->mesh.verticies,
-							header->mesh.num_verticies);
+							header->mesh.num_verticies * 8);
 
 						GFX::IndexBuffer index = GFX::create_index_buffer(
 							(uint32 *) header->mesh.indicies, 
@@ -173,9 +174,13 @@ void update_assets() // Create the assets here since this is called on the main 
 						GFX::VertexAttribute attributes[3];
 						const uint32 v_size = sizeof(Vertex);
 						const uint32 f_size = sizeof(float32);
-						attributes[0] = {buffer, 0, 3, GL_FLOAT, false, v_size - 3 * f_size, (void *) (0 * f_size)};
-						attributes[1] = {buffer, 1, 3, GL_FLOAT, false, v_size - 3 * f_size, (void *) (3 * f_size)};
-						attributes[2] = {buffer, 2, 2, GL_FLOAT, false, v_size - 2 * f_size, (void *) (6 * f_size)};
+						// Vert: 
+						// x, y, z
+						// nx, ny, nz
+						// u, v
+						attributes[0] = {buffer, 0, 3, GL_FLOAT, false, v_size, (void *) (0 * f_size)};
+						attributes[1] = {buffer, 2, 3, GL_FLOAT, false, v_size, (void *) (3 * f_size)};
+						attributes[2] = {buffer, 1, 2, GL_FLOAT, false, v_size, (void *) (6 * f_size)};
 						asset.mesh_vao = GFX::create_vertex_array(attributes, 3, index);
 						break;
 					}

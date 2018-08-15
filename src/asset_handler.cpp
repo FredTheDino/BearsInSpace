@@ -158,31 +158,25 @@ int main(int arg_len, char *args)
 					Array<Vertex> out_verticies = create_array<Vertex>(100);
 					Array<uint32> out_indicies = create_array<uint32>(100);
 					Array<Indici> full  = create_array<Indici>(100);
-					for (uint64 i = 0; i < size(mesh.indicies); i += mesh.stride)
+					for (uint64 i = 0; i < size(mesh.indicies);)
 					{
-						int32 p_i;
-						int32 u_i;
-						int32 n_i;
+						int32 p_i = -1;
+						int32 u_i = -1;
+						int32 n_i = -1;
 						ASSERT(mesh.stride > 0);
 						ASSERT(mesh.stride < 4);
-						if (mesh.stride == 3)
-						{
-							p_i = get(mesh.indicies, i + 0) - 1;
-							u_i = get(mesh.indicies, i + 1) - 1;
-							n_i = get(mesh.indicies, i + 2) - 1;
-						}
-						else if (mesh.stride == 2)
-						{
-							p_i = get(mesh.indicies, i + 0) - 1;
-							n_i = get(mesh.indicies, i + 1) - 1;
-						}
-						else if (mesh.stride == 1)
-						{
-							p_i = get(mesh.indicies, i + 0) - 1;
-						}
-						ASSERT(p_i >= 0);
-						ASSERT(n_i >= 0);
-						ASSERT(u_i >= 0);
+						// These has to be in this order. Since this is how they will be packed. I know
+						// It's kinda B.
+						if (size(mesh.positions))
+							p_i = get(mesh.indicies, i++) - 1;
+						if (size(mesh.uvs))
+							u_i = get(mesh.indicies, i++) - 1;
+						if (size(mesh.normals))
+							n_i = get(mesh.indicies, i++) - 1;
+
+						ASSERT(-1 <= p_i);
+						ASSERT(-1 <= n_i);
+						ASSERT(-1 <= u_i);
 						Indici full_indici = {p_i, n_i, u_i};
 						int32 vertex_index = find(full, full_indici);
 						if (vertex_index == -1)
@@ -193,11 +187,11 @@ int main(int arg_len, char *args)
 							Vec2f uv;
 							ASSERT(size(mesh.positions));
 							pos = get(mesh.positions, p_i);
-							if (size(mesh.normals))
+							if (0 < n_i)
 								nor = normalize(get(mesh.normals, n_i));
 							else
 								nor = {};
-							if (size(mesh.uvs))
+							if (0 < u_i)
 								uv = get(mesh.uvs, u_i);
 							else
 								uv = {};
@@ -208,8 +202,8 @@ int main(int arg_len, char *args)
 								nor.x, nor.y, nor.z,
 								uv.x, uv.y
 							};
+							append(&out_indicies, (uint32) size(out_verticies));
 							append(&out_verticies, vertex); 
-							append(&out_indicies, (uint32) sizeof(out_verticies));
 						}
 						else
 						{
