@@ -6,9 +6,8 @@ struct GameMemory;
 GameMemory *mem;
 
 #include "bear_shared.h"
-#include "bear_memory.cpp"
-
 PLT plt;
+#include "bear_memory.cpp"
 
 #include "bear_main.h"
 World *world;
@@ -33,6 +32,9 @@ World *world;
 
 // Assets
 #include "bear_loader.cpp"
+
+// Random! :P
+#include "bear_random.h"
 
 #if 0
 // Tests
@@ -101,6 +103,7 @@ void init(PLT _plt, GameMemory *_mem)
 	//world->matrix_profiles = GFX::matrix_profiles;
 }
 
+RandomState rng;
 // Reload the library.
 extern "C"
 void reload(PLT _plt, GameMemory *_mem)
@@ -112,17 +115,16 @@ void reload(PLT _plt, GameMemory *_mem)
 		world = (World *) ((MemoryAllocation *) mem->static_memory + 1);
 	}
 
-	start_loader();
-	//load_asset(0);
-
-	// TODO: This is ugly as fuck.
-	// GFX::matrix_profiles = world->matrix_profiles;
-
 	if (!GL_LOADED)
 	{
 		gladLoadGL();
 		glEnable(GL_DEPTH_TEST);
 	}
+
+	start_loader();
+	//load_asset(0);
+
+	rng = seed(34565432654323);
 
 	GFX::init_matrix_profiles();
 	GFX::init_debug();
@@ -187,7 +189,6 @@ void reload(PLT _plt, GameMemory *_mem)
 extern "C"
 void destroy()
 {
-	PRINT("Destroy!\n");
 }
 
 // Exit the library
@@ -196,7 +197,8 @@ void replace()
 {
 	// TODO: This is ugly as fuck.
 	// world->matrix_profiles = GFX::matrix_profiles;
-	PRINT("Replace!\n");
+	PRINT("MEM watermark: %d\n", get_static_memory_watermark());
+	stop_loader();
 }
 
 
@@ -204,7 +206,7 @@ extern "C"
 void step(float32 delta)
 {
 	//LOG("DEBUG", "MEEEEEEEEEEEEEEEEEEEEP!");
-	update_assets();
+	//update_assets();
 	reset_debug_clock();
 
 	float32 planar_speed = 15.0f * delta;
@@ -231,9 +233,10 @@ void step(float32 delta)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	debug_draw_engine(&world->ecs, &world->phy);
 
+#if 0
 	GFX::Renderable renderable = {}; 
 	renderable.matrix_profiles = temp_array<GFX::MatrixProfile>(1);
-	AssetID asset_id = get_asset_id(BAT_MESH, "test", "sphere");
+	AssetID asset_id = get_asset_id(BAT_MESH, "default", "mesh");
 	renderable.vertex_array = get_asset(asset_id).mesh_vao;
 	renderable.num_vertices = am.headers[asset_id].mesh.num_indicies;
 	renderable.program = program;
@@ -241,7 +244,7 @@ void step(float32 delta)
 	Transform transform = create_transform();
 	static float32 t = 0.0f;
 	t += delta;
-	transform.orientation = toQ(t * 0.3f, t * 0.5f, 0);
+	transform.orientation = toQ(t * 0.1f, t * 0.5f, 0);
 	transform.scale *= 4.0f;
 	transform.position.y = 3.0f;
 
@@ -250,9 +253,19 @@ void step(float32 delta)
 	transform_profile.transform = &transform;
 
 	append(&renderable.matrix_profiles, transform_profile);
+#endif
 
+	for (uint32 i = 0; i < 500; i++)
+	{
+		Vec2f p2 = random_unit_vec2f(&rng);
+		Vec3f p = {p2.x, p2.y, 0.0f};
+		GFX::debug_draw_point(p * 5.0f, {0.75f, 0.25f, 0.5f});
+	}
+
+#if 0
 	GFX::bind(default_image.texture);
 	GFX::draw(renderable);
+#endif
 	
 	stop_debug_clock(phy_clock);
 

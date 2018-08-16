@@ -193,8 +193,6 @@ bool load_libgame(GameHandle *handle)
 		init(plt, &mem);
 	}
 	game.reload(plt, &mem);
-
-	PRINT("Reload!");
 	game.access_time = new_last_edit;
 	*handle = game;
 	SDL_UnlockMutex(game.lock);
@@ -300,10 +298,6 @@ int main(int varc, char *varv[])
 	}
 
 	SDL_PauseAudioDevice(audio_device, 0);
-	
-	PRINT("Linux launch!");
-
-
 	
 	clock_gettime(CLOCK_MONOTONIC, &_spec);
 	start_time = SPEC_TO_SEC(_spec);

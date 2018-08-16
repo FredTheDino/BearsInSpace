@@ -49,15 +49,24 @@ void unload_asset(uint32 asset_id)
 			case (BAT_MESH):
 				{
 					LOG("LOADER ERROR", "Don't know how to free meshes... Sorry...\n");
-				}
+					break;
+				}	
 			case (BAT_IMAGE):
 				{
 					LOG("LOADER ERROR", "Don't know how to free textures... Sorry...\n");
+					break;
 
 				}
 			default:
 				PRINT("Trying to free unrecognized Asset Type (%d)\n", header->type);
 		}
+		*state = BAS_UNLOADED;
+	}
+	if (*state == BAS_REDIN)
+	{
+		// Here we've only read it in. So we just free and we're done.
+		static_pop(header->data);
+		*state = BAS_UNLOADED;
 	}
 }
 
@@ -65,17 +74,7 @@ void unload_all_assets()
 {
 	for (uint32 i = 0; i < am.file_header.num_assets; i++)
 	{
-		AssetState state = am.loaded_states[i];
-		AssetHeader *header = &am.headers[i];
-		if (state == BAS_REDIN)
-		{
-			// Here we've only read it in. So we just free and we're done.
-			static_pop(header->data);
-		}
-		else
-		{
-			unload_asset(i);
-		}
+		unload_asset(i);
 	}
 }
 
@@ -276,5 +275,9 @@ void stop_loader()
 	// We have to wait for all the loading OPS to end.
 	while (is_loading());
 	unload_all_assets();
+
+	static_pop(am.headers);
+	static_pop(am.loaded_states);
+	static_pop(am.assets);
 }
 

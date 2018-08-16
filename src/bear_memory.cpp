@@ -67,6 +67,8 @@ void static_pop(void *ptr)
 	
 		prev_block_ptr = &block->next_free;
 		block = block->next_free;
+		if (block && block == *prev_block_ptr)
+			return;
 	}
 	(*prev_block_ptr) = pop_block;
 }
@@ -79,8 +81,8 @@ void *static_push(uint64 size)
 	void *ptr;
 	MemoryAllocation *block = nullptr;
 
-	// Couldn't I make this into the allways condition. And just have a block on the end that we 
-	// can find last.
+	// Couldn't I make this into the allways condition. 
+	// And just have a block on the end that we can find last.
 	if (mem->free)
 	{
 		// Pop the list and use that
@@ -136,6 +138,11 @@ void *static_realloc(void *ptr, uint64 size)
 	}
 	static_pop(ptr);
 	return (void *) new_ptr;
+}
+
+uint64 get_static_memory_watermark()
+{
+	return mem->static_at - mem->static_memory;
 }
 
 #define static_push_struct(type) (type *) static_push(sizeof(type))
