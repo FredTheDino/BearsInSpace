@@ -31,8 +31,8 @@ struct AssetFileHeader
 struct Vertex
 {
 	float32 x, y, z;
-	float32 nx, ny, nz;
 	float32 u, v;
+	float32 nx, ny, nz;
 };
 
 // List of these is after the file header

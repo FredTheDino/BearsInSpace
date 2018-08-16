@@ -72,21 +72,12 @@ Array<FileData> initalize_endings()
 
 void keep_writing(FILE *file, void *data, uint64 len)
 {
-	uint8 *read_head = (uint8 *) data;
-	uint64 left_to_write = len;
-	const uint64 buffer_size = 1000000;
-	while (left_to_write)
-	{
-		uint64 write_pass = left_to_write > buffer_size ? buffer_size: left_to_write;
-		auto ret = fwrite(read_head, 1, left_to_write, file);
-		ASSERT(ret != 0);
-		left_to_write -= ret;
-		read_head += ret;
-	}
+	int32 ret = fwrite(data, 1, len, file);
+	ASSERT(ret != 0);
 }
 
 void find_files_in_folder(const char *);
-int main(int arg_len, char *args)
+int main(int arg_len, char **args)
 {
 	endings = initalize_endings();
 	files = create_array<FileData>(50);
@@ -123,7 +114,8 @@ int main(int arg_len, char *args)
 							&header.image.color_depth, 0);
 					header.data_size = header.image.width * header.image.height * header.image.color_depth;
 					printf("%s (image), %dx%dx%d, size: %d\n", file_path, 
-							header.image.width, header.image.height, header.image.color_depth, header.data_size);
+							header.image.width, header.image.height, 
+							header.image.color_depth, (uint32) header.data_size);
 					break;
 				}
 			case (BAT_SOUND):
@@ -167,8 +159,8 @@ int main(int arg_len, char *args)
 						ASSERT(mesh.stride < 4);
 						// These has to be in this order. Since this is how they will be packed. I know
 						// It's kinda B.
-						if (size(mesh.positions))
-							p_i = get(mesh.indicies, i++) - 1;
+						ASSERT(size(mesh.positions));
+						p_i = get(mesh.indicies, i++) - 1;
 						if (size(mesh.uvs))
 							u_i = get(mesh.indicies, i++) - 1;
 						if (size(mesh.normals))
@@ -185,23 +177,28 @@ int main(int arg_len, char *args)
 							append(&full, full_indici);
 							Vec3f pos, nor;
 							Vec2f uv;
-							ASSERT(size(mesh.positions));
 							pos = get(mesh.positions, p_i);
-							if (0 < n_i)
-								nor = normalize(get(mesh.normals, n_i));
-							else
-								nor = {};
-							if (0 < u_i)
+							if (0 <= u_i)
 								uv = get(mesh.uvs, u_i);
 							else
 								uv = {};
+							if (0 <= n_i)
+								nor = normalize(get(mesh.normals, n_i));
+							else
+								nor = {};
 
-							Vertex vertex = 
-							{
-								pos.x, pos.y, pos.z,
-								nor.x, nor.y, nor.z,
-								uv.x, uv.y
-							};
+							Vertex vertex; 
+							vertex.x = pos.x;
+							vertex.y = pos.y;
+							vertex.z = pos.z;
+
+							vertex.nx = nor.x;
+							vertex.ny = nor.y;
+							vertex.nz = nor.z;
+
+							vertex.u = uv.x;
+							vertex.v = uv.y;
+
 							append(&out_indicies, (uint32) size(out_verticies));
 							append(&out_verticies, vertex); 
 						}
@@ -215,6 +212,20 @@ int main(int arg_len, char *args)
 					header.mesh.verticies = out_verticies.data;
 					header.mesh.num_indicies = size(out_indicies);
 					header.mesh.indicies = out_indicies.data;
+
+#if 0
+					if (ends_with(header.tag.lower, "plane"))
+					{
+						for (uint32 i = 0; i < header.mesh.num_verticies; i++)
+						{
+							Vertex v = header.mesh.verticies[i];
+							printf("V %.2f %.2f %.2f, %.2f %.2f %.2f, %.2f %.2f\n", 
+									v.x, v.y, v.z,
+									v.nx, v.ny, v.nz,
+									v.u, v.v);
+						}
+					}
+#endif
 					break;
 				}
 			default:

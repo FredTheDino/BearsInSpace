@@ -1,45 +1,8 @@
-#include "bear_asset.h"
+#include "bear_loader.h"
 
-string data_dir = "res/data.bear";
+const string data_dir = "res/data.bear";
 
-enum AssetState
-{
-	BAS_UNLOADED = 0,
-	BAS_LOADING,
-	BAS_REDIN,
-	BAS_LOADED
-};
-
-typedef int32 AssetID;
-
-struct Asset
-{
-	bool valid;
-	union
-	{
-		GFX::VertexArray mesh_vao;
-		GFX::Texture texture;
-		AudioID buffer_id;
-	};
-};
-Asset default_mesh, default_image;
-
-struct AssetManager
-{
-	AssetFileHeader file_header;
-	AssetState *loaded_states;
-	AssetHeader *headers;
-	Asset *assets;
-} am;
-
-struct AssetLoadCommand 
-{
-	void *addrs;
-	AssetID asset_id;
-	uint64 start;
-	uint64 size;
-};
-
+// Helper function for threads
 void _read_in_asset(void *_arg)
 {
 	AssetLoadCommand *cmd = (AssetLoadCommand *) _arg;
@@ -71,20 +34,53 @@ void load_asset(int32 asset_id)
 
 void unload_asset(uint32 asset_id)
 {
-	AssetState *state = am.loaded_states + asset_id;
+	AssetState *state = &am.loaded_states[asset_id];
+	AssetHeader *header = &am.headers[asset_id];
 	
 	if (*state == BAS_LOADED)
 	{
 		*state = BAS_UNLOADED;
-		static_pop(am.headers[asset_id].data); // This can potentially be moved.
-		// Do some more stuff.
-	}
+		switch (header->type)
+		{
+			case (BAT_SOUND):
+				{
+					static_pop(am.headers[asset_id].data);
+				}
+			case (BAT_MESH):
+				{
+					LOG("LOADER ERROR", "Don't know how to free meshes... Sorry...\n");
+				}
+			case (BAT_IMAGE):
+				{
+					LOG("LOADER ERROR", "Don't know how to free textures... Sorry...\n");
 
-	
+				}
+			default:
+				PRINT("Trying to free unrecognized Asset Type (%d)\n", header->type);
+		}
+	}
+}
+
+void unload_all_assets()
+{
+	for (uint32 i = 0; i < am.file_header.num_assets; i++)
+	{
+		AssetState state = am.loaded_states[i];
+		AssetHeader *header = &am.headers[i];
+		if (state == BAS_REDIN)
+		{
+			// Here we've only read it in. So we just free and we're done.
+			static_pop(header->data);
+		}
+		else
+		{
+			unload_asset(i);
+		}
+	}
 }
 
 // Returns the first, -1 if not found.
-AssetID get_asset_id(AssetType type, const char *upper=0, const char *lower=0)
+AssetID get_asset_id(AssetType type, const char *upper, const char *lower)
 {
 	// Maybe we should use a hash later.
 	for (uint32 i = 0; i < am.file_header.num_assets; i++)
@@ -99,6 +95,24 @@ AssetID get_asset_id(AssetType type, const char *upper=0, const char *lower=0)
 		return i;
 	}
 	return -1;
+}
+
+// Returns ALL the matching IDs.
+Array<AssetID> get_asset_ids(AssetType type, const char *upper, const char *lower)
+{
+	Array<AssetID> result = temp_array<AssetID>(20);
+	for (AssetID i = 0; i < (AssetID) am.file_header.num_assets; i++)
+	{
+		AssetHeader *header = &am.headers[i];
+		if (header->type != type)
+			continue;
+		if (upper && !(str_eq(header->tag.upper, upper)))
+			continue;
+		if (lower && !(str_eq(header->tag.lower, lower)))
+			continue;
+		append(&result, i);
+	}
+	return result;
 }
 
 Asset get_asset(int32 asset_id)
@@ -137,9 +151,23 @@ Asset get_asset(int32 asset_id)
 	}
 }
 
+// Returns the first match.
 Asset get_asset(AssetType type, const char *upper=0, const char *lower=0)
 {
 	return get_asset(get_asset_id(type, upper, lower));
+}
+
+bool is_loading()
+{
+	for (uint32 asset_id = 0; asset_id < am.file_header.num_assets; asset_id++)
+	{
+		AssetState state = am.loaded_states[asset_id];
+		if (state == BAS_LOADING)
+		{
+			return true;	
+		}
+	}
+	return false;
 }
 
 void update_assets() // Create the assets here since this is called on the main thread.
@@ -174,24 +202,31 @@ void update_assets() // Create the assets here since this is called on the main 
 						GFX::VertexAttribute attributes[3];
 						const uint32 v_size = sizeof(Vertex);
 						const uint32 f_size = sizeof(float32);
-						// Vert: 
-						// x, y, z
-						// nx, ny, nz
-						// u, v
 						attributes[0] = {buffer, 0, 3, GL_FLOAT, false, v_size, (void *) (0 * f_size)};
-						attributes[1] = {buffer, 2, 3, GL_FLOAT, false, v_size, (void *) (3 * f_size)};
-						attributes[2] = {buffer, 1, 2, GL_FLOAT, false, v_size, (void *) (6 * f_size)};
+						attributes[1] = {buffer, 1, 2, GL_FLOAT, false, v_size, (void *) (3 * f_size)};
+						attributes[2] = {buffer, 2, 3, GL_FLOAT, false, v_size, (void *) (5 * f_size)};
 						asset.mesh_vao = GFX::create_vertex_array(attributes, 3, index);
 						break;
 					}
 				case(BAT_IMAGE):
 					{
-						Image img = {header->image.width, header->image.height, header->image.color_depth, data};
-						asset.texture = GFX::create_texture(img);
+						asset.texture = GFX::create_texture(
+								header->image.width, header->image.height, 
+								header->image.color_depth, data);
 						static_pop(data);
 						break;
 					}
 				case(BAT_SOUND):
+					{
+						AudioBuffer buffer;
+						buffer.channels = header->sound.channels;
+						buffer.bitdepth = header->sound.bitdepth;
+						buffer.sample_rate = header->sound.sample_rate;
+						buffer.num_samples = header->sound.num_samples;
+						buffer.data = header->data;
+						// TODO: This is dumb...
+						add_buffer(&world->audio, buffer);
+					}
 					break;
 				default:
 					HALT_AND_CATCH_FIRE();
@@ -203,7 +238,7 @@ void update_assets() // Create the assets here since this is called on the main 
 	}
 }
 
-void start_asset_loader()
+void start_loader()
 {
 	plt.random_file_read(data_dir, &am.file_header, 0, sizeof(AssetFileHeader));
 	ASSERT(am.file_header.file_code == 0x42454152); // BEAR in ASCII
@@ -216,15 +251,11 @@ void start_asset_loader()
 	am.loaded_states = static_push_array(AssetState, am.file_header.num_assets);
 	for (uint32 i = 0; i < am.file_header.num_assets; i++)
 	{
-		PRINT("LOADED: %s.%s\n", am.headers[i].tag.lower, am.headers[i].tag.upper);
 		am.loaded_states[i] = BAS_UNLOADED;
 	}
-
 	am.assets = static_push_array(Asset, am.file_header.num_assets);
 
-	PRINT("Size of HEADER: %d\n", sizeof(AssetHeader));
-
-	// Default assets:
+	// Load default assets
 	AssetID mesh_id = get_asset_id(BAT_MESH, "default", "mesh");
 	AssetID img_id = get_asset_id(BAT_IMAGE, "default", "image");
 	load_asset(mesh_id);
@@ -239,4 +270,11 @@ void start_asset_loader()
 	default_image = get_asset(img_id);
 	default_image.valid = false;
 }	
+
+void stop_loader()
+{
+	// We have to wait for all the loading OPS to end.
+	while (is_loading());
+	unload_all_assets();
+}
 

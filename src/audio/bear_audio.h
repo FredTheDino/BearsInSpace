@@ -27,7 +27,7 @@ struct AudioBuffer
 	uint8 channels;
 	uint8 bitdepth;
 	uint16 sample_rate;
-	int32 length; // Enough audio for 811h.
+	int32 num_samples; // Enough audio for 811h.
 	union
 	{
 		void *data;

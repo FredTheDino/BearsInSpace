@@ -24,6 +24,9 @@
 // Clocks
 #include "bear_clock.h"
 
+// Loader
+// #include "bear_loader.h" I kinda want this here. But GFX is needed.
+
 // TODO: This can also be done a lot better.
 namespace GFX
 {

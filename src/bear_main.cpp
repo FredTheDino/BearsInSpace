@@ -20,7 +20,6 @@ World *world;
 // GFX
 #include "glad.c"
 #define GL_LOADED glClear
-//#include "bear_obj_loader.cpp"
 #include "bear_gfx.h"
 
 // ECS
@@ -33,7 +32,7 @@ World *world;
 #include "bear_clock.cpp"
 
 // Assets
-#include "bear_asset_loader.h"
+#include "bear_loader.cpp"
 
 #if 0
 // Tests
@@ -113,7 +112,7 @@ void reload(PLT _plt, GameMemory *_mem)
 		world = (World *) ((MemoryAllocation *) mem->static_memory + 1);
 	}
 
-	start_asset_loader();
+	start_loader();
 	//load_asset(0);
 
 	// TODO: This is ugly as fuck.
@@ -234,7 +233,7 @@ void step(float32 delta)
 
 	GFX::Renderable renderable = {}; 
 	renderable.matrix_profiles = temp_array<GFX::MatrixProfile>(1);
-	AssetID asset_id = get_asset_id(BAT_MESH, "test", "ico");
+	AssetID asset_id = get_asset_id(BAT_MESH, "test", "sphere");
 	renderable.vertex_array = get_asset(asset_id).mesh_vao;
 	renderable.num_vertices = am.headers[asset_id].mesh.num_indicies;
 	renderable.program = program;
