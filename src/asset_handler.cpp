@@ -113,7 +113,7 @@ int main(int arg_len, char **args)
 							&header.image.width, &header.image.height, 
 							&header.image.color_depth, 0);
 					header.data_size = header.image.width * header.image.height * header.image.color_depth;
-					printf("%s (image), %dx%dx%d, size: %d\n", file_path, 
+					printf("%s (image), %dx%dx%d, size: %lld\n", file_path, 
 							header.image.width, header.image.height, 
 							header.image.color_depth, header.data_size);
 					break;

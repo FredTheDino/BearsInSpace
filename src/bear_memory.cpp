@@ -78,9 +78,11 @@ void *static_push(uint64 size)
 	if (!mem->static_at)
 		mem->static_at = mem->static_memory;
 	uint64 alloc_size = size + sizeof(MemoryAllocation);
-	void *ptr;
 	MemoryAllocation *block = nullptr;
+	void *ptr;
 
+
+	const uint32 wasted_space = 150;
 	// Couldn't I make this into the allways condition. 
 	// And just have a block on the end that we can find last.
 	if (mem->free)
@@ -94,7 +96,7 @@ void *static_push(uint64 size)
 			ASSERT(!block->taken);
 			if (alloc_size <= block->size)
 			{
-				if (alloc_size < block->size)
+				if ((alloc_size + wasted_space) < block->size)
 				{
 					MemoryAllocation *new_block = (MemoryAllocation *)(((uint8 *) block) + alloc_size);
 					new_block->taken = false;
@@ -108,7 +110,7 @@ void *static_push(uint64 size)
 				}
 				break;
 			}
-			prev_block_ptr = &block;
+			*prev_block_ptr = block;
 		}
 	}
 
@@ -117,10 +119,10 @@ void *static_push(uint64 size)
 		// We need to reserve more
 		ASSERT(mem->static_at + alloc_size < mem->static_memory + mem->static_memory_size);
 		block = (MemoryAllocation *) mem->static_at;
+		block->size = alloc_size;
 		mem->static_at += alloc_size;
 	}
 	block->taken = true;
-	block->size = alloc_size;
 	block->next_free = nullptr;
 	ptr = block + 1; // If it was an array, the next element should be the data ptr.
 	return ptr;
