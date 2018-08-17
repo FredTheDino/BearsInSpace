@@ -27,10 +27,10 @@ RandomState seed(uint64 i)
 uint32 random(RandomState *rng)
 {
     uint64 oldstate = rng->state;
-    rng->state = oldstate * 6364136223846793005ULL + (rng->inc|1);
+    rng->state = oldstate * 6364136223846793005ULL + (rng->inc | 1);
     uint32 xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
-    uint32 rot = oldstate >> 59u;
-    return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
+    uint32 rot = (oldstate >> 57u);
+    return (xorshifted >> rot) | (xorshifted << ((-rot) & 31u));
 }
 
 float32 random_float(RandomState *rng)
@@ -56,7 +56,7 @@ float32 random_float_in_range(RandomState *rng, float32 min, float32 max)
 Vec2f random_unit_vec2f(RandomState *rng)
 {
 	float32 angle = random_float(rng) * 2 * PI;
-	Vec2f result = {cos(angle), sin(angle)};
+	Vec2f result = {(float32) cos(angle), (float32) sin(angle)};
 	return result;
 }
 

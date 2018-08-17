@@ -50,7 +50,7 @@ namespace GFX
 				glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &len);
 
 				// Get info log
-				Array<int8> log = temp_array<int8>(len);
+				Array<char> log = temp_array<char>(len);
 				glGetShaderInfoLog(shader_id, len, &len, data_ptr(log));
 				
 				LOG("SHADER ERROR", "=======================");
@@ -80,7 +80,7 @@ namespace GFX
 			glGetProgramiv(program.id, GL_INFO_LOG_LENGTH, &len);
 
 			// Get info log
-			Array<int8> log = temp_array<int8>(len);
+			Array<char> log = temp_array<char>(len);
 			glGetProgramInfoLog(program.id, len, &len, data_ptr(log));
 
 			LOG("SHADER ERROR", "=======================");
@@ -107,7 +107,7 @@ namespace GFX
 			glGetProgramiv(program.id, GL_INFO_LOG_LENGTH, &len);
 
 			// Get info log
-			Array<int8> log = temp_array<int8>(len);
+			Array<char> log = temp_array<char>(len);
 			glGetProgramInfoLog(program.id, len, &len, data_ptr(log));
 
 			LOG("SHADER ERROR", "=======================");
