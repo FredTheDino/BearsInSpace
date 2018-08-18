@@ -134,7 +134,7 @@ void *static_realloc(void *ptr, uint64 size)
 	uint8 *old_ptr = (uint8 *) ptr;
 	uint8 *new_ptr = (uint8 *) static_push(size);
 	MemoryAllocation * block = ((MemoryAllocation *) ptr) - 1;
-	for (uint8 i = 0; i < block->size; i++)
+	for (uint64 i = 0; i < block->size; i++)
 	{
 		new_ptr[i] = old_ptr[i];
 	}

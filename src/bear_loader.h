@@ -16,7 +16,10 @@ struct Asset
 	bool valid;
 	union
 	{
-		GFX::VertexArray mesh_vao;
+		struct {
+			GFX::VertexArray vao;
+			uint32 draw_length;
+		};
 		GFX::Texture texture;
 		AudioID buffer_id;
 	};

@@ -696,7 +696,7 @@ void update_physics(ECS *ecs, Physics *engine, float32 world_delta)
 	{
 		time_accumulator -= delta;
 
-		Vec3f gravity = {0.0f, -50.0f * delta, 0.0f};
+		Vec3f gravity = {0.0f, -0.0f * delta, 0.0f};
 		Vec3f sort_direction = {0.0f, 0.0f, 1.0f};
 		for (uint32 i = 0; i < size(engine->body_limits); i++)
 		{

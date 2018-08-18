@@ -60,6 +60,14 @@ Vec2f random_unit_vec2f(RandomState *rng)
 	return result;
 }
 
+Vec2f random_vec2f(RandomState *rng, Vec2f min=V2(-1.0f, -1.0f), Vec2f max=V2(1.0f, 1.0f))
+{
+	Vec2f result;
+	result.x = random_float_in_range(rng, min.x, max.x);
+	result.y = random_float_in_range(rng, min.y, max.y);
+	return result;
+}
+
 Vec3f random_unit_vec3f(RandomState *rng)
 {
 	float32 alpha = random_float(rng) * 2.0f * PI;
@@ -78,4 +86,12 @@ Vec3f random_unit_vec3f(RandomState *rng)
 	return result;
 }
 
+Vec3f random_vec3f(RandomState *rng, Vec3f min=V3(-1.0f, -1.0f, -1.0f), Vec3f max=V3(1.0f, 1.0f, 1.0f))
+{
+	Vec3f result;
+	result.x = random_float_in_range(rng, min.x, max.x);
+	result.y = random_float_in_range(rng, min.y, max.y);
+	result.z = random_float_in_range(rng, min.z, max.z);
+	return result;
+}
 

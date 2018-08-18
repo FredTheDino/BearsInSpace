@@ -36,6 +36,9 @@ World *world;
 // Random! :P
 #include "bear_random.h"
 
+GFX::ShaderProgram program;
+#include "world/bear_world_gen.cpp"
+
 #if 0
 // Tests
 #include "bear_test.cpp"
@@ -46,12 +49,6 @@ World *world;
 #define GL_LOADED glClear
 
 #if 1
-GFX::Renderable renderable;
-GFX::VertexBuffer vertex_buffer;
-GFX::VertexArray vertex_array;
-GFX::ShaderProgram program;
-GFX::Texture texture;
-Transform transform = create_transform();
 Camera camera;
 #endif
 
@@ -147,6 +144,9 @@ void reload(PLT _plt, GameMemory *_mem)
 
 	clear_ecs(&world->ecs, &world->phy);
 
+	// TODO: Realloc doens't work... I don't know why.
+	generate_astroid_field(world, 50, V3(-10.0f, -10.0f, -10.0f), V3(10.0f, 10.0f, 10.0f));
+
 #if 0 
 	CTransform transform = {};
 	transform.type = C_TRANSFORM;
@@ -224,7 +224,7 @@ void step(float32 delta)
 		toQ(-AXIS_VAL("yrot") * rotational_speed, 0.0f, 0.0f);
 
 	auto phy_clock = start_debug_clock("Physics Step");
-	//run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
 	stop_debug_clock(phy_clock);
 
 	phy_clock = start_debug_clock("Physics Draw");
@@ -237,15 +237,15 @@ void step(float32 delta)
 	GFX::Renderable renderable = {}; 
 	renderable.matrix_profiles = temp_array<GFX::MatrixProfile>(1);
 	AssetID asset_id = get_asset_id(BAT_MESH, "default", "mesh");
-	renderable.vertex_array = get_asset(asset_id).mesh_vao;
-	renderable.num_vertices = am.headers[asset_id].mesh.num_indicies;
+	renderable.vertex_array = get_asset(asset_id).vao;
+	renderable.num_vertices = get_asset(asset_id).draw_length;
 	renderable.program = program;
 
 	Transform transform = create_transform();
 	static float32 t = 0.0f;
 	t += delta;
 	transform.orientation = toQ(t * 0.1f, t * 0.5f, 0);
-	transform.scale *= 4.0f;
+	transform.scale = V3(0.5f, 1.0f, 0.75f);
 	transform.position.y = 3.0f;
 
 	GFX::MatrixProfile transform_profile = {};
@@ -253,7 +253,12 @@ void step(float32 delta)
 	transform_profile.transform = &transform;
 
 	append(&renderable.matrix_profiles, transform_profile);
+
+	GFX::bind(default_image.texture);
+	GFX::draw(renderable);
+
 #endif
+#if 0
 
 	for (uint32 i = 0; i < 500; i++)
 	{
@@ -262,10 +267,8 @@ void step(float32 delta)
 		GFX::debug_draw_point(p * 5.0f, {0.75f, 0.25f, 0.5f});
 	}
 
-#if 0
-	GFX::bind(default_image.texture);
-	GFX::draw(renderable);
 #endif
+	draw_asteroids(world);
 	
 	stop_debug_clock(phy_clock);
 

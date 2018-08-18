@@ -312,11 +312,6 @@ void clear_ecs(ECS *ecs, Physics *phy)
 	}
 }
 
-void s_hello_world(World *world, float32 delta)
-{
-	plt.print("Delta is %.2f\n", delta);
-}
-
 void update_physics(ECS *, Physics *, float32);
 
 void run_system(SystemType type_id, World *world, float32 delta)
@@ -326,7 +321,6 @@ void run_system(SystemType type_id, World *world, float32 delta)
 	{
 #define SYSTEM_ENTRY(id, func_call) case id: (func_call); break;
 
-		SYSTEM_ENTRY(S_HELLO_WORLD, s_hello_world(world, delta));
 		SYSTEM_ENTRY(S_PHYSICS, update_physics(&world->ecs, &world->phy, delta));
 
 	default:
@@ -358,6 +352,7 @@ void init_ecs(ECS *ecs)
 
 	COMP_ENTRY(C_TRANSFORM, CTransform);
 	COMP_ENTRY(C_BODY, CBody);
+	COMP_ENTRY(C_ASTEROID, CAsteroid);
 
 	// Entries end here.
 

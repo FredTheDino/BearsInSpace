@@ -9,8 +9,8 @@ struct Transform
 	// Applies a transform
 	Vec3f operator* (Vec3f p)
 	{
-		Vec3f out_p = orientation * p;
-		out_p = {scale.x * out_p.x, scale.y * out_p.y, scale.z * out_p.z};
+		Vec3f out_p = {scale.x * p.x, scale.y * p.y, scale.z * p.z};
+		out_p = orientation * out_p;
 		out_p += position;
 		return out_p;
 	}
@@ -19,8 +19,8 @@ struct Transform
 	Vec3f operator/ (Vec3f p)
 	{
 		Vec3f out_p = p - position;
-		out_p = {out_p.x / scale.x, out_p.y / scale.y, out_p.z / scale.z};
 		out_p = (-orientation) * out_p;
+		out_p = {out_p.x / scale.x, out_p.y / scale.y, out_p.z / scale.z};
 		return out_p;
 	}
 };
@@ -57,7 +57,11 @@ Camera create_camera(Mat4f projection)
 
 Mat4f toMat4f(Transform t)
 {
-	return translate(rotate(create_identity(), t.orientation), t.position);
+	Mat4f m = create_identity();
+	m = rotate(m, t.orientation);
+	m = scale(m, t.scale);
+	m = translate(m, t.position);
+	return m;
 }
 
 Mat4f toMat4f(Camera c)

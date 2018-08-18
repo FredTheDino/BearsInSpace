@@ -326,5 +326,15 @@ Vec3f toVec3f(Vec4f v)
 	return {v.x, v.y, v.z};
 }
 
+Vec2f V2(float32 x, float32 y)
+{
+	return {x, y};
+}
+
+Vec3f V3(float32 x, float32 y, float32 z)
+{
+	return {x, y, z};
+}
+
 #pragma pack( pop )
 
