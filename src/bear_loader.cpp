@@ -79,13 +79,13 @@ void unload_all_assets()
 }
 
 // Returns the first, -1 if not found.
-AssetID get_asset_id(AssetType type, const char *upper, const char *lower)
+AssetID get_asset_id(uint32 type, const char *upper, const char *lower)
 {
 	// Maybe we should use a hash later.
 	for (uint32 i = 0; i < am.file_header.num_assets; i++)
 	{
 		AssetHeader *header = &am.headers[i];
-		if (header->type != type)
+		if (type && !(header->type & type))
 			continue;
 		if (upper && !(str_eq(header->tag.upper, upper)))
 			continue;
@@ -97,13 +97,13 @@ AssetID get_asset_id(AssetType type, const char *upper, const char *lower)
 }
 
 // Returns ALL the matching IDs.
-Array<AssetID> get_asset_ids(AssetType type, const char *upper, const char *lower)
+Array<AssetID> get_asset_ids(uint32 type, const char *upper, const char *lower)
 {
 	Array<AssetID> result = temp_array<AssetID>(20);
 	for (AssetID i = 0; i < (AssetID) am.file_header.num_assets; i++)
 	{
 		AssetHeader *header = &am.headers[i];
-		if (header->type != type)
+		if (type && !(header->type & type))
 			continue;
 		if (upper && !(str_eq(header->tag.upper, upper)))
 			continue;
@@ -114,7 +114,12 @@ Array<AssetID> get_asset_ids(AssetType type, const char *upper, const char *lowe
 	return result;
 }
 
-Asset get_asset(int32 asset_id)
+AssetType get_type(AssetID id)
+{
+	return am.headers[id].type;
+}
+
+Asset get_asset(AssetID asset_id)
 {
 	ASSERT(asset_id >= 0);
 	ASSERT(asset_id < (int32) am.file_header.num_assets);
@@ -261,7 +266,8 @@ void start_loader()
 	load_asset(mesh_id);
 	load_asset(img_id);
 
-	while (am.loaded_states[img_id] != BAS_REDIN);
+	AssetState state;
+	while (is_loading());
 
 	update_assets();
 

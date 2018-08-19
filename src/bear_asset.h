@@ -2,10 +2,10 @@
 enum AssetType
 {
 	// Bear Asset Type. I'm a genious.
-	BAT_MESH,
-	BAT_SOUND,
-	BAT_IMAGE,
-	BAT_FONT,
+	BAT_MESH	= 0b000001,
+	BAT_SOUND	= 0b000010,
+	BAT_IMAGE	= 0b000100,
+	BAT_FONT	= 0b001000,
 };
 
 struct AssetTag
@@ -79,5 +79,4 @@ struct FileData
 	};
 	AssetType type;
 };
-
 

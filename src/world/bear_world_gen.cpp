@@ -1,7 +1,7 @@
 
 void generate_astroid_field(World *world, uint32 num_asteroids, Vec3f min, Vec3f max)
 {
-	RandomState rng = seed(2131234);
+	RandomState rng = seed(131236);
 	CTransform t;
 	t.type = C_TRANSFORM;
 
@@ -30,7 +30,7 @@ void generate_astroid_field(World *world, uint32 num_asteroids, Vec3f min, Vec3f
 void draw_asteroids(World *world)
 {
 	ECSEntry entry = get_all_components(&world->ecs, C_ASTEROID);
-	AssetID asset_id = get_asset_id(BAT_MESH, "default", "mesh");
+	AssetID asset_id = get_asset_id(BAT_MESH, "default", 0);
 
 	GFX::Renderable renderable = {}; 
 	renderable.vertex_array = get_asset(asset_id).vao;

@@ -165,6 +165,7 @@ bool load_libbear(GameHandle *handle)
 	}
 
 	CopyFile(path, temp_path, false);
+
 	game.lib = LoadLibrary(temp_path);
 	if (!game.lib)
 	{

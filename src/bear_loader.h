@@ -53,9 +53,9 @@ bool is_loading();
 // can be set to NULL, which will match anything.
 //
 // Returns the first, -1 if not found.
-AssetID get_asset_id(AssetType type, const char *upper=0, const char *lower=0);
+AssetID get_asset_id(uint32 type, const char *upper=0, const char *lower=0);
 // Returns ALL the matching IDs.
-Array<AssetID> get_asset_ids(AssetType type, const char *upper=0, const char *lower=0);
+Array<AssetID> get_asset_ids(uint32 type, const char *upper=0, const char *lower=0);
 // Returns the actual asset the game can use.
 Asset get_asset(int32 asset_id);
 

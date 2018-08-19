@@ -19,6 +19,7 @@ void static_pop(void *ptr)
 {
 	MemoryAllocation *pop_block = ((MemoryAllocation *) ptr) - 1;
 	pop_block->taken = false;
+	pop_block->next_free = 0;
 
 	MemoryAllocation **prev_block_ptr = &mem->free;
 	MemoryAllocation *block = mem->free;
@@ -31,13 +32,10 @@ void static_pop(void *ptr)
 				block->size += pop_block->size;
 				// Might be a free one afterwards.
 				MemoryAllocation *next = block->next_free;
-				if (next)
+				if (next && neighboring_allocations(next, pop_block))
 				{
-					if (neighboring_allocations(next, pop_block))
-					{
-						block->size += next->size;
-						block->next_free = next->next_free;
-					}
+					block->size += next->size;
+					block->next_free = next->next_free;
 				}
 			}
 			else
@@ -48,27 +46,14 @@ void static_pop(void *ptr)
 			return;
 		}
 
-		if (pop_block < block->next_free)
+		if (block < pop_block && pop_block < block->next_free)
 		{
-			MemoryAllocation *next = block->next_free;
-			ASSERT(!next->taken);
-			if (neighboring_allocations(pop_block, block))
-			{
-				pop_block->size += next->size;
-				pop_block->next_free = next->next_free;
-			}
-			else
-			{
-				pop_block->next_free = block->next_free;
-				block->next_free = pop_block;
-			}
+			pop_block->next_free = block->next_free;
+			block->next_free = pop_block;
 			return;
 		}
-	
 		prev_block_ptr = &block->next_free;
 		block = block->next_free;
-		if (block && block == *prev_block_ptr)
-			return;
 	}
 	(*prev_block_ptr) = pop_block;
 }
@@ -90,7 +75,7 @@ void *static_push(uint64 size)
 		// Pop the list and use that
 		MemoryAllocation **prev_block_ptr = &mem->free;
 		block = mem->free;
-		for (; block; block = block->next_free)
+		while (block)
 		{
 			ASSERT((void *) block < (void *) mem->static_at);
 			ASSERT(!block->taken);
@@ -103,6 +88,7 @@ void *static_push(uint64 size)
 					new_block->size = block->size - alloc_size;
 					new_block->next_free = block->next_free;
 					*prev_block_ptr = new_block;
+					block->size = alloc_size;
 				}
 				else
 				{
@@ -110,7 +96,8 @@ void *static_push(uint64 size)
 				}
 				break;
 			}
-			*prev_block_ptr = block;
+			prev_block_ptr = &block->next_free;
+			block = block->next_free;
 		}
 	}
 

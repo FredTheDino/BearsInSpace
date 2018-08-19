@@ -12,6 +12,9 @@ PLT plt;
 #include "bear_main.h"
 World *world;
 
+// Clocks
+#include "bear_clock.cpp"
+
 // Audio
 #include "audio/bear_audio.cpp"
 #include "audio/bear_mixer.cpp"
@@ -27,8 +30,6 @@ World *world;
 // Physics
 #include "physics/bear_physics.cpp"
 
-// Clocks
-#include "bear_clock.cpp"
 
 // Assets
 #include "bear_loader.cpp"
@@ -145,7 +146,8 @@ void reload(PLT _plt, GameMemory *_mem)
 	clear_ecs(&world->ecs, &world->phy);
 
 	// TODO: Realloc doens't work... I don't know why.
-	generate_astroid_field(world, 50, V3(-10.0f, -10.0f, -10.0f), V3(10.0f, 10.0f, 10.0f));
+	float32 range = 50.0f;
+	generate_astroid_field(world, 1000, V3(-1.0, -1.0f, -1.0f) * range, V3(1.0f, 1.0f, 1.0f) * range);
 
 #if 0 
 	CTransform transform = {};
@@ -195,8 +197,6 @@ void destroy()
 extern "C"
 void replace()
 {
-	// TODO: This is ugly as fuck.
-	// world->matrix_profiles = GFX::matrix_profiles;
 	PRINT("MEM watermark: %d\n", get_static_memory_watermark());
 	stop_loader();
 }
@@ -206,7 +206,7 @@ extern "C"
 void step(float32 delta)
 {
 	//LOG("DEBUG", "MEEEEEEEEEEEEEEEEEEEEP!");
-	//update_assets();
+	update_assets();
 	reset_debug_clock();
 
 	float32 planar_speed = 15.0f * delta;
@@ -223,15 +223,19 @@ void step(float32 delta)
 		camera.transform.orientation *
 		toQ(-AXIS_VAL("yrot") * rotational_speed, 0.0f, 0.0f);
 
-	auto phy_clock = start_debug_clock("Physics Step");
+	auto phy_clock = start_debug_clock("Physics");
 	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
 	stop_debug_clock(phy_clock);
 
-	phy_clock = start_debug_clock("Physics Draw");
 
+	auto draw_clock = start_debug_clock("Render");
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	debug_draw_engine(&world->ecs, &world->phy);
+	draw_asteroids(world);
+	stop_debug_clock(draw_clock);
+
+	display_clocks();
 
 #if 0
 	GFX::Renderable renderable = {}; 
@@ -268,11 +272,6 @@ void step(float32 delta)
 	}
 
 #endif
-	draw_asteroids(world);
-	
-	stop_debug_clock(phy_clock);
-
-	//display_clocks();
 }
 
 #if 0

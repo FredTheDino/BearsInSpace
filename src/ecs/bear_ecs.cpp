@@ -121,12 +121,10 @@ bool add_component(ECS *ecs, EntityID id, ComponentType type, BaseComponent *com
 	component->owner = id;
 
 	ECSEntry entry = ecs->component_types[type];
-	if (entry.max_length == entry.length || entry.max_length == 0)
+	while (entry.max_length <= entry.length || entry.max_length == 0)
 	{
 		entry.max_length += 50;
-		void *tmp = static_realloc(entry.c, entry.component_size * entry.max_length);
-		if (!tmp) return false;
-		entry.c = tmp;
+		entry.c = static_realloc(entry.c, entry.component_size * entry.max_length);
 	}
 
 	int32 component_id = entry.length++;
@@ -253,11 +251,8 @@ EntityID add_entity(ECS *ecs)
 
 	if (ecs->allocated_entities <= id._index)
 	{
-		int32 new_allocation_size = ecs->allocated_entities	* 2;
-		Entity *ptr = (Entity *) static_realloc(ecs->entities, new_allocation_size);
-		if (!ptr) return {-1, -1};
-		ecs->entities = ptr;
-		ecs->allocated_entities = new_allocation_size;
+		ecs->allocated_entities = sizeof(Entity) * ecs->allocated_entities * 2;
+		ecs->entities = (Entity *) static_realloc(ecs->entities, sizeof(Entity) * ecs->allocated_entities);
 	}
 
 	ecs->max_entity = maximum(ecs->max_entity, (int32) id._index);
