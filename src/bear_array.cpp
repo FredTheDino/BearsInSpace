@@ -53,8 +53,13 @@ Array<T> static_array(std::initializer_list<T> list)
 }
 
 template <typename T>
-void prepend(Array<T> *arr, T val)
+void insert(Array<T> *arr, uint64 index, T val)
 {
+	ASSERT(index >= 0);
+	
+	if (index >= arr->size)
+		return append(arr, val);
+
 	ASSERT(arr->size <= arr->limit);
 	// NOTE: If we did this reallocation more 
 	// manually, we wouldn't have to move the memory twice.
@@ -63,12 +68,18 @@ void prepend(Array<T> *arr, T val)
 	if (arr->size == arr->limit)
 		relimit(arr, arr->limit * 2);
 
-	for (uint64 i = arr->size; i > 0; i--)
+	for (uint64 i = arr->size; i > index; i--)
 		arr->data[i] = arr->data[i - 1];
 
-	arr->data[0] = val;
+	arr->data[index] = val;
 
 	arr->size++;
+}
+
+template <typename T>
+void prepend(Array<T> *arr, T val)
+{
+	insert(arr, 0, val);
 }
 
 template <typename T>
@@ -138,7 +149,7 @@ T get(Array<T> *arr, uint64 index)
 	return arr->data[index];
 }
 
-template<typename T>
+template <typename T>
 T *get_ptr(Array<T> arr, uint64 index)
 {
 	ASSERT(index >= 0 && index < arr.size);

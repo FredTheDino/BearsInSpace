@@ -18,13 +18,16 @@ World *world;
 #include "audio/bear_mixer.cpp"
 
 // Utility
-#include "bear_utility.h"
+//#include "bear_utility.h"
 
 // GFX
 #include "glad.c"
 #define GL_LOADED glClear
 #include "bear_obj_loader.cpp"
 #include "bear_gfx.h"
+
+// Font
+#include "gfx/bear_font.h"
 
 // ECS
 #include "ecs/bear_ecs.cpp"
@@ -35,7 +38,7 @@ World *world;
 // Clocks
 #include "bear_clock.cpp"
 
-// Draw function for ECS
+// Draw function for ECS (should preferably be the last include)
 #include "gfx/bear_draw_ecs.h"
 
 #if 0
@@ -76,22 +79,26 @@ void init(PLT _plt, GameMemory *_mem)
 		auto error = gladLoadGL();
 		ASSERT(error);
 		glEnable(GL_DEPTH_TEST);
-
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		
 		GFX::init_matrix_profiles();
 		
 	}
 	
-
 	init_ecs(&world->ecs);
 	init_phy(&world->phy);
 
 	buffer = load_sound(&world->audio, "res/stockhausen.wav");
 
 	camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
-	camera.transform.position = {-30.0f, 25.0f, 20.0f};
-	camera.transform.orientation = toQ(5.7f, -1.0f, 0);
+	//camera.transform.position = {-30.0f, 25.0f, 20.0f};
+	//camera.transform.orientation = toQ(5.7f, -1.0f, 0);
 	GFX::add_matrix_profile("m_view", &camera);
-
+	
+	// Font
+	load_font("open-sans", "res/fonts/open-sans/OpenSans-Regular.ttf");
+	
 	// Output graphics
 	world->output_buffer = GFX::create_frame_buffer(temp_array<uint32>({ GL_COLOR_ATTACHMENT0 }), WINDOW_WIDTH, WINDOW_HEIGHT);
 	world->output_vb = GFX::create_vertex_buffer(temp_array<float32>({ -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1 }));
@@ -118,7 +125,9 @@ void reload(PLT _plt, GameMemory *_mem)
 	}
 	
 	GFX::init_debug();
-
+	PRINT("hej");
+	GFX::init_font_rendering();
+	PRINT("då\n");
 	//play_sound(&world->audio, buffer, 1.0f, 1.0f);
 	// How the fk does the graphics work?
 
@@ -177,6 +186,8 @@ void replace()
 {
 	PRINT("Replace!\n");
 	GFX::destroy_debug();
+	GFX::destroy_font_rendering();
+	PRINT("WHAT\n");
 }
 
 
@@ -211,7 +222,7 @@ void step(float32 delta)
 
 	stop_debug_clock(phy_clock);
 	
-	display_clocks();
+	//display_clocks();
 
 	GFX::draw(world->output_buffer, &world->ecs, false);
 	GFX::draw_to_screen();

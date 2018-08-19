@@ -5,12 +5,7 @@
 // TODO: This has some stdlib stuff. Like assert and malloc.
 #include "stb_image.h"
 
-struct Image
-{
-	int32 width, height;
-	int32 channels;
-	uint8 *data;
-};
+#include "bear_image_loader.h"
 
 Image load_image(string path)
 {

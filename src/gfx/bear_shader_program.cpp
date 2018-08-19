@@ -147,4 +147,14 @@ namespace GFX
 	{
 		glUniform3f(uniform_location(program, uniform_name), v.x, v.y, v.z);
 	}
+
+	void send2f(ShaderProgram program, string uniform_name, Vec2f v)
+	{
+		glUniform2f(uniform_location(program, uniform_name), v.x, v.y);
+	}
+
+	void send1f(ShaderProgram program, string uniform_name, float32 f)
+	{
+		glUniform1f(uniform_location(program, uniform_name), f);
+	}
 }

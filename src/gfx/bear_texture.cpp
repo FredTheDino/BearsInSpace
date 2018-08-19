@@ -2,18 +2,20 @@
 
 namespace GFX
 {
-	Texture create_texture(uint32 width, uint32 height, bool depth_texture=false)
+	Texture create_texture(uint32 width, uint32 height, int32 internal_format=GL_RGBA, uint32 format=GL_BGRA)
 	{
 		Texture t = {};
+		t.width = width;
+		t.height = height;
 
 		glGenTextures(1, &t.id);
 
 		glBindTexture(GL_TEXTURE_2D, t.id);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, depth_texture ? GL_DEPTH_COMPONENT32 : GL_RGBA, width, height, 0, depth_texture ? GL_DEPTH_COMPONENT : GL_BGRA, GL_UNSIGNED_BYTE, (void *) 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, format, GL_UNSIGNED_BYTE, (void *) 0);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -22,18 +24,20 @@ namespace GFX
 		return t;
 	}
 
-	Texture create_texture(Image img)
+	Texture create_texture(Image img, int32 internal_format=GL_RGBA, uint32 format=GL_BGRA)
 	{
 		Texture t = {};
-
+		t.width = img.width;
+		t.height = img.height;
+		
 		glGenTextures(1, &t.id);
 
 		glBindTexture(GL_TEXTURE_2D, t.id);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.width, img.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, img.data);
+		glTexImage2D(GL_TEXTURE_2D, 0, internal_format, img.width, img.height, 0, format, GL_UNSIGNED_BYTE, img.data);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 

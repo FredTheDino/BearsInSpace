@@ -26,7 +26,7 @@ namespace GFX
 			if (attachments[i] == GL_DEPTH_ATTACHMENT)
 			{
 				has_depth_texture = true;
-				t = create_texture(width, height, true);
+				t = create_texture(width, height, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT);
 				draw_buffers[i] = GL_NONE;
 			}
 			else

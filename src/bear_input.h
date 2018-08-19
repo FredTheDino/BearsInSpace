@@ -107,9 +107,8 @@ Array<Button> button_array;
 //TODO: Replace with more efficient alternative
 uint8 input_map_hash(string name)
 {
-	// Note(Ed): You can just write 'a', instead of 0x61.
-	return str_len(name) > 1 ? // 0x61 = ascii value for 'a'
-		(((((uint8) *name) - 0x61) & 0x0F) << 4) | ((((uint8) name[1]) - 0x61) & 0x0F)
+	return str_len(name) > 1 ?
+		(((((uint8) *name) - 'a') & 0x0F) << 4) | ((((uint8) name[1]) - 'a') & 0x0F)
 		: (uint8) *name;
 }
 
@@ -209,7 +208,6 @@ void add_to_map(string name, Button *button)
 			{
 				entry->next = new ButtonEntry;
 				*entry->next = {};
-				entry->next->buttons = {};
 				entry->next->buttons = create_array<Button *>(1);
 				entry = entry->next;
 				break;
@@ -237,7 +235,6 @@ void add_to_map(string name, Axis *axis)
 			{
 				entry->next = new AxisEntry;
 				*entry->next = {};
-				entry->next->axises = {};
 				entry->next->axises = create_array<Axis *>(1);
 				entry = entry->next;
 				break;

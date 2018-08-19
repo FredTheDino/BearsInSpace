@@ -7,7 +7,7 @@
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
-#define ASPECT_RATIO ((float32) WINDOW_WIDTH) / WINDOW_HEIGHT
+#define ASPECT_RATIO (((float32) WINDOW_WIDTH) / WINDOW_HEIGHT)
 
 #define HALT_AND_CATCH_FIRE() ((int *)(void *)0)[0] = 1
 #define ASSERT(expr) if (!(expr)) { HALT_AND_CATCH_FIRE(); }
