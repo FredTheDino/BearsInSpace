@@ -146,7 +146,7 @@ void reload(PLT _plt, GameMemory *_mem)
 	clear_ecs(&world->ecs, &world->phy);
 
 	// TODO: Realloc doens't work... I don't know why.
-	float32 range = 50.0f;
+	float32 range = 100.0f;
 	generate_astroid_field(world, 1000, V3(-1.0, -1.0f, -1.0f) * range, V3(1.0f, 1.0f, 1.0f) * range);
 
 #if 0 
@@ -231,7 +231,7 @@ void step(float32 delta)
 	auto draw_clock = start_debug_clock("Render");
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	debug_draw_engine(&world->ecs, &world->phy);
+	//debug_draw_engine(&world->ecs, &world->phy);
 	draw_asteroids(world);
 	stop_debug_clock(draw_clock);
 

@@ -340,12 +340,14 @@ void find_collisions(ECS *ecs, Physics *engine)
 		{
 			BodyLimit inner_limit = engine->body_limits[inner_limit_index];
 			// They can't possibly collide.
-			if ((outer_limit.max.x < inner_limit.min.x) || 
-			    (outer_limit.max.y < inner_limit.min.y) || 
+			if (outer_limit.max.x < inner_limit.min.x)
+				break;
+			// More complete broadphase.
+			if ((outer_limit.max.y < inner_limit.min.y) || 
 				(outer_limit.min.y > inner_limit.max.y) ||
 				(outer_limit.max.z < inner_limit.min.z) || 
 			    (outer_limit.min.z > inner_limit.max.z))
-				break;
+				continue;
 			CBody *b = (CBody *) get_component(ecs, inner_limit.owner, C_BODY);
 
 			if (a->inverse_mass == 0.0f && b->inverse_mass == 0.0f)
@@ -674,8 +676,11 @@ void debug_draw_engine(ECS *ecs, Physics *engine)
 				body->_transform->position + body->velocity, 
 				{0.0f, 1.0f, 1.0f});
 
+		Transform t = create_transform();
+		t.position = (limit.min + limit.max) / 2.0f;
+		Vec3f dim = limit.max - limit.min;
+		debug_draw_box(t, dim, V3(1.0f, 0.0f, 0.0f));
 #if 0 // Draws the broadphase.
-		Vec3f sort_direction = {0.0f, 0.0f, 1.0f}; // COpY
 		Vec3f offset = {(float32) i, 1.0f, 1.0f};
 		GFX::debug_draw_line(
 				sort_direction * limit.min_limit + offset, 
@@ -727,7 +732,7 @@ void update_physics(ECS *ecs, Physics *engine, float32 world_delta)
 		ASSERT(body->_transform);
 	}
 
-	if (time_accumulator > delta)
+	while (time_accumulator > delta)
 	{
 		auto integrate_clock = start_debug_clock("Integrate");
 		time_accumulator -= delta;
@@ -748,32 +753,19 @@ void update_physics(ECS *ecs, Physics *engine, float32 world_delta)
 		}
 		stop_debug_clock(integrate_clock);
 
-		// TODO: Drag the shapes by the velocity. It will help tunneling a bit.
-
 		auto limit_clock = start_debug_clock("Limit Sort");
 		sort_limits(&engine->body_limits);
 		stop_debug_clock(limit_clock);
 
-		// NOTE: We're running the collision detection multiple times. This is 
-		// very slow and a bad idea... But it does produce some nice results.
-		// If we need to fix this. We can. It's just more complex to implement. 
-		// That would involce changeing the collision detection to return multiple
-		// collision points and updateing the collisions after by approximation after
-		// we calculate one.
-		for (uint32 i = 0; i < 1; i++)
-		{
-			clear(&engine->collisions);
-			auto col_clock = start_debug_clock("Collision");
-			find_collisions(ecs, engine);
-			stop_debug_clock(col_clock);
-			
-			if (size(engine->collisions) == 0)
-				break;
-			// Solving them randomly, is a bad idea. If we sort them and then solve them and updat them,
-			// we can make this bad boy run faster.
-			auto solve_clock = start_debug_clock("Solve");
-			solve_collisions_randomly(engine);
-			stop_debug_clock(solve_clock);
-		}
+		clear(&engine->collisions);
+		auto col_clock = start_debug_clock("Collision");
+		find_collisions(ecs, engine);
+		stop_debug_clock(col_clock);
+
+		if (size(engine->collisions) == 0)
+			break;
+		auto solve_clock = start_debug_clock("Solve");
+		solve_collisions_randomly(engine);
+		stop_debug_clock(solve_clock);
 	}
 }

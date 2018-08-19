@@ -1,7 +1,7 @@
 @echo off
 
 set C_FLAGS=-EHsc -nologo -FC -I../inc -DWINDOWS=1  -std:c++14
-set D_FLAGS=-Zi -MT -Od -D__DEBUG
+set D_FLAGS=-Zi -MT -O2 -D__DEBUG
 set R_FLAGS=-MD -O2 
 set C_LINK_FLAGS=/link /LIBPATH:..\lib\win64 SDL2.lib SDL2main.lib 
 set R_LINK_FLAGS=/SUBSYSTEM:windows /RELEASE 
