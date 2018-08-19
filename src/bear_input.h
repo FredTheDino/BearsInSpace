@@ -1,28 +1,6 @@
 #pragma once
 
 /* Input Type */
-enum InputType
-{
-	KEY, MOUSE, CONTROLLER
-};
-
-#define INPUT_MAP_SIZE 256
-#define MAX_AXIS    32
-#define MAX_BUTTONS 32
-#define CONTROLLER_AXIS_THRESHOLD .2
-#define CONTROLLER_AXIS_FACTOR (1.0 / 32767.0)
-
-#ifdef BEAR_GAME
-
-#define AXIS_VAL(name) world->plt.axis_value(name)
-#define B_STATE(name) world->plt.button_state(name)
-#define B_PRESSED(name) world->plt.button_state(name) == ButtonState::PRESSED
-#define B_RELEASED(name) world->plt.button_state(name) == ButtonState::RELEASED
-#define B_DOWN(name) world->plt.button_state(name) == ButtonState::DOWN
-#define B_UP(name) world->plt.button_state(name) == ButtonState::UP
-
-#else
-
 // Forwarding
 struct Axis;
 
@@ -129,7 +107,8 @@ Array<Button> button_array;
 //TODO: Replace with more efficient alternative
 uint8 input_map_hash(string name)
 {
-	return strlen(name) > 1 ? // 0x61 = ascii value for 'a'
+	// Note(Ed): You can just write 'a', instead of 0x61.
+	return str_len(name) > 1 ? // 0x61 = ascii value for 'a'
 		(((((uint8) *name) - 0x61) & 0x0F) << 4) | ((((uint8) name[1]) - 0x61) & 0x0F)
 		: (uint8) *name;
 }
@@ -140,12 +119,12 @@ Array<Axis *> get_axises(string name)
 
 	if (entry.name == nullptr)
 	{
-		ERROR_LOG("Invalid axis name:");
-		ERROR_LOG(name);
+		LOG("INPUT ERROR", "Invalid axis name:");
+		LOG("INPUT ERROR", (char *) name);
 		return {};
 	}
 	
-	while (strcmp(entry.name, name))
+	while (!str_eq(entry.name, name))
 	{
 		if (entry.next == nullptr)
 			return {};
@@ -161,12 +140,12 @@ Array<Button *> get_buttons(string name)
 
 	if (entry.name == nullptr)
 	{
-		ERROR_LOG("Invalid button name:");
-		ERROR_LOG(name);
+		LOG("INPUT ERROR", "Invalid button name:");
+		LOG("INPUT ERROR", (char *) name);
 		return {};
 	}
 	
-	while (strcmp(entry.name, name))
+	while (!str_eq(entry.name, name))
 	{
 		if (entry.next == nullptr)
 			return {};
@@ -186,7 +165,7 @@ AxisValue axis_value(string name)
 		value += a->value;
 	}
 	
-	if (abs(value) < CONTROLLER_AXIS_THRESHOLD)
+	if (absolute(value) < CONTROLLER_AXIS_THRESHOLD)
 		return 0;
 	else
 		return clamp(value, -1.0, 1.0);
@@ -224,7 +203,7 @@ void add_to_map(string name, Button *button)
 	}
 	else
 	{
-		while (strcmp(entry->name, name))
+		while (!str_eq(entry->name, name))
 		{
 			if (entry->next == nullptr)
 			{
@@ -252,7 +231,7 @@ void add_to_map(string name, Axis *axis)
 	}
 	else
 	{
-		while (strcmp(entry->name, name))
+		while (!str_eq(entry->name, name))
 		{
 			if (entry->next == nullptr)
 			{
@@ -561,12 +540,12 @@ void open_controllers()
 
 		if (!c)
 		{
-			ERROR_LOG("Failed to open controller!");
+			LOG("INPUT ERROR", "Failed to open controller!");
 			continue;
 		}
 		
-		DEBUG_LOG("Found controller:");
-		DEBUG_LOG(SDL_GameControllerName(c));
+		LOG("INPUT", "Found controller:");
+		LOG("INPUT", (char *) SDL_GameControllerName(c));
 
 		append(&controller_array, c);
 	}
@@ -596,6 +575,10 @@ void init_input()
 	
 	bind_axis_controller("up", 0, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
 	bind_axis_controller("down", 0, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+
+	bind_button_controller("forward", 0, SDL_CONTROLLER_BUTTON_A);
+	bind_button_controller("left", 0, SDL_CONTROLLER_BUTTON_B);
+	bind_button_controller("right", 0, SDL_CONTROLLER_BUTTON_X);
 }
 
 void destroy_input()
@@ -644,4 +627,3 @@ void destroy_input()
 	close_controllers();
 }
 
-#endif

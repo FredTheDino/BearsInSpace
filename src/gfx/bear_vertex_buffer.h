@@ -4,18 +4,24 @@ namespace GFX
 {
 	typedef uint32 VertexBuffer;
 
-	VertexBuffer create_vertex_buffer(Array<float32> data, uint32 usage=GL_STATIC_DRAW)
+	VertexBuffer create_vertex_buffer(float32 *data, uint32 size, uint32 usage=GL_STATIC_DRAW)
 	{
 		VertexBuffer buffer;
 		glGenBuffers(1, &buffer);
 
 		glBindBuffer(GL_ARRAY_BUFFER, buffer);
 
-		glBufferData(GL_ARRAY_BUFFER, size(data) * sizeof(float32), data_ptr(data), usage);
+		glBufferData(GL_ARRAY_BUFFER, size * sizeof(float32), data, usage);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		return buffer;
+	}
+
+	// NOTE: I don't think we'll need this, like ever.
+	VertexBuffer create_vertex_buffer(Array<float32> data, uint32 usage=GL_STATIC_DRAW)
+	{
+		return create_vertex_buffer(data_ptr(data), size(data), usage);
 	}
 
 	void bind(VertexBuffer buffer)

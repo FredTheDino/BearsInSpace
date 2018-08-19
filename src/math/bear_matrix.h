@@ -16,6 +16,24 @@ struct Mat4f
 		float32 __[16];
 	};
 
+	Mat4f operator* (float32 s)
+	{
+		Mat4f out;
+		for (uint8 i = 0; i < 16; i++)
+		{
+			out.__[i] = __[i] * s;
+		}
+		return out;
+	}
+
+	void operator*= (float32 s)
+	{
+		for (uint8 i = 0; i < 16; i++)
+		{
+			__[i] = __[i] * s;
+		}
+	}
+
 	Mat4f operator* (Mat4f m)
 	{
 		Mat4f out = {};
@@ -31,6 +49,11 @@ struct Mat4f
 		}
 		return out;
 	}
+	
+	void operator*= (Mat4f m)
+	{
+		*this = (*this) * m;
+	}
 
 	Vec4f operator* (Vec4f v)
 	{
@@ -43,6 +66,11 @@ struct Mat4f
 		};
 	}
 
+	Vec3f operator* (Vec3f v)
+	{
+		return toVec3f((*this) * toVec4f(v));
+	}
+
 	bool operator== (Mat4f m)
 	{
 		for (uint8 i = 0; i < 16; i++)
@@ -51,6 +79,24 @@ struct Mat4f
 				return false;
 		}
 		return true;
+	}
+
+	Mat4f operator+ (Mat4f m)
+	{
+		Mat4f out;
+		for (uint8 i = 0; i < 16; i++)
+		{
+			out.__[i] = m.__[i] + __[i];
+		}
+		return out;
+	}
+
+	void operator+= (Mat4f m)
+	{
+		for (uint8 i = 0; i < 16; i++)
+		{
+			__[i] = m.__[i] + __[i];
+		}
 	}
 };
 
@@ -82,16 +128,27 @@ Mat4f translate(Mat4f m, Vec3f v)
 Mat4f scale(Mat4f m, Vec3f v)
 {
 	m._00 *= v.x;
+	m._10 *= v.x;
+	m._20 *= v.x;
+	m._01 *= v.y;
 	m._11 *= v.y;
+	m._21 *= v.y;
+	m._02 *= v.z;
+	m._12 *= v.z;
 	m._22 *= v.z;
-
 	return m;
 }
 
 Mat4f scale(Mat4f m, float32 scalar)
 {
 	m._00 *= scalar;
+	m._10 *= scalar;
+	m._20 *= scalar;
+	m._01 *= scalar;
 	m._11 *= scalar;
+	m._21 *= scalar;
+	m._02 *= scalar;
+	m._12 *= scalar;
 	m._22 *= scalar;
 
 	return m;
@@ -148,6 +205,19 @@ Mat4f toMat4f(Q q)
 Mat4f rotate(Mat4f m, Quaternion q)
 {
 	return m * toMat4f(q);
+}
+
+Mat4f create_skew_symmetric(Vec3f v)
+{
+	Mat4f m;
+	m._00 = m._11 = m._22 = m._33 = 0.0f;
+	m._10 =  v.z;
+	m._01 = -v.z;
+	m._02 =  v.y;
+	m._20 = -v.y;
+	m._13 =  v.z;
+	m._31 = -v.z;
+	return m;
 }
 
 Mat4f zero_transform(Mat4f m)
@@ -306,7 +376,7 @@ Mat4f inverse(Mat4f m)
 	float32 det = m.__[0] * inv.__[0] + m.__[1] * inv.__[4] + m.__[2] * inv.__[8] + m.__ [3] * inv.__[12];
 
 	if (det == 0)
-		return create_identity();
+		return {};
 
 	det = 1.0f / det;
 

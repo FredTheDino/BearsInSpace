@@ -25,6 +25,7 @@ void test_(bool check, const char *expression, uint32 line_number)
 void test_summary()
 {
 	world->plt.print("    \x1b[4m %04d/%04d TESTS PASSED \x1b[0m\n", passed_tests, total_tests);
+	world->plt.print("    \x1b[4m t: %.5f \x1b[0m\n", world->clk.time);
 	
 }
 

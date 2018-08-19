@@ -3,27 +3,47 @@
 #include <dlfcn.h>
 #include <unistd.h>
 #include <time.h>
+#include <stdio.h>
 
-#include "bear_main.h"
+#include "bear_shared.h"
+#define LOG(type, msg) linux_log(__FILE__, __LINE__, type, msg)
+#define PRINT(...) printf(__VA_ARGS__)
+
+void linux_log(string file, int32 line, string type, string msg)
+{
+	printf("[%s:%d] %s %s\n", file, line, type, msg);
+}
+
+bool running = true;
+
+#include "bear_sdl_threads_plt.h"
+#include "bear_array_plt.cpp"
+#include "bear_input.h"
+
 #include "glad.c"
 
-typedef void (*StepFunc)(World *, float32);
-typedef void (*SoundFunc)(float32 *, int32);
+GameMemory mem;
+PLT plt;
 
 struct GameHandle
 {
-	SDL_mutex *lock;
-	StepFunc  step;
+
+	StepFunc step;
 	SoundFunc sound;
+
+	ReloadFunc reload;
+	ReplaceFunc replace;
+
+	DestroyFunc destroy;
+
+	SDL_mutex *lock;
+	bool first_load;
 
 	int32 access_time;
 	void *lib;
 };
 
 static GameHandle game;
-
-// Dirty, I know.
-MemoryAllocation __mem[1024];
 
 int32 get_file_edit_time(const char *path)
 {
@@ -36,7 +56,7 @@ int32 get_file_edit_time(const char *path)
 	return attr.st_ctime;
 }
 
-OSFile read_entire_file(const char *path)
+OSFile read_entire_file(const char *path, AllocatorFunc alloc)
 {
 	OSFile file = {};
 	file.timestamp = get_file_edit_time(path);
@@ -54,7 +74,7 @@ OSFile read_entire_file(const char *path)
 	fseek(disk, 0, SEEK_END);
 	file.size = ftell(disk);
 	fseek(disk, 0, SEEK_SET);
-	file.data = malloc_("FILE IO", 0, file.size + 1);
+	file.data = alloc(file.size + 1);
 	fread(file.data, file.size, 1, disk);
 	((uint8 *) file.data)[file.size] = 0; // Null terminate.
 	fclose(disk);
@@ -62,15 +82,37 @@ OSFile read_entire_file(const char *path)
 	return file;
 }
 
-void free_file(OSFile file)
+void linux_random_read(const char *path, void *to, uint32 start_byte, uint32 read_length)
 {
-	if (file.data)
+	FILE *disk = fopen(path, "rb");
+	if (!disk)
 	{
-		FREE(file.data);
-		file.data = 0;
+		*((uint8 *) to) = 0;
+		return;
 	}
+
+	fseek(disk, start_byte, SEEK_SET);
+	size_t red = fread(to, read_length, 1, disk);
+	if (!red)
+	{
+		HALT_AND_CATCH_FIRE();
+	}
+	fclose(disk);
 }
 
+struct timespec _spec;
+uint64 start_time;
+uint64 last_time;
+uint64 current_time;
+
+#define SPEC_TO_SEC(s) ((s).tv_sec * 1000000000) + (s).tv_nsec
+#define NSEC_TO_SEC (0.000000001)
+
+float64 get_time()
+{
+	clock_gettime(CLOCK_MONOTONIC, &_spec);
+	return (start_time - SPEC_TO_SEC(_spec)) * NSEC_TO_SEC;
+}
 
 bool load_libgame(GameHandle *handle)
 {
@@ -87,7 +129,7 @@ bool load_libgame(GameHandle *handle)
 	if (!temp_handle)
 	{
 		printf("[DL-ERROR] %s\n", dlerror());
-		DEBUG_LOG("Failed to load libbear.so!");
+		PRINT("Failed to load libbear.so!\n");
 		return false;
 	}
 
@@ -103,27 +145,54 @@ bool load_libgame(GameHandle *handle)
 	SDL_LockMutex(game.lock);
 	if (game.lib)
 	{
+		game.replace();
 		dlclose(game.lib);
 	}
 	game.lib = dlopen(path, RTLD_NOW);
 
-	StepFunc  step	= (StepFunc)  dlsym(game.lib, "step");
-	SoundFunc sound	= (SoundFunc) dlsym(game.lib, "sound");
-
-	if (!step)
+	game.step	= (StepFunc)  dlsym(game.lib, "step");
+	if (!game.step)
 	{
+		PRINT("Failed to find step!\n");
 		return false;
-		DEBUG_LOG("Failed to load step function.");
 	}
-	game.step = step;
-	if (!sound)
+	game.sound	= (SoundFunc) dlsym(game.lib, "sound");
+	if (!game.sound)
 	{
+		PRINT("Failed to find sound!\n");
 		return false;
-		DEBUG_LOG("Failed to load sound function.");
 	}
-	game.sound = sound;
+	game.reload = (ReloadFunc) dlsym(game.lib, "reload");
+	if (!game.reload)
+	{
+		PRINT("Failed to find reload!\n");
+		return false;
+	}
+	game.replace = (ReplaceFunc) dlsym(game.lib, "replace");
+	if (!game.replace)
+	{
+		PRINT("Failed to find replace!\n");
+		return false;
+	}
+	game.destroy = (DestroyFunc) dlsym(game.lib, "destroy");
+	if (!game.destroy)
+	{
+		PRINT("Failed to find destroy!\n");
+		return false;
+	}
 
-	DEBUG_LOG("Reload!");
+	if (game.first_load)
+	{
+		game.first_load = false;
+		InitFunc init = (InitFunc) dlsym(game.lib, "init");
+		if (!init)
+		{
+			PRINT("Failed to find init!\n");
+			return false;
+		}
+		init(plt, &mem);
+	}
+	game.reload(plt, &mem);
 	game.access_time = new_last_edit;
 	*handle = game;
 	SDL_UnlockMutex(game.lock);
@@ -133,38 +202,44 @@ bool load_libgame(GameHandle *handle)
 void plt_audio_callback(void *userdata, uint8 *stream, int32 length)
 {
 	SDL_LockMutex(game.lock);
-	game.sound((float32 *) stream, length / (sizeof(float32) / sizeof(uint8)));
+	game.sound((int16 *) stream, length / (sizeof(float32) / sizeof(uint8)));
 	SDL_UnlockMutex(game.lock);
 }
 
 int main(int varc, char *varv[])
 {
-	world.plt.malloc = malloc_;
-	world.plt.free = free_;
-	world.plt.realloc = realloc_;
+	plt.log = linux_log;
+	plt.print = printf;
 
-	world.plt.log = debug_log_;
-	world.plt.print = printf;
+	plt.read_file = read_entire_file;
+	plt.last_write = get_file_edit_time;
+	plt.random_file_read = linux_random_read;
 
-	world.plt.read_file = read_entire_file;
-	world.plt.free_file = free_file;
-	world.plt.last_write = get_file_edit_time;
+	plt.submit_work = send_work;
+	plt.get_time = get_time;
 
-	world.plt.axis_value = axis_value;
-	world.plt.button_state = button_state;
+	plt.axis_value = axis_value;
+	plt.button_state = button_state;
 
-	world.__mem = (MemoryAllocation *)(void *)__mem;
-
-	if (!load_libgame(&game))
+	mem.static_memory_size = GIGABYTE(1);
+	mem.static_memory = (uint8 *) malloc(mem.static_memory_size);
+	if (!mem.static_memory)
 	{
-		DEBUG_LOG("Failed to load libgame.so");
-		SDL_Quit();
-		return(-1);
+		HALT_AND_CATCH_FIRE();
 	}
 
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+
+	mem.temp_memory_size = GIGABYTE(1);
+	mem.temp_memory = (uint8 *) malloc(mem.temp_memory_size);
+	if (!mem.temp_memory)
 	{
-		DEBUG_LOG("Unable to initalize SDL.");
+		HALT_AND_CATCH_FIRE();
+	}
+
+
+	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
+	{
+		LOG("LOAD ERROR", "Unable to initalize SDL.");
 		SDL_Quit();
 		return(-1);
 	}
@@ -178,6 +253,8 @@ int main(int varc, char *varv[])
 			SDL_WINDOW_OPENGL
 			);
 
+	create_sdl_threads();
+
 	SDL_RaiseWindow(window);
 	
 	// TODO: Use OpenGL 3.3, or newer. This is just to get hello triangle.
@@ -186,11 +263,11 @@ int main(int varc, char *varv[])
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_CreateContext(window);
-	SDL_GL_SetSwapInterval(0);
+	SDL_GL_SetSwapInterval(1);
 
 	if (gladLoadGL() == 0)
 	{
-		DEBUG_LOG("Unable to load OpenGL.");
+		LOG("OPENGL", "Unable to load OpenGL.");
 		SDL_Quit();
 		return(-1);
 	}
@@ -198,39 +275,36 @@ int main(int varc, char *varv[])
 	SDL_AudioSpec audio_spec = {};
 	audio_spec.callback = plt_audio_callback;
 	audio_spec.freq = spec_freq; // Is this dumb? Is 44100 better?
-	audio_spec.format = AUDIO_F32; // Maybe too high rez?
+	audio_spec.format = AUDIO_S16; // Maybe too high rez?
 	audio_spec.channels = 2; // This needs to be changeable.
-	audio_spec.samples = 2048; // Ideally we want this as small as possible.
+	audio_spec.samples = 1024; // Ideally we want this as small as possible.
 	auto audio_device = SDL_OpenAudioDevice(NULL, 0, &audio_spec, NULL, 0);
 	if (!audio_device)
 	{
-		DEBUG_LOG("Unable to load audio.");
+		LOG("AUDIO", "Unable to load audio.");
 		SDL_Quit();
 		return(-1);
 	}
 
-	init_ecs(&world);
+	init_input();
+
+	game.first_load = true;
+	game.lock = SDL_CreateMutex();
+	if (!load_libgame(&game))
+	{
+		LOG("LOAD ERROR", "Failed to load libgame.so");
+		SDL_Quit();
+		return(-1);
+	}
 
 	SDL_PauseAudioDevice(audio_device, 0);
-	
-	init_input();
-	
-	DEBUG_LOG("Linux launch!");
-
-#define SPEC_TO_SEC(s) ((s).tv_sec * 1000000000) + (s).tv_nsec
-#define NSEC_TO_SEC (0.000000001f)
-
-	struct timespec _spec;
-	uint64 start_time;
-	uint64 last_time;
-	uint64 current_time;
 	
 	clock_gettime(CLOCK_MONOTONIC, &_spec);
 	start_time = SPEC_TO_SEC(_spec);
 	last_time = SPEC_TO_SEC(_spec);
+	float32 delta = 0.0f; 
 
-	world.running = true;
-	while (world.running)
+	while (running)
 	{
 		load_libgame(&game);
 		
@@ -241,7 +315,7 @@ int main(int varc, char *varv[])
 		{
 			if (event.type == SDL_QUIT)
 			{
-				world.running = false;
+				running = false;
 			}
 			else
 			{
@@ -249,24 +323,26 @@ int main(int varc, char *varv[])
 			}
 		}
 		
-		game.step(&world, world.clk.delta);
+		game.step(delta);
 		SDL_GL_SwapWindow(window);
 
 		// Timing
 		clock_gettime(CLOCK_MONOTONIC, &_spec);
 		current_time = SPEC_TO_SEC(_spec);
-		world.clk.time  = (float64) (current_time - start_time) * NSEC_TO_SEC;
-		world.clk.delta = (float32) (current_time - last_time) * NSEC_TO_SEC;
+		delta = (float32) (current_time - last_time) * NSEC_TO_SEC;
 		last_time = current_time;
 	}
 
 	destroy_input();
-	
+	game.destroy();
+
 	SDL_CloseAudio();
+	delete_sdl_threads();
+	SDL_DestroyMutex(game.lock);
 	SDL_Quit();
 
-	destroy_ecs(&world);
+	free(mem.static_memory);
+	free(mem.temp_memory);
 
-	check_for_leaks();
 	return 0;
 }

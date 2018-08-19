@@ -7,8 +7,10 @@ namespace GFX
 		uint32 id;
 	};
 
-	Texture create_texture(Image img)
+	Texture create_texture(uint32 width, uint32 height, 
+			uint32 color_depth, uint8 *data)
 	{
+		ASSERT(color_depth == 4);
 		Texture t = {};
 
 		glGenTextures(1, &t.id);
@@ -16,7 +18,7 @@ namespace GFX
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, t.id);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.width, img.height, 0, GL_BGRA, GL_UNSIGNED_BYTE, img.data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -28,14 +30,6 @@ namespace GFX
 		return t;
 	}
 	
-	Texture create_texture(string path)
-	{
-		Image img = load_image(path);
-		Texture t = create_texture(load_image(path));
-		free_image(&img);
-		return t;
-	}
-
 	void bind(Texture texture, uint8 target=0)
 	{
 		glActiveTexture(GL_TEXTURE0 + target);

@@ -36,6 +36,32 @@ T clamp(T min, T max, T v)
 	return maximum(min, minimum(max, v));
 }
 
+template <typename T>
+int32 sign_no_zero(T n)
+{
+	if (n < 0)
+		return -1;
+	return 1;
+}
+
+template <typename T>
+int32 sign(T n)
+{
+	if (n < 0)
+		return -1;
+	if (n > 0)
+		return 1;
+	return 0;
+}
+
+template <typename T>
+T absolute(T n)
+{
+	if (n < 0)
+		return -n;
+	return n;
+}
+
 #include "bear_vector.h"
 #include "bear_quaternion.h"
 #include "bear_matrix.h"

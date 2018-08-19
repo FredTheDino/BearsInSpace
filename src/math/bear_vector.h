@@ -1,10 +1,11 @@
 #pragma once
+#pragma pack( push, 1 )
 
 struct Vec2f;
 struct Vec3f;
 struct Vec4f;
 
-#define FLOAT_EQ_MARGIN 0.0000000000001
+#define FLOAT_EQ_MARGIN 0.0000001
 
 // SIMD this, later OFC.
 struct Vec2f
@@ -89,7 +90,7 @@ float32 length(Vec2f a)
 	return sqrt(length_squared(a));
 }
 
-Vec2f normalized(Vec2f a)
+Vec2f normalize(Vec2f a)
 {
 	return a / length(a);
 }
@@ -128,7 +129,8 @@ struct Vec3f
 	Vec3f operator/ (float32 scaler)
 	{
 		float32 divisor = 1.0f / scaler;
-		return {x * divisor, y * divisor, z * divisor};
+		Vec3f result = {x * divisor, y * divisor, z * divisor};
+		return result;
 	}
 
 	void operator+= (Vec3f other)
@@ -162,7 +164,6 @@ struct Vec3f
 			(y - other.y) * (y - other.y) < FLOAT_EQ_MARGIN && 
 			(z - other.z) * (z - other.z) < FLOAT_EQ_MARGIN;
 	}
-
 };
 
 float32 dot(Vec3f a, Vec3f b)
@@ -195,7 +196,7 @@ float32 length(Vec3f a)
 	return sqrt(length_squared(a));
 }
 
-Vec3f normalized(Vec3f a)
+Vec3f normalize(Vec3f a)
 {
 	return a / length(a);
 }
@@ -289,7 +290,7 @@ float32 length(Vec4f a)
 	return sqrt(length_squared(a));
 }
 
-Vec4f normalized(Vec4f a)
+Vec4f normalize(Vec4f a)
 {
 	return a / length(a);
 }
@@ -324,3 +325,16 @@ Vec3f toVec3f(Vec4f v)
 {
 	return {v.x, v.y, v.z};
 }
+
+Vec2f V2(float32 x, float32 y)
+{
+	return {x, y};
+}
+
+Vec3f V3(float32 x, float32 y, float32 z)
+{
+	return {x, y, z};
+}
+
+#pragma pack( pop )
+
