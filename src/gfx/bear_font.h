@@ -90,60 +90,90 @@ bool is_inside_font(uint8 *src, int32 x, int32 y, int32 width, int32 height, int
 
 void bitmap_to_sdf(uint8 *dst, uint8 *src, int32 width, int32 height, int32 border)
 {
-	int32 search_radius = width / 2;
+	int32 search_radius = width;
 	
 	for (int32 i = 0; i < height + border * 2; i++)
 	{
 		for (int32 j = 0; j < width + border * 2; j++)
 		{
 			bool in = is_inside_font(src, j, i, width, height, border);
-			Array<Vec2f> dists = temp_array<Vec2f>(8);
-			append(&dists, { FLT_MAX, FLT_MAX });
 			
-			for (int32 k = -search_radius; k < search_radius; k++)
+
+			Vec2f dist = { };
+
+			for (int32 k = 1; k <= search_radius; k++)
 			{
-				for (int32 l = -search_radius; l < search_radius; l++)
+				for (int32 l = -k * k; l <= k * k; l++)
 				{
-					if (i + k < 0 || j + l < 0 || i + k >= height + 2 * border || j + l >= width + 2 * border)
-						continue;
-					
-					bool s = is_inside_font(src, j + l, i + k, width, height, border);
+					int32 x = j + k * cos((l * M_PI) / (k * k));
+					int32 y = i + k * sin((l * M_PI) / (k * k));
+					bool s = is_inside_font(src, x, y, width, height, border);
+
 					
 					if (in ^ s)
 					{
-						if (length_squared(dists[0]) > k * k + l * l)
-						{
-							clear(&dists);
-							append(&dists, { (float32) l, (float32) k });
-						}
-						else if (length_squared(dists[0]) == k * k + l * l)
-						{
-							bool should_append = false;
-							for (uint8 m = 0; m < size(dists); m++)
-								if (absolute(dists[m].x - l) <= 2.0f && absolute(dists[m].y - k) <= 2.0f)
-									should_append = true;
-
-							if (should_append)
-								append(&dists, { (float32) l, (float32) k });
-						}
+						dist = { (float32) x - j, (float32) y - i };
+						break;
 					}
 				}
-			}
 
-			Vec2f dist = {};
-			
-			for (uint8 k = 0; k < size(dists); k++)
-			{
-				dist.x += dists[k].x;
-				dist.y += dists[k].y;
+				if (dist.x != 0)
+					break;
 			}
-
-			dist /= size(dists);
 			
 			if (in)
-				dst[i * (width + 2 * border) + j] = minimum((uint8) (0x7F * (1.0f + minimum(length_squared(dist) / width, 1.0f))), (uint8) 0xFF) ;
+			{
+				int16 d;
+				
+				if (length_squared(dist) == 0)
+					d = 0xFF;
+				else
+					d = 0x7F * (1.0f + minimum(1.0f, length_squared(dist) / FONT_PIXEL_SIZES * 2));
+
+				ASSERT(d >= 0x7F && d <= 0xFF);
+
+				dst[i * (width + 2 * border) + j] = (uint8) d;
+			}
 			else
-				dst[i * (width + 2 * border) + j] = maximum((uint8) (0x7F * (1.0f - minimum(length_squared(dist) / width, 1.0f))), (uint8) 0x00);
+			{
+				int16 d;
+
+				if (length_squared(dist) == 0)
+					d = 0x00;
+				else
+					d = 0x7F * (1.0f - minimum(1.0f, length_squared(dist) / FONT_PIXEL_SIZES * 2));
+
+				ASSERT(d >= 0x00 && d <= 0x7F);
+
+				dst[i * (width + 2 * border) + j] = (uint8) d;
+			}
+		}
+	}
+}
+
+void scale_down(uint8 *dst, uint8 *src, int32 width, int32 height)
+{
+	for (int32 i = 0; i < height / 2; i++)
+	{
+		for (int32 j = 0; j < width / 2; j++)
+		{
+			int32 src_x = j * 2 + 1;
+			int32 src_y = i * 2 + 1;
+
+			uint32 total = 0;
+			total += src[(src_y + 0) * (width) + (src_x + 0)];
+			
+			total += src[(src_y + 1) * (width) + (src_x + 0)] / 2;
+			total += src[(src_y - 1) * (width) + (src_x + 0)] / 2;
+			total += src[(src_y + 0) * (width) + (src_x + 1)] / 2;
+			total += src[(src_y + 0) * (width) + (src_x - 1)] / 2;
+			
+			total += src[(src_y + 1) * (width) + (src_x + 1)] / 4;
+			total += src[(src_y + 1) * (width) + (src_x - 1)] / 4;
+			total += src[(src_y - 1) * (width) + (src_x + 1)] / 4;
+			total += src[(src_y - 1) * (width) + (src_x - 1)] / 4;
+			
+			dst[i * (width / 2) + j] = total / 4;
 		}
 	}
 }
@@ -182,7 +212,7 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 	Array<GlyphTexture> textures = static_array<GlyphTexture>(128);
 	
 	// Retrieve FreeType data
-	for (uint8 i = 0; i < 128; i++)
+	for (uint16 i = 0; i < 128; i++)
 	{
 		if (FT_Load_Char(face, i, FT_LOAD_RENDER))
 		{
@@ -229,6 +259,8 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 		};
 
 		append(&glyphs, c);
+
+		LOG("BMP->SDF", "Status: %d/%d (%f\%)", i, 128, (i * 100.0f) / 128);
 	}
 
 	// Pack textures (TODO: IMPROVE THIS A LOT)
@@ -279,12 +311,24 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 		}
 	}
 
-	add_font(name, GFX::create_texture({ (int32) total_width, (int32) total_height, 0, data }, GL_RED, GL_RED), glyphs);
+	uint8 *scaled_data1 = (uint8 *) static_push((total_width / 2) * (total_height / 2));
 
+	scale_down(scaled_data1, data, total_width, total_height);
+	
 	static_pop((void *) data);
+
+	uint8 *scaled_data2 = (uint8 *) static_push((total_width / 4) * (total_height / 4));
+	
+	scale_down(scaled_data2, scaled_data1, total_width / 2, total_height / 2);
+
+	static_pop((void *) scaled_data1);
+	
+	add_font(name, GFX::create_texture({ (int32) total_width / 4, (int32) total_height / 4, 0, scaled_data2 }, GL_RED, GL_RED), glyphs);
 
 	delete_array(&textures);
 
+	static_pop((void *) scaled_data2);
+	
 	// Only allow texture dimensions of 4^n (DEFAULT)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
