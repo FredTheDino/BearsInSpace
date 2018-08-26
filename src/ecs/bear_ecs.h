@@ -57,19 +57,6 @@ struct BaseComponent
 	ComponentType type;
 };
 
-struct Position
-{
-	COMPONENT
-	Vec3f position;
-};
-
-struct Blargh
-{
-	COMPONENT
-	int32 b;
-	int32 a;
-};
-
 struct Entity
 {
 	EntityID id;

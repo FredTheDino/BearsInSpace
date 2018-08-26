@@ -5,7 +5,7 @@ struct Mesh
 	Array<Vec3f> positions;
 	Array<Vec3f> normals;
 	Array<Vec2f> uvs;
-	Array<int32> indicies;
+	Array<uint32> indices;
 	uint32 stride;
 };
 
@@ -90,9 +90,9 @@ Mesh load_mesh(char *path, void *(*alloc)(size_t))
 	}
 	// Now we kinda know the size of the other arrays.
 	// Just randomly choosen 2
-	mesh.normals	= create_array<Vec3f>(mesh.positions.size * 2);
-	mesh.uvs		= create_array<Vec2f>(mesh.positions.size * 2);
-	mesh.indicies	= create_array<int32>(mesh.positions.size * 2);
+	mesh.normals	= static_array<Vec3f>(mesh.positions.size * 2);
+	mesh.uvs		= static_array<Vec2f>(mesh.positions.size * 2);
+	mesh.indices	= static_array<uint32>(mesh.positions.size * 2);
 	
 	// Reset the ptr.
 	ptr = start;
@@ -135,7 +135,7 @@ Mesh load_mesh(char *path, void *(*alloc)(size_t))
 			{
 				if (*ptr >= '0' && *ptr <= '9')
 				{
-					append(&mesh.indicies, eat_int(&ptr));
+					append(&mesh.indices, (uint32) eat_int(&ptr));
 					sum_data++;
 				}
 				else
@@ -156,7 +156,7 @@ void free_mesh(Mesh mesh)
 	delete_array(&mesh.positions);
 	delete_array(&mesh.normals);
 	delete_array(&mesh.uvs);
-	delete_array(&mesh.indicies);
+	delete_array(&mesh.indices);
 }
 
 

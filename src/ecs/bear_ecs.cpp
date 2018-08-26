@@ -12,6 +12,11 @@ Entity* get_entity(ECS *ecs, EntityID id)
 	return NULL;
 }
 
+ECSEntry get_all_components_of_type(ECS *ecs, ComponentType type)
+{
+	return ecs->component_types[type];
+}
+
 inline
 int8 *get_component(const ECSEntry entry, const int32 index)
 {

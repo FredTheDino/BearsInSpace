@@ -1,0 +1,13 @@
+#pragma once
+
+namespace GFX
+{
+	void draw(FrameBuffer target, ECS *ecs, bool use_global_matrix_profiles=true)
+	{	
+		bind(target);
+		glClearColor(.1f, .1f, .1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		debug_draw_engine(ecs, &world->phy);
+	}
+}

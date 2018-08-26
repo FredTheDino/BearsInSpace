@@ -54,7 +54,7 @@ namespace GFX
 		});
 		sub_data(vb_lines, 0, data);
 		
-		draw(r_lines, GL_LINES);
+		draw(world->output_buffer, r_lines, GL_LINES);
 	}
 
 	void debug_draw_point(Vec3f pos, Vec3f color)
@@ -74,7 +74,7 @@ namespace GFX
 		});
 		sub_data(vb_lines, 0, data);
 		
-		draw(r_points, GL_POINTS);
+		draw(world->output_buffer, r_points, GL_POINTS);
 	}
 
 	void destroy_debug()

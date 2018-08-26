@@ -19,6 +19,9 @@ World *world;
 #include "audio/bear_audio.cpp"
 #include "audio/bear_mixer.cpp"
 
+// Utility
+#include "bear_utility.h"
+
 // GFX
 #include "glad.c"
 #define GL_LOADED glClear
@@ -40,16 +43,20 @@ World *world;
 GFX::ShaderProgram program;
 #include "world/bear_world_gen.cpp"
 
+// Draw function for ECS
+#include "gfx/bear_draw_ecs.h"
+
 #if 0
 // Tests
 #include "bear_test.cpp"
 #endif
 
-
-#include "glad.c"
-#define GL_LOADED glClear
-
 #if 1
+GFX::VertexBuffer vertex_buffer;
+GFX::VertexArray vertex_array;
+GFX::ShaderProgram program;
+GFX::Texture texture;
+Transform transform = create_transform();
 Camera camera;
 #endif
 
@@ -64,18 +71,6 @@ float32 speed = 6.0f;
 
 AudioID buffer;
 
-#if 0
-inline
-void setup_pointers()
-{
-	world = (World *) ((MemoryAllocation *) mem->static_memory + 1);
-	world_audio = &world->audio;
-	world_ecs = &world->ecs;
-	world_phy = &world->phy;
-	world_matrix_profiles = &world->matrix_profiles;
-}
-#endif
-
 // Enter APP
 extern "C"
 void init(PLT _plt, GameMemory *_mem)
@@ -89,6 +84,7 @@ void init(PLT _plt, GameMemory *_mem)
 		auto error = gladLoadGL();
 		ASSERT(error);
 		glEnable(GL_DEPTH_TEST);
+		GFX::init_matrix_profiles();
 	}
 
 	init_ecs(&world->ecs);
@@ -96,9 +92,19 @@ void init(PLT _plt, GameMemory *_mem)
 
 	//buffer = load_sound(&world->audio, "res/stockhausen.wav");
 
+	camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
+	camera.transform.position = {-30.0f, 25.0f, 20.0f};
+	camera.transform.orientation = toQ(5.7f, -1.0f, 0);
+	GFX::add_matrix_profile("m_view", &camera);
 
-	// TODO: This is ugly as fuck.
-	//world->matrix_profiles = GFX::matrix_profiles;
+	// Output graphics
+	world->output_buffer = GFX::create_frame_buffer(temp_array<uint32>({ GL_COLOR_ATTACHMENT0 }), WINDOW_WIDTH, WINDOW_HEIGHT);
+	world->output_vb = GFX::create_vertex_buffer(temp_array<float32>({ -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1 }));
+	world->output_quad = GFX::create_vertex_array(
+		temp_array<GFX::VertexAttribute>({
+				{ world->output_vb, 0, 2, GL_FLOAT }
+		}));
+	world->output_program = GFX::create_shader_program(temp_array<GFX::ShaderInfo>({ { GL_VERTEX_SHADER, "src/shader/post.vert" }, { GL_FRAGMENT_SHADER, "src/shader/post.frag" } }));
 }
 
 RandomState rng;
@@ -112,12 +118,12 @@ void reload(PLT _plt, GameMemory *_mem)
 		plt = _plt;
 		world = (World *) ((MemoryAllocation *) mem->static_memory + 1);
 	}
-
 	if (!GL_LOADED)
 	{
 		gladLoadGL();
-		glEnable(GL_DEPTH_TEST);
 	}
+	
+	GFX::init_debug();
 
 	start_loader();
 	//load_asset(0);
@@ -191,6 +197,10 @@ void reload(PLT _plt, GameMemory *_mem)
 extern "C"
 void destroy()
 {
+	GFX::delete_shader_program(world->output_program);
+	GFX::delete_vertex_array(world->output_quad);
+	GFX::delete_vertex_buffer(world->output_vb);
+	GFX::delete_frame_buffer(world->output_buffer);
 }
 
 // Exit the library
@@ -199,6 +209,7 @@ void replace()
 {
 	PRINT("MEM watermark: %d\n", get_static_memory_watermark());
 	stop_loader();
+	GFX::destroy_debug();
 }
 
 
@@ -209,6 +220,7 @@ void step(float32 delta)
 	update_assets();
 	reset_debug_clock();
 
+	/* -- START MOVEMENT -- */
 	float32 planar_speed = 15.0f * delta;
 	float32 vertical_speed = 15.0f * delta;
 	float32 rotational_speed = 1.5f * delta;
@@ -222,20 +234,28 @@ void step(float32 delta)
 		toQ(0.0f, -AXIS_VAL("xrot") * rotational_speed, 0.0f) *
 		camera.transform.orientation *
 		toQ(-AXIS_VAL("yrot") * rotational_speed, 0.0f, 0.0f);
+	/* -- END MOVEMENT -- */
 
-	auto phy_clock = start_debug_clock("Physics");
-	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f)); 
+	auto phy_clock = start_debug_clock("Physics Step");
+	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f));
+
 	stop_debug_clock(phy_clock);
-
 
 	auto draw_clock = start_debug_clock("Render");
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//debug_draw_engine(&world->ecs, &world->phy);
 	draw_asteroids(world);
+
+	display_clocks();
+
+	GFX::draw(world->output_buffer, &world->ecs, false);
+	GFX::draw_to_screen();
+
 	stop_debug_clock(draw_clock);
 
 	display_clocks();
+}
 
 #if 0
 	GFX::Renderable renderable = {}; 
@@ -272,7 +292,6 @@ void step(float32 delta)
 	}
 
 #endif
-}
 
 #if 0
 	// Step
@@ -357,7 +376,7 @@ void step(float32 delta)
 			body.rotation = {0.0f, 0.0f, 2.0f};
 			body.linear_damping = 1.0f;
 			body.angular_damping = 0.99f;
-			body.shape = make_mesh(cone.positions, cone.stride, cone.indicies);
+			body.shape = make_mesh(cone.positions, cone.stride, cone.indices);
 			body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 1.0f));
 
 			EntityID g = add_entity(&world->ecs);
@@ -379,59 +398,43 @@ void step(float32 delta)
 		}
 
 		run_tests();
-#if 0
+
+#if 1
 		// Test code.
 		Mesh mesh = load_mesh("res/monkey.obj");
 		free_mesh(mesh);
-
 		
 		// Shader program
 		Array<GFX::ShaderInfo> shader_info = {
-			{ GL_VERTEX_SHADER, "src/shader/simple.vert" },
-			{ GL_FRAGMENT_SHADER, "src/shader/simple.frag" }
+			{ GL_VERTEX_SHADER, "src/shader/obj.vert" },
+			{ GL_FRAGMENT_SHADER, "src/shader/obj.frag" }
 		};
 
 		program = GFX::create_shader_program(shader_info);
 		delete_array(&shader_info);
-
-		texture = GFX::create_texture("res/test2.png");
 		
 		// Vertex buffer
-		Array<float32> data_vb = {
-			-.5f, .0f, .5f, .0f, .0f,
-			-.5f, .0f, -.5f, 2.0f, .0f,
-			.5f, .0f, -.5f, .0f, .0f,
-			.5f, .0f, .5f, 2.0f, .0f,
-			.0f, 1.0f, .0f, .5f, 2.0f
-		};
+		Mesh mesh = load_mesh("res/monkey.obj");
+		Array<float32> data_vb = to_float32(mesh.positions);
 		
 		vertex_buffer = GFX::create_vertex_buffer(data_vb);
 		delete_array(&data_vb);
 
 		// Index buffer
-		Array<uint32> data_ib = {
-			0, 4, 3,
-			1, 4, 0,
-			2, 4, 1,
-			3, 4, 2
-		};
-
-		GFX::IndexBuffer index_buffer = GFX::create_index_buffer(data_ib);
-		
-		delete_array(&data_ib);
+		GFX::IndexBuffer index_buffer = GFX::create_index_buffer(mesh.indices);
 		
 		// Vertex array
 		Array<GFX::VertexAttribute> attributes = {
-			{ vertex_buffer, 0, 3, GL_FLOAT, false, 5 << 2, (void *) 0 },
-			{ vertex_buffer, 1, 2, GL_FLOAT, false, 5 << 2, (void *) (3 << 2) }
+			{ vertex_buffer, 0, 3, GL_FLOAT },
 		};
 		vertex_array = GFX::create_vertex_array(attributes, index_buffer);
 		delete_array(&attributes);
 
 		// Renderable
 		renderable.vertex_array = vertex_array;
-		renderable.num_vertices = 12;
+		renderable.num_vertices = size(mesh.indices);
 		renderable.program = program;
+		free_mesh(mesh);
 		
 		// Model matrix
 		renderable.matrix_profiles = create_array<GFX::MatrixProfile>(1);
@@ -479,48 +482,4 @@ void step(float32 delta)
 		relative_impulse(body, impulse, offset);
 	}
 #endif
-#endif
-
-#if 0
-// Old update.
-void update(float32 delta)
-{
-	float32 rx = AXIS_VAL("xrot") * 3.0f * delta;
-	float32 ry = AXIS_VAL("yrot") * 3.0f * delta;
-
-	if (rx || ry)
-	{
-		world->camera.rotx -= rx;
-		world->camera.roty -= ry;
-	}
-	camera.transform.orientation = toQ(world->camera.roty, world->camera.rotx, 0);
-
-	float32 dx = AXIS_VAL("xmove") * speed * delta;
-	float32 dz = AXIS_VAL("zmove") * speed * delta;
-	if (dx || dz)
-	{
-		world->camera.position.x += dx * cos(-world->camera.rotx) - dz * sin(-world->camera.rotx);
-		world->camera.position.z += dz * cos(-world->camera.rotx) + dx * sin(-world->camera.rotx);
-	}
-
-	world->camera.position.y += (AXIS_VAL("up") - AXIS_VAL("down")) * speed * delta;
-
-	camera.transform.position = world->camera.position;
-}
-
-void draw()
-{
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-#if 0
-	GFX::debug_draw_point({ .0f, .0f, .0f }, { .5f, .75f, .25f });
-
-	GFX::bind(texture);
-	GFX::draw(renderable);
-
-	GFX::debug_draw_line({ .0f, 1.0f, .0f }, { .0f, 2.0f, .0f }, { 1.0f, .0f, .0f });
-	GFX::debug_draw_point({ .0f, 2.5f, .0f }, { .0f, 1.0f, .0f });
-#endif
-}
 #endif
