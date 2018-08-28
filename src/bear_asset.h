@@ -62,7 +62,7 @@ struct AssetHeader
 			int32 num_verticies;
 			Vertex *verticies;
 			int32 num_indicies;
-			uint32 *indicies;
+			uint32 *indices;
 		} mesh;
 		// TODO Font.
 	};

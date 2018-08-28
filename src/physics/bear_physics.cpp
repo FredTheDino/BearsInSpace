@@ -367,7 +367,6 @@ void find_collisions(ECS *ecs, Physics *engine)
 			}
 		}
 	}
-	PRINT("Num tests: %d\n", num_collision_tests);
 }
 
 Mat4f make_orthonormal_basis(Vec3f x, Vec3f y)

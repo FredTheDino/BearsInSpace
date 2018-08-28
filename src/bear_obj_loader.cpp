@@ -90,9 +90,10 @@ Mesh load_mesh(char *path, void *(*alloc)(size_t))
 	}
 	// Now we kinda know the size of the other arrays.
 	// Just randomly choosen 2
-	mesh.normals	= static_array<Vec3f>(mesh.positions.size * 2);
-	mesh.uvs		= static_array<Vec2f>(mesh.positions.size * 2);
-	mesh.indices	= static_array<uint32>(mesh.positions.size * 2);
+	uint64 num_elements = mesh.positions.size * 2;
+	mesh.normals	= create_array<Vec3f> (num_elements);
+	mesh.uvs		= create_array<Vec2f> (num_elements);
+	mesh.indices	= create_array<uint32>(num_elements);
 	
 	// Reset the ptr.
 	ptr = start;

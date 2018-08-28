@@ -193,13 +193,13 @@ void update_assets() // Create the assets here since this is called on the main 
 				case(BAT_MESH):
 					{
 						header->mesh.verticies = (Vertex *) header->data;
-						header->mesh.indicies = (uint32 *) (data + (sizeof(Vertex) * header->mesh.num_verticies));
+						header->mesh.indices = (uint32 *) (data + (sizeof(Vertex) * header->mesh.num_verticies));
 						GFX::VertexBuffer buffer = GFX::create_vertex_buffer(
 							(float32 *) header->mesh.verticies,
 							header->mesh.num_verticies * 8);
 
 						GFX::IndexBuffer index = GFX::create_index_buffer(
-							(uint32 *) header->mesh.indicies, 
+							(uint32 *) header->mesh.indices, 
 							header->mesh.num_indicies);
 						static_pop(data);
 

@@ -45,4 +45,4 @@ if "%1" == "run" (
 :_END
 set PATH=%ORIGINAL_PATH%
 popd
-pause
+rem pause

@@ -55,7 +55,7 @@ void draw_asteroids(World *world)
 		append(&renderable.matrix_profiles, transform_profile);
 
 		GFX::bind(default_image.texture);
-		GFX::draw(renderable);
+		GFX::draw(world->output_buffer, renderable);
 	}
 }
 

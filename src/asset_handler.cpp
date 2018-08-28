@@ -150,7 +150,7 @@ int main(int arg_len, char **args)
 					Array<Vertex> out_verticies = create_array<Vertex>(100);
 					Array<uint32> out_indicies = create_array<uint32>(100);
 					Array<Indici> full  = create_array<Indici>(100);
-					for (uint64 i = 0; i < size(mesh.indicies);)
+					for (uint64 i = 0; i < size(mesh.indices);)
 					{
 						int32 p_i = -1;
 						int32 u_i = -1;
@@ -160,11 +160,11 @@ int main(int arg_len, char **args)
 						// These has to be in this order. Since this is how they will be packed. I know
 						// It's kinda B.
 						ASSERT(size(mesh.positions));
-						p_i = get(mesh.indicies, i++) - 1;
+						p_i = get(mesh.indices, i++) - 1;
 						if (size(mesh.uvs))
-							u_i = get(mesh.indicies, i++) - 1;
+							u_i = get(mesh.indices, i++) - 1;
 						if (size(mesh.normals))
-							n_i = get(mesh.indicies, i++) - 1;
+							n_i = get(mesh.indices, i++) - 1;
 
 						ASSERT(-1 <= p_i);
 						ASSERT(-1 <= n_i);
@@ -211,7 +211,7 @@ int main(int arg_len, char **args)
 					header.mesh.num_verticies = size(out_verticies);
 					header.mesh.verticies = out_verticies.data;
 					header.mesh.num_indicies = size(out_indicies);
-					header.mesh.indicies = out_indicies.data;
+					header.mesh.indices = out_indicies.data;
 
 #if 0
 					if (ends_with(header.tag.lower, "plane"))
@@ -253,12 +253,12 @@ int main(int arg_len, char **args)
 		if (asset.type == BAT_MESH)
 		{
 			uint64 vert_size = sizeof(*asset.mesh.verticies) * asset.mesh.num_verticies;
-			uint64 indi_size = sizeof(*asset.mesh.indicies) * asset.mesh.num_indicies;
+			uint64 indi_size = sizeof(*asset.mesh.indices) * asset.mesh.num_indicies;
 			keep_writing(disk, asset.mesh.verticies, vert_size);
-			keep_writing(disk, asset.mesh.indicies, indi_size);
+			keep_writing(disk, asset.mesh.indices, indi_size);
 			asset.data_size = vert_size + indi_size;
 			free(asset.mesh.verticies);
-			free(asset.mesh.indicies);
+			free(asset.mesh.indices);
 		}
 		else
 		{

@@ -23,6 +23,7 @@ void append(Array<T> *arr, T val)
 	arr->data[arr->size++] = val;
 }
 
+#if 0
 template <typename T>
 Array<T> temp_array(std::initializer_list<T> list)
 {
@@ -40,6 +41,7 @@ Array<T> static_array(std::initializer_list<T> list)
 		append(&arr, e);
 	return arr;
 }
+#endif
 
 template <typename T>
 void prepend(Array<T> *arr, T val)

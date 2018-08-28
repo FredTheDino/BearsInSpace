@@ -45,6 +45,7 @@ namespace GFX
 		return t;
 	}
 
+#if 0 // Depricated
 	Texture create_texture(Image img)
 	{
 		Texture t = {};
@@ -64,7 +65,7 @@ namespace GFX
 		
 		return t;
 	}
-	
+
 	Texture create_texture(string path)
 	{
 		Image img = load_image(path);
@@ -72,6 +73,7 @@ namespace GFX
 		free_image(&img);
 		return t;
 	}
+#endif
 
 	void bind(Texture texture, uint8 target=0)
 	{

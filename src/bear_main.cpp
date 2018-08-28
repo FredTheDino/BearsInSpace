@@ -51,23 +51,7 @@ GFX::ShaderProgram program;
 #include "bear_test.cpp"
 #endif
 
-#if 1
-GFX::VertexBuffer vertex_buffer;
-GFX::VertexArray vertex_array;
-GFX::ShaderProgram program;
-GFX::Texture texture;
-Transform transform = create_transform();
 Camera camera;
-#endif
-
-#if 0
-float32 rotx = 0;
-float32 roty = 0;
-
-Mesh cone;
-float32 speed = 6.0f;
-#endif
-
 
 AudioID buffer;
 
@@ -75,14 +59,14 @@ AudioID buffer;
 extern "C"
 void init(PLT _plt, GameMemory *_mem)
 {
-	mem = _mem;
-	plt = _plt;
-	world = static_push_struct(World); // This must allways be the first allocation.
+  mem = _mem;
+  plt = _plt;
+  world = static_push_struct(World); // This must allways be the first allocation.
 
-	if (!GL_LOADED)
-	{
-		auto error = gladLoadGL();
-		ASSERT(error);
+  if (!GL_LOADED)
+    {
+      auto error = gladLoadGL();
+      ASSERT(error);
 		glEnable(GL_DEPTH_TEST);
 		GFX::init_matrix_profiles();
 	}
@@ -124,6 +108,8 @@ void reload(PLT _plt, GameMemory *_mem)
 	}
 	
 	GFX::init_debug();
+
+	
 
 	start_loader();
 	//load_asset(0);
@@ -221,12 +207,14 @@ void step(float32 delta)
 	reset_debug_clock();
 
 	/* -- START MOVEMENT -- */
+	// Movement doesn't work. Fix it.
 	float32 planar_speed = 15.0f * delta;
 	float32 vertical_speed = 15.0f * delta;
 	float32 rotational_speed = 1.5f * delta;
 	Vec3f movement = {};
 	movement.x = AXIS_VAL("xmove") * planar_speed;
 	movement.z = AXIS_VAL("zmove") * planar_speed;
+	PRINT("%.4f\n", movement.x);
 	movement = camera.transform.orientation * movement;
 	movement.y += (AXIS_VAL("up") - AXIS_VAL("down")) * vertical_speed;
 	camera.transform.position += movement;
@@ -242,19 +230,18 @@ void step(float32 delta)
 	stop_debug_clock(phy_clock);
 
 	auto draw_clock = start_debug_clock("Render");
+	bind(world->output_buffer);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//debug_draw_engine(&world->ecs, &world->phy);
 	draw_asteroids(world);
 
-	display_clocks();
-
-	GFX::draw(world->output_buffer, &world->ecs, false);
+	//GFX::draw(world->output_buffer, &world->ecs, false);
 	GFX::draw_to_screen();
 
 	stop_debug_clock(draw_clock);
 
-	display_clocks();
+	//display_clocks();
 }
 
 #if 0
@@ -298,7 +285,6 @@ void step(float32 delta)
 	if (should_run_tests)
 	{
 		{
-
 			{
 				Transform t;
 				t.scale = {2.0f, 3.0f, 1.0f,};
@@ -396,7 +382,6 @@ void step(float32 delta)
 			add_components(&world->ecs, &world->phy, h, body, transform);
 #endif
 		}
-
 		run_tests();
 
 #if 1
