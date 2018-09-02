@@ -12,7 +12,8 @@ bool running = true;
 #include "bear_shared.h"
 #include "bear_sdl_threads_plt.h"
 
-#define LOG(type, ...) win_printf("[%s:%d] type :", __FILE__, __LINE__, type); win_printf(__VA_ARGS__); win_printf("\n");
+#define LOG(type, ...) { win_printf("[%s:%d] %s :", __FILE__, __LINE__, type); win_printf(__VA_ARGS__); win_printf("\n"); }
+#define ERROR_LOG(type, ...) LOG("ERROR:" #type, __VA_ARGS__)
 #define PRINT(...) win_printf(__VA_ARGS__)
 int32 win_printf(const char *format, ...);
 void win_log(const char *file, int32 line, const char *type, const char *msg);
@@ -96,7 +97,8 @@ int32 get_file_edit_time(const char *path)
 
 WINDOWS_FILE_ERROR:
 	CloseHandle(file_handle);
-	return -1;
+	HALT_AND_CATCH_FIRE();
+	return 0;
 }
 
 OSFile read_entire_file(const char *path, AllocatorFunc alloc)
@@ -170,6 +172,7 @@ bool load_libbear(GameHandle *handle)
 	if (!game.lib)
 	{
 		LOG("LIB LOAD", "Failed to load libgame.so!");
+		win_printf("Windows Error Code: %d\n", GetLastError());
 		return false;
 	}
 	StepFunc step = (StepFunc) GetProcAddress(game.lib, "step");
@@ -278,7 +281,7 @@ int CALLBACK WinMain(
 	{
 		LOG("INIT", "Unable to initalize SDL.");
 		SDL_Quit();
-		return(-1);
+		HALT_AND_CATCH_FIRE();
 	}
 	SDL_Window *window = SDL_CreateWindow(
 			"Space Bears",
@@ -313,14 +316,14 @@ int CALLBACK WinMain(
 	{
 		LOG("INIT", "Unable to open audio device");
 		SDL_Quit();
-		return(-1);
+		HALT_AND_CATCH_FIRE();
 	}
 
 	game.lock = SDL_CreateMutex();
 	game.first_load = true;
 	if (load_libbear(&game) == false)
 	{
-		return(-1);
+	  HALT_AND_CATCH_FIRE();
 	}
 
 	init_input();

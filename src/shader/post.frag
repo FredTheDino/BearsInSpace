@@ -10,7 +10,8 @@ out vec4 out_color;
 
 void main()
 {
-	float dist = 0.005f;
+	float dist = .0f;
+	//float dist = 0.005f;
 	
 	vec4 color = vec4(.0f, .0f, .0f, .0f);
 	color += texture(t_sampler, pass_tex_coords) * 0.1964825501511404f;

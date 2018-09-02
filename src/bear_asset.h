@@ -28,11 +28,32 @@ struct AssetFileHeader
 	uint32 num_assets;
 };
 
+// Vertex 
+
 struct Vertex
 {
 	float32 x, y, z;
 	float32 u, v;
 	float32 nx, ny, nz;
+};
+
+// Font stuff
+// TODO: Mapping function, since the .fnt file should have the same set of chars in it, we can 
+// do a simple transform to change from chars to indicies in the list. Saving us space.
+struct Glyph
+{
+	char id;
+	float32 u, v;
+	float32 x, y;
+	float32 w, h;
+	float32 x_advance;
+};
+
+struct Kerning
+{
+	char first;
+	char second;
+	float32 amount;
 };
 
 // List of these is after the file header
@@ -64,7 +85,18 @@ struct AssetHeader
 			int32 num_indicies;
 			uint32 *indices;
 		} mesh;
-		// TODO Font.
+		struct 
+		{
+			int32 width, height;
+			int32 color_depth;
+			int8 *image;
+
+			uint64 max_glyph;
+			uint64 num_kernings;
+			Kerning *kernings;
+			uint64 num_glyphs;
+			Glyph *glyphs;
+		} font;
 	};
 };
 

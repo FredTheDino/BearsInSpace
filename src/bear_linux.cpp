@@ -6,7 +6,8 @@
 #include <stdio.h>
 
 #include "bear_shared.h"
-#define LOG(type, msg) linux_log(__FILE__, __LINE__, type, msg)
+#define LOG(type, ...) { printf("[%s:%d] %s :", __FILE__, __LINE__, type); printf(__VA_ARGS__); printf("\n"); }
+#define ERROR_LOG(type, ...) LOG("ERROR:" #type, __VA_ARGS__)
 #define PRINT(...) printf(__VA_ARGS__)
 
 void linux_log(string file, int32 line, string type, string msg)

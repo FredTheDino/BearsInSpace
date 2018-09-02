@@ -55,7 +55,12 @@ void unload_asset(uint32 asset_id)
 				{
 					LOG("LOADER ERROR", "Don't know how to free textures... Sorry...\n");
 					break;
-
+				}
+			case (BAT_FONT):
+				{
+					LOG("LOADER ERROR", "Don't know how to free font textures... Sorry...\n");
+					static_pop(am.headers[asset_id].data);
+					break;
 				}
 			default:
 				PRINT("Trying to free unrecognized Asset Type (%d)\n", header->type);
@@ -158,7 +163,7 @@ Asset get_asset(AssetID asset_id)
 // Returns the first match.
 Asset get_asset(AssetType type, const char *upper=0, const char *lower=0)
 {
-	return get_asset(get_asset_id(type, upper, lower));
+		return get_asset(get_asset_id(type, upper, lower));
 }
 
 bool is_loading()
@@ -172,6 +177,20 @@ bool is_loading()
 		}
 	}
 	return false;
+}
+
+bool is_loaded(AssetID id)
+{
+	return am.loaded_states[id] == BAS_LOADED;
+}
+
+AssetHeader get_asset_header(AssetID asset_id)
+{
+
+	ASSERT(asset_id >= 0);
+	ASSERT(asset_id < (int32) am.file_header.num_assets);
+
+	return am.headers[asset_id];
 }
 
 void update_assets() // Create the assets here since this is called on the main thread.
@@ -190,7 +209,7 @@ void update_assets() // Create the assets here since this is called on the main 
 			Asset asset;
 			switch (header->type)
 			{
-				case(BAT_MESH):
+				case (BAT_MESH):
 					{
 						header->mesh.verticies = (Vertex *) header->data;
 						header->mesh.indices = (uint32 *) (data + (sizeof(Vertex) * header->mesh.num_verticies));
@@ -213,7 +232,7 @@ void update_assets() // Create the assets here since this is called on the main 
 						asset.draw_length = header->mesh.num_indicies;
 						break;
 					}
-				case(BAT_IMAGE):
+				case (BAT_IMAGE):
 					{
 						asset.texture = GFX::create_texture(
 								header->image.width, header->image.height, 
@@ -221,7 +240,7 @@ void update_assets() // Create the assets here since this is called on the main 
 						static_pop(data);
 						break;
 					}
-				case(BAT_SOUND):
+				case (BAT_SOUND):
 					{
 						AudioBuffer buffer;
 						buffer.channels = header->sound.channels;
@@ -229,8 +248,21 @@ void update_assets() // Create the assets here since this is called on the main 
 						buffer.sample_rate = header->sound.sample_rate;
 						buffer.num_samples = header->sound.num_samples;
 						buffer.data = header->data;
-						// TODO: This is dumb...
-						add_buffer(&world->audio, buffer);
+						asset.buffer_id = add_buffer(&world->audio, buffer);
+					}
+					break;
+				case (BAT_FONT):
+					{
+						uint64 image_size = sizeof(int8) * header->font.width * header->font.height * header->font.color_depth;
+						uint64 glyph_size = sizeof(Glyph) * header->font.num_glyphs;
+						//uint64 kerning_size = sizeof(Kerning) * header->font.num_kernings; // We don't need to calculate this, it's here for completion.
+						header->font.image = (int8 *) data;
+						header->font.glyphs = (Glyph *) (data + image_size);
+						header->font.kernings = (Kerning *) (data + image_size + glyph_size);
+						
+						asset.texture = GFX::create_texture(
+								header->font.width, header->font.height, 
+								header->font.color_depth, data);
 					}
 					break;
 				default:
@@ -266,7 +298,6 @@ void start_loader()
 	load_asset(mesh_id);
 	load_asset(img_id);
 
-	AssetState state;
 	while (is_loading());
 
 	update_assets();

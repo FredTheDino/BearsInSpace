@@ -30,7 +30,7 @@ namespace GFX
 	void sub_data(VertexBuffer buffer, int64 offset, Array<float32> data)
 	{
 		bind(buffer);
-		glBufferSubData(GL_ARRAY_BUFFER, offset, size(data) * sizeof(float32), data_ptr(data));
+		glBufferSubData(GL_ARRAY_BUFFER, offset * sizeof(float32), size(data) * sizeof(float32), data_ptr(data));
 	}
 
 	void delete_vertex_buffer(VertexBuffer buffer)

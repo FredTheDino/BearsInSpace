@@ -7,7 +7,7 @@
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
-#define ASPECT_RATIO ((float32) WINDOW_WIDTH) / WINDOW_HEIGHT
+#define ASPECT_RATIO (((float32) WINDOW_WIDTH) / WINDOW_HEIGHT)
 
 #define HALT_AND_CATCH_FIRE() ((int *)(void *)0)[0] = 1
 #define ASSERT(expr) if (!(expr)) { HALT_AND_CATCH_FIRE(); }
@@ -130,8 +130,8 @@ bool str_eq(const char *_a, const char *_b)
 
 uint64 str_len(const char *str)
 {
-	char *end = (char *) str;
-	while (*end != '\0') end++;
-	return (str - end); 
+	uint64 i = 0;
+	while (str[i++] != '\0');
+	return i - 1;
 }
 

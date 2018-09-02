@@ -20,19 +20,21 @@ World *world;
 #include "audio/bear_mixer.cpp"
 
 // Utility
-#include "bear_utility.h"
+//#include "bear_utility.h"
 
 // GFX
 #include "glad.c"
 #define GL_LOADED glClear
 #include "bear_gfx.h"
 
+// Font
+// #include "gfx/bear_font.h"
+
 // ECS
 #include "ecs/bear_ecs.cpp"
 
 // Physics
 #include "physics/bear_physics.cpp"
-
 
 // Assets
 #include "bear_loader.cpp"
@@ -43,7 +45,10 @@ World *world;
 GFX::ShaderProgram program;
 #include "world/bear_world_gen.cpp"
 
-// Draw function for ECS
+// Font rendering... It depends on wierd stuff...
+#include "gfx/bear_font.cpp"
+
+// Draw function for ECS (should preferably be the last include)
 #include "gfx/bear_draw_ecs.h"
 
 #if 0
@@ -77,10 +82,13 @@ void init(PLT _plt, GameMemory *_mem)
 	//buffer = load_sound(&world->audio, "res/stockhausen.wav");
 
 	camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
-	camera.transform.position = {-30.0f, 25.0f, 20.0f};
-	camera.transform.orientation = toQ(5.7f, -1.0f, 0);
+	//camera.transform.position = {-30.0f, 25.0f, 20.0f};
+	//camera.transform.orientation = toQ(5.7f, -1.0f, 0);
 	GFX::add_matrix_profile("m_view", &camera);
-
+	
+	// Font
+	//load_font("open-sans", "res/fonts/open-sans/OpenSans-Regular.ttf");
+	
 	// Output graphics
 	world->output_buffer = GFX::create_frame_buffer(temp_array<uint32>({ GL_COLOR_ATTACHMENT0 }), WINDOW_WIDTH, WINDOW_HEIGHT);
 	world->output_vb = GFX::create_vertex_buffer(temp_array<float32>({ -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1 }));
@@ -108,10 +116,11 @@ void reload(PLT _plt, GameMemory *_mem)
 	}
 	
 	GFX::init_debug();
-
-	
+	GFX::init_font_rendering();
 
 	start_loader();
+
+	load_asset(get_asset_id(BAT_FONT));
 	//load_asset(0);
 
 	rng = seed(34565432654323);
@@ -131,7 +140,6 @@ void reload(PLT _plt, GameMemory *_mem)
 
 	program = GFX::create_shader_program(shader_info);
 
-
 	//play_sound(&world->audio, buffer, 1.0f, 1.0f);
 	// How the fk does the graphics work?
 
@@ -140,43 +148,6 @@ void reload(PLT _plt, GameMemory *_mem)
 	// TODO: Realloc doens't work... I don't know why.
 	float32 range = 100.0f;
 	generate_astroid_field(world, 1000, V3(-1.0, -1.0f, -1.0f) * range, V3(1.0f, 1.0f, 1.0f) * range);
-
-#if 0 
-	CTransform transform = {};
-	transform.type = C_TRANSFORM;
-	transform.position = {0.0f, 5.0f, -4.0f};
-	transform.scale = {1.0f, 1.0f, 1.0f};
-	transform.orientation = toQ(1.5f, 1.5f, 0.0f);
-
-	CBody body = {};
-	body.type = C_BODY;
-	body.inverse_mass = 0.1f;
-	body.velocity = {0.0f, -1.0f, 1.0f};
-	body.rotation = {0.0f, 1.0f, 1.0f};
-	body.linear_damping = 0.80f;
-	body.angular_damping = 0.80f;
-	body.shape = make_box(2.0f, 2.0f, 2.0f);
-	body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 10.0f));
-
-	EntityID e = add_entity(&world->ecs);
-	add_components(&world->ecs, &world->phy, e, &body, &transform);
-
-	transform.type = C_TRANSFORM;
-	transform.position = {-1.0f, 1.0f, 1.0f};
-	transform.orientation = {1.0f, 0.0f, 0.0f, -0.05f};
-
-	body.type = C_BODY;
-	body.inverse_mass = 0.0f;
-	body.velocity = {0.0f, 0.0f, 0.0f};
-	body.rotation = {0.0f, 0.0f, 0.0f};
-	body.linear_damping = 0.0f;
-	body.angular_damping = 0.0f;
-	body.shape = make_box(10.0f, 1.0f, 10.0f);
-	body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 0.0f));
-
-	EntityID f = add_entity(&world->ecs);
-	add_components(&world->ecs, &world->phy, f, &body, &transform);
-#endif
 }
 
 // Exit APP
@@ -196,6 +167,8 @@ void replace()
 	PRINT("MEM watermark: %d\n", get_static_memory_watermark());
 	stop_loader();
 	GFX::destroy_debug();
+	//GFX::destroy_font_rendering();
+	PRINT("WHAT\n");
 }
 
 
@@ -237,6 +210,15 @@ void step(float32 delta)
 	draw_asteroids(world);
 
 	//GFX::draw(world->output_buffer, &world->ecs, false);
+	static AssetID font = 0;
+	if (font == 0)
+	{
+		font = get_asset_id(BAT_FONT);
+	}
+	GFX::draw_surface_text(font, -0.5,  0.5, "Hello World", 1);
+	GFX::draw_surface_text(font, -0.5 + 0.01f,  0.5 - 0.01f, "Hello World", 1, V3(0.0f, 0.0f, 0.0f));
+	GFX::draw_surface_text(font, -0.5,  0.0, "Hello World", 2);
+	GFX::draw_surface_text(font, -0.5, -0.9, "Hello World",8);
 	GFX::draw_to_screen();
 
 	stop_debug_clock(draw_clock);

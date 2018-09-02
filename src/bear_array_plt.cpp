@@ -44,18 +44,24 @@ Array<T> static_array(std::initializer_list<T> list)
 #endif
 
 template <typename T>
-void prepend(Array<T> *arr, T val)
+void insert(Array<T> *arr, uint64 index, T val)
 {
 	ASSERT(arr->size <= arr->limit);
 	if (arr->size == arr->limit)
 		relimit(arr, arr->limit * 2);
 
-	for (uint64 i = arr->size; i > 0; i--)
+	for (uint64 i = arr->size; i > index; i--)
 		arr->data[i] = arr->data[i - 1];
 
-	arr->data[0] = val;
+	arr->data[index] = val;
 
 	arr->size++;
+}
+
+template <typename T>
+void prepend(Array<T> *arr, T val)
+{
+	insert(arr, 0, val);
 }
 
 template <typename T>

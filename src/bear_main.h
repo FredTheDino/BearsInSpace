@@ -2,9 +2,12 @@
 
 #define PRINT(...) plt.print(__VA_ARGS__)
 #define LOG(type, ...) \
-	plt.print("[%s:%d] type :", __FILE__, __LINE__, type); \
+	{\
+	plt.print("[%s:%d] %s :", __FILE__, __LINE__, type); \
 	plt.print(__VA_ARGS__);\
-	plt.print("\n");
+	plt.print("\n");\
+	}
+#define ERROR_LOG(type, ...) LOG("ERROR:" #type, __VA_ARGS__)
 
 // Array
 #include "bear_array.cpp"

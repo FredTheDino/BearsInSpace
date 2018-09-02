@@ -3,11 +3,14 @@
 #define ASSERT(expr) if (!(expr)) { HALT_AND_CATCH_FIRE(); }
 
 #include <stdio.h>
+#include <stdlib.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "bear_types.h"
 #include "bear_array.h"
 #include "bear_array_plt.cpp"
+
+//#include "gfx/bear_font.h"
 
 #include "bear_wav_loader.cpp"
 #include "bear_obj_loader.cpp"
@@ -16,6 +19,69 @@
 
 Array<FileData> files;
 Array<FileData> endings;
+
+char __line[256];
+bool get_line(char **line, uint64 *length, FILE *file)
+{
+	*line = (char *) __line;
+	uint64 l = 0;
+	char c;
+	do 
+	{
+		c = fgetc(file);
+		if (feof(file))
+			break;
+		__line[l] = c;
+		l++;
+	} while (c != '\n' && c != '\r' && c != '\0');
+	if (l == 0)
+		return false;
+
+	__line[l] = '\0';
+	return true;
+}
+
+int64 str_len(const char *str)
+{
+	int64 i = 0;
+	while (str[i++] != '\0');
+	return i;
+}
+
+uint64 str_eq(const char *a, const char *b, int64 len=-1)
+{
+	if (len == -1)
+	{
+		uint64 a_len = str_len(a);
+		uint64 b_len = str_len(b);
+		len = a_len < b_len ? a_len : b_len;
+		len--;
+	}
+
+	for (uint64 i = 0; i < len; i++)
+	{
+		if (b[i] != a[i])
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+const char *go_to_after(const char *source, const char *look_for)
+{
+	int64 look_for_length = str_len(look_for) - 1;
+	const char *ptr = source;
+	while (*ptr)
+	{
+		if (str_eq(ptr, look_for, look_for_length))
+		{
+			return ptr + look_for_length;
+		}
+		ptr++;
+	}
+	return nullptr;
+}
 
 char _strings[2048];
 char *write_head = (char *) _strings;
@@ -65,7 +131,7 @@ Array<FileData> initalize_endings()
 	FILE_ENDING(BAT_IMAGE, "png");
 	FILE_ENDING(BAT_SOUND, "wav");
 	FILE_ENDING(BAT_MESH, "obj");
-	FILE_ENDING(BAT_FONT, "ttf");
+	FILE_ENDING(BAT_FONT, "fnt");
 	return endings;
 }
 
@@ -213,19 +279,64 @@ int main(int arg_len, char **args)
 					header.mesh.num_indicies = size(out_indicies);
 					header.mesh.indices = out_indicies.data;
 
-#if 0
-					if (ends_with(header.tag.lower, "plane"))
+					break;
+				}
+			case (BAT_FONT):
+				{
+					uint64 path_length = str_len(file_path);
+					file_path[path_length - 3] = 't';
+					file_path[path_length - 2] = 'x';
+					header.font.image = (int8 *) stbi_load(file_path, 
+							&header.font.width, &header.font.height, 
+							&header.font.color_depth, 0);
+					ASSERT(header.font.width == header.font.height);
+					uint32 image_size = header.font.width * header.font.height * header.font.color_depth;
+
+					file_path[path_length - 3] = 'n';
+					file_path[path_length - 2] = 't';
+					FILE *handle = fopen(file_path, "r");
+					ASSERT(handle);
+					
+					char *line;
+					size_t length;
+
+					uint32 current_glyph = 0;
+					uint32 current_kerning = 0;
+					while (get_line(&line, &length, handle))
 					{
-						for (uint32 i = 0; i < header.mesh.num_verticies; i++)
+						if (str_eq(line, "chars "))
 						{
-							Vertex v = header.mesh.verticies[i];
-							printf("V %.2f %.2f %.2f, %.2f %.2f %.2f, %.2f %.2f\n", 
-									v.x, v.y, v.z,
-									v.nx, v.ny, v.nz,
-									v.u, v.v);
+							header.font.num_glyphs = atoi(go_to_after(line, "count="));
+							header.font.glyphs = (Glyph *) malloc(header.font.num_glyphs * sizeof(Glyph));
+						}
+						else if (str_eq(line, "char "))
+						{
+							Glyph g;
+							g.id = atoi(go_to_after(line, "id="));
+							g.u = ((float32) atoi(go_to_after(line, "x="))) / (float32) header.font.width;
+							g.v = ((float32) atoi(go_to_after(line, "y="))) / (float32) header.font.width;
+							g.w = ((float32) atoi(go_to_after(line, "width="))) / (float32) header.font.width;
+							g.h = ((float32) atoi(go_to_after(line, "height="))) / (float32) header.font.width;
+							g.x = ((float32) atoi(go_to_after(line, "xoffset="))) / (float32) header.font.width;
+							g.y = ((float32) atoi(go_to_after(line, "yoffset="))) / (float32) header.font.width;
+							g.x_advance = ((float32) atoi(go_to_after(line, "xadvance="))) / (float32) header.font.width;
+							header.font.glyphs[current_glyph++] = g;
+						}
+						else if (str_eq(line, "kernings "))
+						{
+							header.font.num_kernings = atoi(go_to_after(line, "count="));
+							header.font.kernings = (Kerning *) malloc(header.font.num_kernings * sizeof(Kerning));
+						}
+						else if (str_eq(line, "kerning "))
+						{
+							Kerning k;
+							k.first = atoi(go_to_after(line, "first="));
+							k.second = atoi(go_to_after(line, "second="));
+							k.amount = ((float32) atoi(go_to_after(line, "amount="))) / (float32) header.font.width;
+							header.font.kernings[current_kerning++] = k;
 						}
 					}
-#endif
+
 					break;
 				}
 			default:
@@ -260,6 +371,19 @@ int main(int arg_len, char **args)
 			free(asset.mesh.verticies);
 			free(asset.mesh.indices);
 		}
+		else if (asset.type == BAT_FONT)
+		{
+			uint64 image_size = sizeof(int8) * asset.font.width * asset.font.height * asset.font.color_depth;
+			uint64 glyph_size = sizeof(Glyph) * asset.font.num_glyphs;
+			uint64 kerning_size = sizeof(Kerning) * asset.font.num_kernings;
+			keep_writing(disk, asset.font.image, image_size);
+			keep_writing(disk, asset.font.glyphs, glyph_size);
+			keep_writing(disk, asset.font.kernings, kerning_size);
+			asset.data_size = image_size + kerning_size + glyph_size;
+			free(asset.font.image);
+			free(asset.font.glyphs);
+			free(asset.font.kernings);
+		}
 		else
 		{
 			keep_writing(disk, asset.data, asset.data_size);
@@ -272,10 +396,6 @@ int main(int arg_len, char **args)
 	ASSERT(fwrite(assets.data, sizeof(AssetHeader), file_header.num_assets, disk));
 
 	fclose(disk);
-
-	// Write dummy header
-	// Write dummy headers
-	// Write contents
 
 	delete_array(&assets);
 	delete_array(&endings);
