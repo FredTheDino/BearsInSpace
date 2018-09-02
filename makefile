@@ -5,6 +5,13 @@ make:
 	mv bin/libbear_.so bin/libbear.so
 	g++ -ggdb -Wall -std=c++14 -O0 -D__DEBUG=1 -DLINUX src/bear_linux.cpp -o bin/game -Iinc -L./lib/linux -lSDL2 -lSDL2main -ldl -lpthread
 
+#-Iinc -L./lib/linux -lSDL2 -lSDL2main -ldl -lpthread
+asset:
+	g++ -ggdb -Wall -std=c++14 -O0 -D__DEBUG=1 -DLINUX src/asset_handler.cpp -o bin/asset 
+	./bin/asset	
+
+full: asset run
+
 run: make
 	./bin/game
 

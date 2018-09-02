@@ -156,7 +156,7 @@ AudioID load_sound(Audio *audio, const char *path) // NOTE(Ed): Assumes WAV
 	buffer.channels = header->channels;
 	buffer.bitdepth = header->bitdepth;
 	buffer.sample_rate = header->sample_rate;
-	buffer.length = chunk->size / (header->bitdepth / 8); // Num samples
+	buffer.num_samples = chunk->size / (header->bitdepth / 8); // Num samples
 
 	uint32 length = chunk->size;
 	buffer.data8 = static_push_array(int8, length);

@@ -145,21 +145,26 @@ T get(Array<T> arr, uint64 index)
 template <typename T>
 T get(Array<T> *arr, uint64 index)
 {
-	ASSERT(index >= 0 && index < arr->size);
+	ASSERT(index < arr->size);
 	return arr->data[index];
 }
 
 template <typename T>
 T *get_ptr(Array<T> arr, uint64 index)
 {
-	ASSERT(index >= 0 && index < arr.size);
+	ASSERT(index < arr.size);
 	return &arr.data[index];
 }
 
 template <typename T>
 T set(Array<T> arr, uint64 index, T val)
 {
-	T elem = get(arr, index);
+	ASSERT(index < arr.limit);
+	T elem;
+	if (index < arr.size)
+		elem = get(arr, index);
+	else
+		arr.size = index + 1;
 
 	arr.data[index] = val;
 

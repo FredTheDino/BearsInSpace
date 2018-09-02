@@ -19,6 +19,7 @@ void static_pop(void *ptr)
 {
 	MemoryAllocation *pop_block = ((MemoryAllocation *) ptr) - 1;
 	pop_block->taken = false;
+	pop_block->next_free = 0;
 
 	MemoryAllocation **prev_block_ptr = &mem->free;
 	MemoryAllocation *block = mem->free;
@@ -31,13 +32,10 @@ void static_pop(void *ptr)
 				block->size += pop_block->size;
 				// Might be a free one afterwards.
 				MemoryAllocation *next = block->next_free;
-				if (next)
+				if (next && neighboring_allocations(next, pop_block))
 				{
-					if (neighboring_allocations(next, pop_block))
-					{
-						block->size += next->size;
-						block->next_free = next->next_free;
-					}
+					block->size += next->size;
+					block->next_free = next->next_free;
 				}
 			}
 			else
@@ -48,23 +46,12 @@ void static_pop(void *ptr)
 			return;
 		}
 
-		if (pop_block < block->next_free)
+		if (block < pop_block && pop_block < block->next_free)
 		{
-			MemoryAllocation *next = block->next_free;
-			ASSERT(!next->taken);
-			if (neighboring_allocations(pop_block, block))
-			{
-				pop_block->size += next->size;
-				pop_block->next_free = next->next_free;
-			}
-			else
-			{
-				pop_block->next_free = block->next_free;
-				block->next_free = pop_block;
-			}
+			pop_block->next_free = block->next_free;
+			block->next_free = pop_block;
 			return;
 		}
-	
 		prev_block_ptr = &block->next_free;
 		block = block->next_free;
 	}
@@ -76,29 +63,32 @@ void *static_push(uint64 size)
 	if (!mem->static_at)
 		mem->static_at = mem->static_memory;
 	uint64 alloc_size = size + sizeof(MemoryAllocation);
-	void *ptr;
 	MemoryAllocation *block = nullptr;
+	void *ptr;
 
-	// Couldn't I make this into the allways condition. And just have a block on the end that we 
-	// can find last.
+
+	const uint32 wasted_space = 150;
+	// Couldn't I make this into the allways condition. 
+	// And just have a block on the end that we can find last.
 	if (mem->free)
 	{
 		// Pop the list and use that
 		MemoryAllocation **prev_block_ptr = &mem->free;
 		block = mem->free;
-		for (; block; block = block->next_free)
+		while (block)
 		{
 			ASSERT((void *) block < (void *) mem->static_at);
 			ASSERT(!block->taken);
 			if (alloc_size <= block->size)
 			{
-				if (alloc_size < block->size)
+				if ((alloc_size + wasted_space) < block->size)
 				{
 					MemoryAllocation *new_block = (MemoryAllocation *)(((uint8 *) block) + alloc_size);
 					new_block->taken = false;
 					new_block->size = block->size - alloc_size;
 					new_block->next_free = block->next_free;
 					*prev_block_ptr = new_block;
+					block->size = alloc_size;
 				}
 				else
 				{
@@ -106,7 +96,8 @@ void *static_push(uint64 size)
 				}
 				break;
 			}
-			prev_block_ptr = &block;
+			prev_block_ptr = &block->next_free;
+			block = block->next_free;
 		}
 	}
 
@@ -115,10 +106,10 @@ void *static_push(uint64 size)
 		// We need to reserve more
 		ASSERT(mem->static_at + alloc_size < mem->static_memory + mem->static_memory_size);
 		block = (MemoryAllocation *) mem->static_at;
+		block->size = alloc_size;
 		mem->static_at += alloc_size;
 	}
 	block->taken = true;
-	block->size = alloc_size;
 	block->next_free = nullptr;
 	ptr = block + 1; // If it was an array, the next element should be the data ptr.
 	return ptr;
@@ -130,12 +121,17 @@ void *static_realloc(void *ptr, uint64 size)
 	uint8 *old_ptr = (uint8 *) ptr;
 	uint8 *new_ptr = (uint8 *) static_push(size);
 	MemoryAllocation * block = ((MemoryAllocation *) ptr) - 1;
-	for (uint8 i = 0; i < block->size; i++)
+	for (uint64 i = 0; i < block->size; i++)
 	{
 		new_ptr[i] = old_ptr[i];
 	}
 	static_pop(ptr);
 	return (void *) new_ptr;
+}
+
+uint64 get_static_memory_watermark()
+{
+	return mem->static_at - mem->static_memory;
 }
 
 #define static_push_struct(type) (type *) static_push(sizeof(type))

@@ -18,6 +18,36 @@ namespace GFX
 		const void  *offset;
 	};
 
+	VertexArray create_vertex_array(VertexAttribute *attribs, uint64 size, IndexBuffer index_buffer={})
+	{
+		VertexArray vertex_array;
+		glGenVertexArrays(1, &vertex_array.id);
+
+		glBindVertexArray(vertex_array.id);
+
+		if (index_buffer.id > 0)
+		{
+			vertex_array.has_indices = true;
+			bind(index_buffer);
+		}
+		else
+		{
+			vertex_array.has_indices = false;
+		}
+
+		for (uint32 i = 0; i < size; i++)
+		{
+			VertexAttribute attr = attribs[i];
+			bind(attr.vertex_buffer);
+			glEnableVertexAttribArray(attr.location);
+			glVertexAttribPointer(attr.location, attr.size, attr.type, attr.normalized ? GL_TRUE : GL_FALSE, attr.stride, attr.offset);
+		}
+
+		glBindVertexArray(0);
+
+		return vertex_array;
+	}
+
 	VertexArray create_vertex_array(Array<VertexAttribute> attribs, IndexBuffer index_buffer={})
 	{
 		VertexArray vertex_array;

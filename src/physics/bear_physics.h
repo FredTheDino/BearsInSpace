@@ -90,8 +90,8 @@ struct Collision
 
 struct BodyLimit
 {
-	float32 min_limit;
-	float32 max_limit;
+	Vec3f min;
+	Vec3f max;
 
 	EntityID owner;
 };

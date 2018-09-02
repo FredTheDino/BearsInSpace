@@ -128,16 +128,27 @@ Mat4f translate(Mat4f m, Vec3f v)
 Mat4f scale(Mat4f m, Vec3f v)
 {
 	m._00 *= v.x;
+	m._10 *= v.x;
+	m._20 *= v.x;
+	m._01 *= v.y;
 	m._11 *= v.y;
+	m._21 *= v.y;
+	m._02 *= v.z;
+	m._12 *= v.z;
 	m._22 *= v.z;
-
 	return m;
 }
 
 Mat4f scale(Mat4f m, float32 scalar)
 {
 	m._00 *= scalar;
+	m._10 *= scalar;
+	m._20 *= scalar;
+	m._01 *= scalar;
 	m._11 *= scalar;
+	m._21 *= scalar;
+	m._02 *= scalar;
+	m._12 *= scalar;
 	m._22 *= scalar;
 
 	return m;

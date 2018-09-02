@@ -10,8 +10,10 @@ namespace GFX
 		
 		debug_draw_engine(ecs, &world->phy);
 
+#if 0
 		draw_surface_text("open-sans", -.7f, .8f, "Testing!", .001f);
 		draw_surface_text("open-sans", -.7f, .0f, "Testing!", .002f);
 		draw_surface_text("open-sans", -.7f, -.8f, "Testing!", .004f);
+#endif
 	}
 }

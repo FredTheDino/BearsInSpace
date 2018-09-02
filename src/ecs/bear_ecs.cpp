@@ -38,6 +38,11 @@ BaseComponent *get_component(ECS *ecs, EntityID id, ComponentType type)
 	return (BaseComponent *) get_component(ecs, entity, type);
 }
 
+ECSEntry get_all_components(ECS *ecs, ComponentType type)
+{
+	return ecs->component_types[type];
+}
+
 #define get_smallest_type(ecs, ...) get_fastest_type_list(ecs, sizeof((ComponentType []) {__VA_ARGS__}), {__VA_ARGS__})
 int32 get_smallest_type_list(ECS *ecs, int32 num, ComponentType types[])
 {
@@ -121,12 +126,10 @@ bool add_component(ECS *ecs, EntityID id, ComponentType type, BaseComponent *com
 	component->owner = id;
 
 	ECSEntry entry = ecs->component_types[type];
-	if (entry.max_length == entry.length || entry.max_length == 0)
+	while (entry.max_length <= entry.length || entry.max_length == 0)
 	{
 		entry.max_length += 50;
-		void *tmp = static_realloc(entry.c, entry.component_size * entry.max_length);
-		if (!tmp) return false;
-		entry.c = tmp;
+		entry.c = static_realloc(entry.c, entry.component_size * entry.max_length);
 	}
 
 	int32 component_id = entry.length++;
@@ -253,11 +256,8 @@ EntityID add_entity(ECS *ecs)
 
 	if (ecs->allocated_entities <= id._index)
 	{
-		int32 new_allocation_size = ecs->allocated_entities	* 2;
-		Entity *ptr = (Entity *) static_realloc(ecs->entities, new_allocation_size);
-		if (!ptr) return {-1, -1};
-		ecs->entities = ptr;
-		ecs->allocated_entities = new_allocation_size;
+		ecs->allocated_entities = sizeof(Entity) * ecs->allocated_entities * 2;
+		ecs->entities = (Entity *) static_realloc(ecs->entities, sizeof(Entity) * ecs->allocated_entities);
 	}
 
 	ecs->max_entity = maximum(ecs->max_entity, (int32) id._index);
@@ -312,11 +312,6 @@ void clear_ecs(ECS *ecs, Physics *phy)
 	}
 }
 
-void s_hello_world(World *world, float32 delta)
-{
-	plt.print("Delta is %.2f\n", delta);
-}
-
 void update_physics(ECS *, Physics *, float32);
 
 void run_system(SystemType type_id, World *world, float32 delta)
@@ -326,7 +321,6 @@ void run_system(SystemType type_id, World *world, float32 delta)
 	{
 #define SYSTEM_ENTRY(id, func_call) case id: (func_call); break;
 
-		SYSTEM_ENTRY(S_HELLO_WORLD, s_hello_world(world, delta));
 		SYSTEM_ENTRY(S_PHYSICS, update_physics(&world->ecs, &world->phy, delta));
 
 	default:
@@ -358,6 +352,7 @@ void init_ecs(ECS *ecs)
 
 	COMP_ENTRY(C_TRANSFORM, CTransform);
 	COMP_ENTRY(C_BODY, CBody);
+	COMP_ENTRY(C_ASTEROID, CAsteroid);
 
 	// Entries end here.
 

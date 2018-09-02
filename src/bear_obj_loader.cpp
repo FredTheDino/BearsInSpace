@@ -36,19 +36,6 @@ void eat_spaces(char **ptr)
 	*ptr = p;
 }
 
-float32 pow(float32 n, int32 exp)
-{
-	// TODO: This can be made faster
-	float32 result = n;
-	if (exp == 0) return 1.0f;
-	while (exp != 0)
-	{
-		result *= n;
-		exp--;
-	}
-	return result;
-}
-
 float32 eat_float(char **ptr)
 {
 	char *p = *ptr;
@@ -60,26 +47,29 @@ float32 eat_float(char **ptr)
 	{
 		char *dot_pos = ++p;
 		int32 decimals = eat_int(&p);
-		f += (float32) decimals / (float32) pow( (float32) 10.0f, (int32) (p - dot_pos) - 1);
+		f += (float32) decimals / (float32) pow( (float32) 10.0f, (int32) (p - dot_pos));
 	}
 	*ptr = p;
 	return negative ? -f : f;
 }
 
-Mesh load_mesh(OSFile file)
+Mesh load_mesh(char *path, void *(*alloc)(size_t))
 {
+	FILE *file = fopen(path, "r");
+	fseek(file, 0, SEEK_END);
+	uint64 size = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	char *ptr = (char *) alloc(size + 1);
+	char *start = ptr;
+	fread(ptr, size, 1, file);
+	fclose(file);
+
 	Mesh mesh = {};
-	if (file.timestamp == -1)
-	{
-		return mesh;
-	}
-	
 	// Read in the positions to get an idea for the size.
-	mesh.positions	= static_array<Vec3f>(100);
+	mesh.positions	= create_array<Vec3f>(100);
 	
-	char *ptr = (char *) file.data;
-	char *end = &ptr[file.size - 1];
-	for (;ptr != end; ptr++)
+	char *end = (char *) &ptr[size - 1];
+	for (;(void *) ptr != (void *) end; ptr++)
 	{
 		if (*ptr == '\0') break;
 		if (*ptr == 'v' && *(ptr + 1) == ' ')
@@ -100,12 +90,13 @@ Mesh load_mesh(OSFile file)
 	}
 	// Now we kinda know the size of the other arrays.
 	// Just randomly choosen 2
-	mesh.normals	= static_array<Vec3f>(mesh.positions.size * 2);
-	mesh.uvs		= static_array<Vec2f>(mesh.positions.size * 2);
-	mesh.indices	= static_array<uint32>(mesh.positions.size * 2);
+	uint64 num_elements = mesh.positions.size * 2;
+	mesh.normals	= create_array<Vec3f> (num_elements);
+	mesh.uvs		= create_array<Vec2f> (num_elements);
+	mesh.indices	= create_array<uint32>(num_elements);
 	
 	// Reset the ptr.
-	ptr = (char *) file.data;
+	ptr = start;
 	for (;ptr != end; ptr++)
 	{
 		if (*ptr == '\0') break;
@@ -141,27 +132,23 @@ Mesh load_mesh(OSFile file)
 			ptr++;
 			// f, we're reading faces.
 			uint32 sum_data = 0;
-			while (*ptr != '\n' && *ptr != '\0')
+			do
 			{
 				if (*ptr >= '0' && *ptr <= '9')
 				{
 					append(&mesh.indices, (uint32) eat_int(&ptr));
 					sum_data++;
 				}
-				ptr++;
-			}
+				else
+				{
+					ptr++;
+				}
+			} while (*ptr != '\n' && *ptr != '\0');
 			ASSERT(sum_data % 3 == 0);
 			mesh.stride = sum_data / 3;
 		}
 		while (*ptr != '\n' && *ptr != '\0') ptr++;
 	}
-	return mesh;
-}
-
-Mesh load_mesh(const char *file_name)
-{
-	OSFile file = plt.read_file(file_name, temp_push);
-	Mesh mesh = load_mesh(file);
 	return mesh;
 }
 

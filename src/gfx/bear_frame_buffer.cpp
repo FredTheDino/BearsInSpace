@@ -18,7 +18,7 @@ namespace GFX
 		
 		bool has_depth_texture = false;
 
-		uint32 draw_buffers[size(attachments)];
+		Array<uint32> draw_buffers = temp_array<uint32>(size(attachments));
 		
 		for (uint32 i = 0; i < size(attachments); i++)
 		{
@@ -26,13 +26,13 @@ namespace GFX
 			if (attachments[i] == GL_DEPTH_ATTACHMENT)
 			{
 				has_depth_texture = true;
-				t = create_texture(width, height, GL_DEPTH_COMPONENT32, GL_DEPTH_COMPONENT);
-				draw_buffers[i] = GL_NONE;
+				t = create_texture(width, height, true);
+				set(draw_buffers, i, (uint32) GL_NONE);
 			}
 			else
 			{
 				t = create_texture(width, height);
-				draw_buffers[i] = attachments[i];
+				set(draw_buffers, i, (uint32) attachments[i]);
 			}
 
 			append(&buffer.textures, t);
@@ -40,7 +40,7 @@ namespace GFX
 			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachments[i], GL_TEXTURE_2D, t.id, 0);
 		}
 
-		glDrawBuffers(size(attachments), draw_buffers);
+		glDrawBuffers(size(attachments), draw_buffers.data);
 
 		// We still need depth rendering for depth test
 		if (!has_depth_texture)

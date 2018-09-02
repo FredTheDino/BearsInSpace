@@ -23,6 +23,7 @@ void append(Array<T> *arr, T val)
 	arr->data[arr->size++] = val;
 }
 
+#if 0
 template <typename T>
 Array<T> temp_array(std::initializer_list<T> list)
 {
@@ -40,6 +41,7 @@ Array<T> static_array(std::initializer_list<T> list)
 		append(&arr, e);
 	return arr;
 }
+#endif
 
 template <typename T>
 void insert(Array<T> *arr, uint64 index, T val)
@@ -156,6 +158,28 @@ template <typename T>
 void clear(Array<T> *arr)
 {
 	arr->size = 0;
+}
+
+template <typename T>
+int32 find(Array<T> arr, T obj)
+{
+	for (uint64 i = 0; i < size(arr); i++)
+	{
+		if (obj == get(arr, i))
+			return i;
+	}
+	return -1;
+}
+
+template <typename T>
+int32 find(Array<T> *arr, T obj)
+{
+	for (uint64 i = 0; i < size(arr); i++)
+	{
+		if (obj == get(arr, i))
+			return i;
+	}
+	return -1;
 }
 
 template <typename T>

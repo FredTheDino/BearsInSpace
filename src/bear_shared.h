@@ -71,15 +71,31 @@ struct OSFile
 	void *data;
 };
 
+//
+// TODO: Now that we have threading, we need to 
+// make sure we don't accidentaly run 2 functions 
+// from both threads.
+//
+
+struct Work
+{
+	void (*func)(void *);
+	void *args;
+};
+
 typedef void *(*AllocatorFunc)(uint64);
 struct PLT
 {
 	void  (*log)	(string, int32, string, string);
 	int32 (*print)	(string, ...); 
 
+	int32 (*submit_work)(Work); // 0 if it fails
+
 	float64 (*get_time) (void);
 
 	OSFile (*read_file)	(string, AllocatorFunc);
+	// A start and a size
+	void (*random_file_read) (string, void *, uint32, uint32);
 	int32 (*last_write) (string);
 
 	AxisValue (*axis_value) (string);
@@ -114,8 +130,8 @@ bool str_eq(const char *_a, const char *_b)
 
 uint64 str_len(const char *str)
 {
-	char *end = (char *) str;
-	while (*end != '\0') end++;
-	return (str - end); 
+	uint64 i = 0;
+	while (str[i++] != '\0');
+	return i - 1;
 }
 

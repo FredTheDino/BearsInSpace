@@ -1,5 +1,31 @@
 #pragma once
 
+namespace GFX
+{
+	#define GFX_MAXIMUM_TEXT_LENGTH 64
+	
+	ShaderProgram font_program_flat;
+	VertexBuffer font_vertex_buffer;
+	VertexArray font_vertex_array;
+	IndexBuffer font_index_buffer;
+	
+	void init_font_rendering();
+
+	void destroy_font_rendering();
+
+	void draw_surface_text(AssetID asset_id, 
+		float32 x, float32 y, string text, 
+		float32 scale, Vec3f color={ 1.0f, 1.0f, 1.0f });
+}
+
+// 
+// NOTE:
+// _OLD_ SDF Font RENDERING, there are major bugs in the distance calculations since 
+// the circle generated doesn't hit all pixels. But it is a good blueprint
+// for how to use FreeType.
+// 
+
+#if 0
 #include <cfloat>
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -9,7 +35,7 @@
 #define FONT_PIXEL_SIZES 96
 #define FONT_BORDER_SIZE 8
 
-struct FTChar
+struct Glyph
 {
 	uint32  width;
 	uint32  height;
@@ -20,42 +46,12 @@ struct FTChar
 	Vec2f   uv_max;
 };
 
-struct FontEntry
+bool is_white_space(char c)
 {
-	FontEntry *next;
-	string name;
-	GFX::Texture texture;
-	Array<FTChar> glyphs;
-} font_map[256];
-
-uint8 font_map_hash(string name)
-{
-	return str_len(name) > 1 ?
-		(((((uint8) *name) - 'a') & 0x0F) << 4) | ((((uint8) name[1]) - 'a') & 0x0F)
-		: (uint8) *name;
+	return c <= 32;
 }
 
-FontEntry get_font(string name)
-{
-	FontEntry *entry = &font_map[font_map_hash(name)];
-
-	// No match with name
-	if (size(entry->glyphs) == 0)
-		ASSERT(false);
-
-	while (entry != nullptr && !str_eq(entry->name, name))
-	{
-		entry = entry->next;
-	}
-
-	// No match with name
-	if (entry == nullptr)
-		ASSERT(false);
-
-	return *entry;
-}
-
-void add_font(string name, GFX::Texture texture, Array<FTChar> glyphs)
+void add_font(string name, GFX::Texture texture, Array<Glyph> glyphs)
 {
 	FontEntry *entry = &font_map[font_map_hash(name)];
 	
@@ -92,60 +88,61 @@ void bitmap_to_sdf(uint8 *dst, uint8 *src, int32 width, int32 height, int32 bord
 {
 	int32 search_radius = width;
 	
-	for (int32 i = 0; i < height + border * 2; i++)
+	for (int32 center_y = 0; 
+		center_y < height + border * 2; 
+		center_y++)
 	{
-		for (int32 j = 0; j < width + border * 2; j++)
+		for (int32 center_x = 0; center_x < width + border * 2; center_x++)
 		{
-			bool in = is_inside_font(src, j, i, width, height, border);
-			
+			bool in = is_inside_font(src, center_x, center_y, width, height, border);
 
-			Vec2f dist = { };
+			Vec2f offset = {};
 
-			for (int32 k = 1; k <= search_radius; k++)
+			for (int32 r = 1; r <= search_radius; r++)
 			{
-				for (int32 l = -k * k; l <= k * k; l++)
+				for (int32 angle = -r * r; angle < r * r; angle++)
 				{
-					int32 x = j + k * cos((l * M_PI) / (k * k));
-					int32 y = i + k * sin((l * M_PI) / (k * k));
+					// NOTE(Ed): This can probably be made faster or smarter. Because we will hitt doubles.
+					int32 x = center_x + r * cos((angle * PI) / (r * r));
+					int32 y = center_y + r * sin((angle * PI) / (r * r));
 					bool s = is_inside_font(src, x, y, width, height, border);
 
-					
 					if (in ^ s)
 					{
-						dist = { (float32) x - j, (float32) y - i };
+						offset = { (float32) x - center_x, (float32) y - center_y };
 						break;
 					}
 				}
 
-				if (dist.x != 0)
+				if (offset.x != 0)
 					break;
 			}
 			
+			float32 distance = length_squared(offset);
+			uint32 current_pixel = center_y * (width + 2 * border) + center_x;
 			if (in)
 			{
 				int16 d;
-				
-				if (length_squared(dist) == 0)
+				if (distance == 0)
 					d = 0xFF;
 				else
-					d = 0x7F * (1.0f + minimum(1.0f, length_squared(dist) / FONT_PIXEL_SIZES * 2));
+					d = 0x7F * (1.0f + minimum(1.0f, sqrt(distance) / FONT_PIXEL_SIZES * 2));
 
 				ASSERT(d >= 0x7F && d <= 0xFF);
 
-				dst[i * (width + 2 * border) + j] = (uint8) d;
+				dst[current_pixel] = (uint8) d;
 			}
 			else
 			{
 				int16 d;
-
-				if (length_squared(dist) == 0)
+				if (distance == 0)
 					d = 0x00;
 				else
-					d = 0x7F * (1.0f - minimum(1.0f, length_squared(dist) / FONT_PIXEL_SIZES * 2));
+					d = 0x7F * (1.0f - minimum(1.0f, sqrt(distance) / FONT_PIXEL_SIZES * 2));
 
 				ASSERT(d >= 0x00 && d <= 0x7F);
 
-				dst[i * (width + 2 * border) + j] = (uint8) d;
+				dst[current_pixel] = (uint8) d;
 			}
 		}
 	}
@@ -199,7 +196,7 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 	// Allow all texture dimensions
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	Array<FTChar> glyphs = static_array<FTChar>(128);
+	Array<Glyph> glyphs = static_array<Glyph>(128);
 
 	struct GlyphTexture
 	{
@@ -230,7 +227,7 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 
 		// Make sure the glyph textures are sorted from largest to smallest
 		if (size(textures) == 0)
-			append(&textures, { i, data, 0, 0, w, h });
+		  append(&textures, { (uint8) i, data, 0, 0, w, h });
 		else
 		{
 			for (uint8 j = size(textures); j > 0; j--)
@@ -238,18 +235,18 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 				GlyphTexture gt = textures[j - 1];
 				if (gt.width * gt.height > w * h)
 				{
-					insert(&textures, j, { i, data, 0, 0, w, h });
+					insert(&textures, j, { (uint8) i, data, 0, 0, w, h });
 					break;
 				}
 				else if (j == 1)
 				{
-					prepend(&textures, { i, data, 0, 0, w, h });
+					prepend(&textures, { (uint8) i, data, 0, 0, w, h });
 					break;
 				}
 			}
 		}
 
-		FTChar c =
+		Glyph c =
 		{
 			face->glyph->bitmap.width + 2 * FONT_BORDER_SIZE,
 			face->glyph->bitmap.rows + 2 * FONT_BORDER_SIZE,
@@ -260,7 +257,7 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 
 		append(&glyphs, c);
 
-		LOG("BMP->SDF", "Status: %d/%d (%f\%)", i, 128, (i * 100.0f) / 128);
+		LOG("BMP->SDF", "Status: %d/%d (%f%%)", i, 128, (i * 100.0f) / 128);
 	}
 
 	// Pack textures (TODO: IMPROVE THIS A LOT)
@@ -305,7 +302,7 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 			
 			static_pop((void *) gt.data);
 			
-			FTChar *c = get_ptr(glyphs, gt.glyph);
+			Glyph *c = get_ptr(glyphs, gt.glyph);
 			c->uv_min = { ((float32) gt.x + uv_margin) / total_width, 1.0f - ((float32) gt.height + uv_margin) / total_height };
 			c->uv_max = { ((float32) (gt.x + gt.width) - uv_margin) / total_width, 1.0f };
 		}
@@ -323,7 +320,7 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 
 	static_pop((void *) scaled_data1);
 	
-	add_font(name, GFX::create_texture({ (int32) total_width / 4, (int32) total_height / 4, 0, scaled_data2 }, GL_RED, GL_RED), glyphs);
+	add_font(name, GFX::create_texture((int32) total_width / 4, (int32) total_height / 4, 1, scaled_data2, GL_RED, GL_RED), glyphs);
 
 	delete_array(&textures);
 
@@ -359,108 +356,4 @@ void destroy_fonts()
 }
 
 #undef FREETYPE_ERROR_LOG
-
-namespace GFX
-{
-
-	#define GFX_MAXIMUM_TEXT_LENGTH 64
-	
-	ShaderProgram font_program_flat;
-	VertexBuffer font_vertex_buffer;
-	VertexArray font_vertex_array;
-	IndexBuffer font_index_buffer;
-	
-	void init_font_rendering()
-	{
-		// Shader programs
-		font_program_flat = create_shader_program(temp_array<ShaderInfo>({
-					{ GL_VERTEX_SHADER, "src/shader/font_flat.vert" },
-					{ GL_FRAGMENT_SHADER, "src/shader/font_flat.frag" }
-				}));
-
-		// Vertex buffer
-		
-		// 4 * 4 <= 4 vertices per char glyph, 4 floats per vertex (x, y, u, v)
-		font_vertex_buffer = create_vertex_buffer(4 * 4 * GFX_MAXIMUM_TEXT_LENGTH, GL_DYNAMIC_DRAW);
-
-		// Index buffer
-		Array<uint32> indices = temp_array<uint32>(6 * GFX_MAXIMUM_TEXT_LENGTH);
-
-		for (uint32 i = 0; i < GFX_MAXIMUM_TEXT_LENGTH; i++)
-		{
-			append(&indices, i * 4 + 0);
-			append(&indices, i * 4 + 1);
-			append(&indices, i * 4 + 3);
-			append(&indices, i * 4 + 1);
-			append(&indices, i * 4 + 2);
-			append(&indices, i * 4 + 3);
-		}
-		
-		font_index_buffer = create_index_buffer(indices);
-
-		// Vertex array
-		
-		font_vertex_array = create_vertex_array(temp_array<VertexAttribute>({
-					{ font_vertex_buffer, 0, 2, GL_FLOAT, false, 4 * sizeof(float32), (void *) 0 },
-					{ font_vertex_buffer, 1, 2, GL_FLOAT, false, 4 * sizeof(float32), (void *) (2 * sizeof(float32)) }
-				}), font_index_buffer);
-	}
-
-	void destroy_font_rendering()
-	{
-		delete_vertex_array(font_vertex_array);
-		delete_index_buffer(font_index_buffer);
-		delete_vertex_buffer(font_vertex_buffer);
-		delete_shader_program(font_program_flat);
-	}
-	
-	void draw_surface_text(string font_name, float32 x, float32 y, string text, float32 scale, Vec3f color={ 1.0f, 1.0f, 1.0f })
-	{
-		uint32 length = strlen(text);
-
-		ASSERT(length <= GFX_MAXIMUM_TEXT_LENGTH);
-
-		FontEntry font = get_font(font_name);
-
-		Array<float32> data = temp_array<float32>(4 * 4 * length);
-		
-		for (uint32 i = 0; i < length; i++)
-		{
-			FTChar c = font.glyphs[text[i]];
-
-			float32 xpos = x + c.bearing_x * scale;
-			float32 ypos = y - (c.height - c.bearing_y) * scale;
-			float32 w = c.width * scale;
-			float32 h = c.height * scale;
-
-			append(&data, xpos / ASPECT_RATIO);
-			append(&data, ypos + h);
-			append(&data, c.uv_min.x);
-			append(&data, c.uv_max.y);
-
-			append(&data, (xpos + w) / ASPECT_RATIO);
-			append(&data, ypos + h);
-			append(&data, c.uv_max.x);
-			append(&data, c.uv_max.y);
-
-			append(&data, (xpos + w) / ASPECT_RATIO);
-			append(&data, ypos);
-			append(&data, c.uv_max.x);
-			append(&data, c.uv_min.y);
-
-			append(&data, xpos / ASPECT_RATIO);
-			append(&data, ypos);
-			append(&data, c.uv_min.x);
-			append(&data, c.uv_min.y);
-			
-			x += (c.advance >> 6) * scale;
-		}
-
-		sub_data(font_vertex_buffer, 0, data);
-		
-		bind(font_program_flat);
-		bind(font_vertex_array);
-		bind(font.texture);
-		glDrawElements(GL_TRIANGLES, length * 6, GL_UNSIGNED_INT, (void *) 0);
-	}
-}
+#endif

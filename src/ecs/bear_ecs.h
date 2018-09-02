@@ -13,11 +13,11 @@ enum SystemType
 
 enum ComponentType
 {
-	// Types
-	
 	// Physics
 	C_BODY,
 	C_TRANSFORM,
+
+	C_ASTEROID,
 
 	// Length
 	NUM_COMPONENTS,
@@ -81,6 +81,11 @@ struct ECS
 	int32 max_entity = -1;
 	int32 allocated_entities;
 	Entity *entities;
+};
+
+struct CAsteroid
+{
+	COMPONENT
 };
 
 

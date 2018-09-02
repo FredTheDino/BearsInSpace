@@ -6,12 +6,14 @@ struct GameMemory;
 GameMemory *mem;
 
 #include "bear_shared.h"
-#include "bear_memory.cpp"
-
 PLT plt;
+#include "bear_memory.cpp"
 
 #include "bear_main.h"
 World *world;
+
+// Clocks
+#include "bear_clock.cpp"
 
 // Audio
 #include "audio/bear_audio.cpp"
@@ -23,11 +25,10 @@ World *world;
 // GFX
 #include "glad.c"
 #define GL_LOADED glClear
-#include "bear_obj_loader.cpp"
 #include "bear_gfx.h"
 
 // Font
-#include "gfx/bear_font.h"
+// #include "gfx/bear_font.h"
 
 // ECS
 #include "ecs/bear_ecs.cpp"
@@ -35,8 +36,17 @@ World *world;
 // Physics
 #include "physics/bear_physics.cpp"
 
-// Clocks
-#include "bear_clock.cpp"
+// Assets
+#include "bear_loader.cpp"
+
+// Random! :P
+#include "bear_random.h"
+
+GFX::ShaderProgram program;
+#include "world/bear_world_gen.cpp"
+
+// Font rendering... It depends on wierd stuff...
+#include "gfx/bear_font.cpp"
 
 // Draw function for ECS (should preferably be the last include)
 #include "gfx/bear_draw_ecs.h"
@@ -46,23 +56,7 @@ World *world;
 #include "bear_test.cpp"
 #endif
 
-#if 1
-GFX::VertexBuffer vertex_buffer;
-GFX::VertexArray vertex_array;
-GFX::ShaderProgram program;
-GFX::Texture texture;
-Transform transform = create_transform();
 Camera camera;
-#endif
-
-#if 0
-float32 rotx = 0;
-float32 roty = 0;
-
-Mesh cone;
-float32 speed = 6.0f;
-#endif
-
 
 AudioID buffer;
 
@@ -70,26 +64,22 @@ AudioID buffer;
 extern "C"
 void init(PLT _plt, GameMemory *_mem)
 {
-	mem = _mem;
-	plt = _plt;
-	world = static_push_struct(World); // This must allways be the first allocation.
+  mem = _mem;
+  plt = _plt;
+  world = static_push_struct(World); // This must allways be the first allocation.
 
-	if (!GL_LOADED)
-	{
-		auto error = gladLoadGL();
-		ASSERT(error);
+  if (!GL_LOADED)
+    {
+      auto error = gladLoadGL();
+      ASSERT(error);
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
 		GFX::init_matrix_profiles();
-		
 	}
-	
+
 	init_ecs(&world->ecs);
 	init_phy(&world->phy);
 
-	buffer = load_sound(&world->audio, "res/stockhausen.wav");
+	//buffer = load_sound(&world->audio, "res/stockhausen.wav");
 
 	camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
 	//camera.transform.position = {-30.0f, 25.0f, 20.0f};
@@ -97,7 +87,7 @@ void init(PLT _plt, GameMemory *_mem)
 	GFX::add_matrix_profile("m_view", &camera);
 	
 	// Font
-	load_font("open-sans", "res/fonts/open-sans/OpenSans-Regular.ttf");
+	//load_font("open-sans", "res/fonts/open-sans/OpenSans-Regular.ttf");
 	
 	// Output graphics
 	world->output_buffer = GFX::create_frame_buffer(temp_array<uint32>({ GL_COLOR_ATTACHMENT0 }), WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -109,6 +99,7 @@ void init(PLT _plt, GameMemory *_mem)
 	world->output_program = GFX::create_shader_program(temp_array<GFX::ShaderInfo>({ { GL_VERTEX_SHADER, "src/shader/post.vert" }, { GL_FRAGMENT_SHADER, "src/shader/post.frag" } }));
 }
 
+RandomState rng;
 // Reload the library.
 extern "C"
 void reload(PLT _plt, GameMemory *_mem)
@@ -117,63 +108,52 @@ void reload(PLT _plt, GameMemory *_mem)
 	{
 		mem = _mem;
 		plt = _plt;
+		world = (World *) ((MemoryAllocation *) mem->static_memory + 1);
 	}
-	
 	if (!GL_LOADED)
 	{
 		gladLoadGL();
 	}
 	
 	GFX::init_debug();
-	PRINT("hej");
 	GFX::init_font_rendering();
-	PRINT("då\n");
+
+	start_loader();
+
+	load_asset(get_asset_id(BAT_FONT));
+	//load_asset(0);
+
+	rng = seed(34565432654323);
+
+	GFX::init_matrix_profiles();
+	GFX::init_debug();
+	camera = create_camera(create_perspective_projection(PI / 4, ASPECT_RATIO, .01f, 100.0f));
+	camera.transform.position = {-30.0f, 25.0f, 20.0f};
+	camera.transform.position *= 0.75f;
+	camera.transform.orientation = toQ(5.7f, -1.0f, 0);
+	GFX::add_matrix_profile("m_view", &camera);
+	
+	Array<GFX::ShaderInfo> shader_info = temp_array<GFX::ShaderInfo>({
+		{ GL_VERTEX_SHADER, "src/shader/simple.vert" },
+		{ GL_FRAGMENT_SHADER, "src/shader/simple.frag" }
+	});
+
+	program = GFX::create_shader_program(shader_info);
+
 	//play_sound(&world->audio, buffer, 1.0f, 1.0f);
 	// How the fk does the graphics work?
 
 	clear_ecs(&world->ecs, &world->phy);
 
-	CTransform transform = {};
-	transform.type = C_TRANSFORM;
-	transform.position = {0.0f, 5.0f, -4.0f};
-	transform.scale = {1.0f, 1.0f, 1.0f};
-	transform.orientation = toQ(1.5f, 1.5f, 0.0f);
-
-	CBody body = {};
-	body.type = C_BODY;
-	body.inverse_mass = 0.1f;
-	body.velocity = {0.0f, -1.0f, 1.0f};
-	body.rotation = {0.0f, 1.0f, 1.0f};
-	body.linear_damping = 0.80f;
-	body.angular_damping = 0.80f;
-	body.shape = make_box(2.0f, 2.0f, 2.0f);
-	body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 10.0f));
-
-	EntityID e = add_entity(&world->ecs);
-	add_components(&world->ecs, &world->phy, e, &body, &transform);
-
-	transform.type = C_TRANSFORM;
-	transform.position = {-1.0f, 1.0f, 1.0f};
-	transform.orientation = {1.0f, 0.0f, 0.0f, -0.05f};
-
-	body.type = C_BODY;
-	body.inverse_mass = 0.0f;
-	body.velocity = {0.0f, 0.0f, 0.0f};
-	body.rotation = {0.0f, 0.0f, 0.0f};
-	body.linear_damping = 0.0f;
-	body.angular_damping = 0.0f;
-	body.shape = make_box(10.0f, 1.0f, 10.0f);
-	body.inverse_inertia = inverse(calculate_inertia_tensor(body.shape, 0.0f));
-
-	EntityID f = add_entity(&world->ecs);
-	add_components(&world->ecs, &world->phy, f, &body, &transform);
+	// TODO: Realloc doens't work... I don't know why.
+	float32 range = 100.0f;
+	generate_astroid_field(world, 1000, V3(-1.0, -1.0f, -1.0f) * range, V3(1.0f, 1.0f, 1.0f) * range);
 }
 
 // Exit APP
 extern "C"
 void destroy()
 {
-	PRINT("Destroy!\n");
 	GFX::delete_shader_program(world->output_program);
 	GFX::delete_vertex_array(world->output_quad);
 	GFX::delete_vertex_buffer(world->output_vb);
@@ -184,9 +164,10 @@ void destroy()
 extern "C"
 void replace()
 {
-	PRINT("Replace!\n");
+	PRINT("MEM watermark: %d\n", get_static_memory_watermark());
+	stop_loader();
 	GFX::destroy_debug();
-	GFX::destroy_font_rendering();
+	//GFX::destroy_font_rendering();
 	PRINT("WHAT\n");
 }
 
@@ -195,22 +176,18 @@ extern "C"
 void step(float32 delta)
 {
 	//LOG("DEBUG", "MEEEEEEEEEEEEEEEEEEEEP!");
+	update_assets();
 	reset_debug_clock();
 
-
-	auto phy_clock = start_debug_clock("Physics Step");
-	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f));
-	stop_debug_clock(phy_clock);
-
-	phy_clock = start_debug_clock("Physics Draw");
-
 	/* -- START MOVEMENT -- */
+	// Movement doesn't work. Fix it.
 	float32 planar_speed = 15.0f * delta;
 	float32 vertical_speed = 15.0f * delta;
 	float32 rotational_speed = 1.5f * delta;
 	Vec3f movement = {};
 	movement.x = AXIS_VAL("xmove") * planar_speed;
 	movement.z = AXIS_VAL("zmove") * planar_speed;
+	PRINT("%.4f\n", movement.x);
 	movement = camera.transform.orientation * movement;
 	movement.y += (AXIS_VAL("up") - AXIS_VAL("down")) * vertical_speed;
 	camera.transform.position += movement;
@@ -220,20 +197,76 @@ void step(float32 delta)
 		toQ(-AXIS_VAL("yrot") * rotational_speed, 0.0f, 0.0f);
 	/* -- END MOVEMENT -- */
 
-	stop_debug_clock(phy_clock);
-	
-	//display_clocks();
+	auto phy_clock = start_debug_clock("Physics Step");
+	run_system(S_PHYSICS, world, minimum(delta, 1.0f / 30.0f));
 
-	GFX::draw(world->output_buffer, &world->ecs, false);
+	stop_debug_clock(phy_clock);
+
+	auto draw_clock = start_debug_clock("Render");
+	bind(world->output_buffer);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//debug_draw_engine(&world->ecs, &world->phy);
+	draw_asteroids(world);
+
+	//GFX::draw(world->output_buffer, &world->ecs, false);
+	static AssetID font = 0;
+	if (font == 0)
+	{
+		font = get_asset_id(BAT_FONT);
+	}
+	GFX::draw_surface_text(font, -0.5,  0.5, "Hello World", 1);
+	GFX::draw_surface_text(font, -0.5 + 0.01f,  0.5 - 0.01f, "Hello World", 1, V3(0.0f, 0.0f, 0.0f));
+	GFX::draw_surface_text(font, -0.5,  0.0, "Hello World", 2);
+	GFX::draw_surface_text(font, -0.5, -0.9, "Hello World",8);
 	GFX::draw_to_screen();
+
+	stop_debug_clock(draw_clock);
+
+	//display_clocks();
 }
+
+#if 0
+	GFX::Renderable renderable = {}; 
+	renderable.matrix_profiles = temp_array<GFX::MatrixProfile>(1);
+	AssetID asset_id = get_asset_id(BAT_MESH, "default", "mesh");
+	renderable.vertex_array = get_asset(asset_id).vao;
+	renderable.num_vertices = get_asset(asset_id).draw_length;
+	renderable.program = program;
+
+	Transform transform = create_transform();
+	static float32 t = 0.0f;
+	t += delta;
+	transform.orientation = toQ(t * 0.1f, t * 0.5f, 0);
+	transform.scale = V3(0.5f, 1.0f, 0.75f);
+	transform.position.y = 3.0f;
+
+	GFX::MatrixProfile transform_profile = {};
+	transform_profile.uniform_name = "m_model";
+	transform_profile.transform = &transform;
+
+	append(&renderable.matrix_profiles, transform_profile);
+
+	GFX::bind(default_image.texture);
+	GFX::draw(renderable);
+
+#endif
+#if 0
+
+	for (uint32 i = 0; i < 500; i++)
+	{
+		Vec2f p2 = random_unit_vec2f(&rng);
+		Vec3f p = {p2.x, p2.y, 0.0f};
+		GFX::debug_draw_point(p * 5.0f, {0.75f, 0.25f, 0.5f});
+	}
+
+#endif
 
 #if 0
 	// Step
 	if (should_run_tests)
 	{
 		{
-
 			{
 				Transform t;
 				t.scale = {2.0f, 3.0f, 1.0f,};
@@ -331,7 +364,6 @@ void step(float32 delta)
 			add_components(&world->ecs, &world->phy, h, body, transform);
 #endif
 		}
-
 		run_tests();
 
 #if 1

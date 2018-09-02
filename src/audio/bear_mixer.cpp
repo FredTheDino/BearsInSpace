@@ -53,7 +53,7 @@ void sound(int16 *out_buffer, int32 num_samples)
 		}
 		ASSERT(buffer.channels < 3);
 
-		int32 samples_left = (int32) (buffer.length - source.current_sample) / buffer.channels;
+		int32 samples_left = (int32) (buffer.num_samples - source.current_sample) / buffer.channels;
 		int32 length;
 		if (source.loop)
 			length = num_samples;
@@ -86,7 +86,7 @@ void sound(int16 *out_buffer, int32 num_samples)
 
 				while (length > 0)
 				{
-					int16 sample = mix_from_one_channel(sampler, buffer.length, current_sample, pitch) * 0x7FFF;
+					int16 sample = mix_from_one_channel(sampler, buffer.num_samples, current_sample, pitch) * 0x7FFF;
 					current_sample += pitch;
 					*(ptr++) += sample * left_volume;
 					*(ptr++) += sample * right_volume;
@@ -102,7 +102,7 @@ void sound(int16 *out_buffer, int32 num_samples)
 
 				while (length > 0)
 				{
-					int16 sample = mix_from_one_channel(sampler, buffer.length, current_sample, pitch);
+					int16 sample = mix_from_one_channel(sampler, buffer.num_samples, current_sample, pitch);
 					current_sample += pitch;
 					*(ptr++) += sample * left_volume;
 					*(ptr++) += sample * right_volume;
@@ -119,7 +119,7 @@ void sound(int16 *out_buffer, int32 num_samples)
 
 				while (length > 0)
 				{
-					int16 sample = mix_from_one_channel(sampler, buffer.length, current_sample, pitch) * 2;
+					int16 sample = mix_from_one_channel(sampler, buffer.num_samples, current_sample, pitch) * 2;
 					current_sample += pitch;
 					*(ptr++) += sample * left_volume;
 					*(ptr++) += sample * right_volume;
@@ -139,13 +139,13 @@ void sound(int16 *out_buffer, int32 num_samples)
 
 				while (length > 0)
 				{
-					float32 left_sample = mix_from_two_channel(sampler, buffer.length, current_sample, pitch, false);
+					float32 left_sample = mix_from_two_channel(sampler, buffer.num_samples, current_sample, pitch, false);
 					*(ptr++) += left_sample  * volume * 0x7FFF;
-					float32 right_sample = mix_from_two_channel(sampler, buffer.length, current_sample, pitch, true);
+					float32 right_sample = mix_from_two_channel(sampler, buffer.num_samples, current_sample, pitch, true);
 					*(ptr++) += right_sample * volume * 0x7FFF;
 					current_sample += pitch;
 
-					if (source.loop && buffer.length < current_sample * 2)
+					if (source.loop && buffer.num_samples < current_sample * 2)
 					{
 						current_sample = 0;
 					}
@@ -162,13 +162,13 @@ void sound(int16 *out_buffer, int32 num_samples)
 
 				while (length > 0)
 				{
-					int16 left_sample = mix_from_two_channel(sampler, buffer.length, current_sample, pitch, false);
+					int16 left_sample = mix_from_two_channel(sampler, buffer.num_samples, current_sample, pitch, false);
 					*(ptr++) += left_sample  * volume;
-					int16 right_sample = mix_from_two_channel(sampler, buffer.length, current_sample, pitch, true);
+					int16 right_sample = mix_from_two_channel(sampler, buffer.num_samples, current_sample, pitch, true);
 					*(ptr++) += right_sample * volume;
 					current_sample += pitch;
 
-					if (source.loop && buffer.length < current_sample * 2)
+					if (source.loop && buffer.num_samples < current_sample * 2)
 					{
 						current_sample = 0;
 					}
@@ -186,12 +186,12 @@ void sound(int16 *out_buffer, int32 num_samples)
 
 				while (length > 0)
 				{
-					int8 left_sample = mix_from_two_channel(sampler, buffer.length, current_sample, pitch, false);
+					int8 left_sample = mix_from_two_channel(sampler, buffer.num_samples, current_sample, pitch, false);
 					*(ptr++) += left_sample  * volume * 2;
-					int8 right_sample = mix_from_two_channel(sampler, buffer.length, current_sample, pitch, true);
+					int8 right_sample = mix_from_two_channel(sampler, buffer.num_samples, current_sample, pitch, true);
 					*(ptr++) += right_sample * volume * 2;
 
-					if (source.loop && buffer.length < current_sample * 2)
+					if (source.loop && buffer.num_samples < current_sample * 2)
 					{
 						current_sample = 0;
 					}

@@ -27,6 +27,9 @@
 // Clocks
 #include "bear_clock.h"
 
+// Loader
+// #include "bear_loader.h" I kinda want this here. But GFX is needed.
+
 // Graphics
 #include "gfx/bear_vertex_array.h"
 #include "gfx/bear_vertex_buffer.h"

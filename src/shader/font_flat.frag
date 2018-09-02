@@ -8,10 +8,16 @@ in vec2 pass_tex_coords;
 
 layout(location=0) out vec4 out_color;
 
+uniform float text_edge;
+uniform vec3 text_color;
+
 void main()
 {
-	float alpha_val = smoothstep(0.47, 0.50, texture(t_sampler, pass_tex_coords).r);
+	float dist = texture(t_sampler, pass_tex_coords).a;
+	float alpha_val = smoothstep(0.49 - text_edge, 0.50, dist);
 	
-	out_color = vec4(1.0, 1.0, 1.0, alpha_val);
-	//out_color = vec4(1.0, 1.0, 1.0, texture(t_sampler, pass_tex_coords).r);
+	if (alpha_val == 0.0)
+		discard;
+
+	out_color = vec4(text_color, alpha_val);
 }

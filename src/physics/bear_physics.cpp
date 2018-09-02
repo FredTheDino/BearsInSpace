@@ -257,19 +257,45 @@ void integrate_body(CBody *body, Vec3f gravity, float32 delta)
 	body->_transform->orientation = rotate_by_vector(body->_transform->orientation, body->rotation, delta);
 }
 
-BodyLimit find_limit(CBody *body, Vec3f sort_direction)
+struct ExtreemPoints
+{
+	float32 min, max;
+};
+
+ExtreemPoints find_extreem_points_on_axis(CBody *body, Vec3f axis)
 {
 	Transform t = *body->_transform;
+
+	Vec3f rotated_axis = t.orientation / axis;
+	Vec3f lowest_point  = t * support(-rotated_axis, body->shape);
+	Vec3f highest_point = t * support( rotated_axis, body->shape);
+	ExtreemPoints ep;
+	ep.min = dot(lowest_point,  axis);
+	ep.max = dot(highest_point, axis);
+	ASSERT(ep.min < ep.max);
+	return ep;
+}
+
+BodyLimit find_limit(CBody *body, Vec3f x_sort, Vec3f y_sort, Vec3f z_sort)
+{
 	BodyLimit limit;
 	limit.owner = body->base.owner;
 
-	float32 velocity_scale = dot(sort_direction, body->velocity);
-	Vec3f lowest_point  = t * support(t.orientation / -sort_direction, body->shape);
-	Vec3f highest_point = t * support(t.orientation / sort_direction, body->shape);
-	limit.min_limit = minimum(0.0f, velocity_scale) + dot(lowest_point, sort_direction);
-	limit.max_limit = maximum(0.0f, velocity_scale) + dot(highest_point, sort_direction);
+	// float32 velocity_scale = dot(sort_direction, body->velocity);
+	// limit.min_limit = minimum(0.0f, velocity_scale) + dot(lowest_point, sort_direction);
+	// limit.max_limit = maximum(0.0f, velocity_scale) + dot(highest_point, sort_direction);
+	ExtreemPoints x_limit = find_extreem_points_on_axis(body, x_sort);
+	ExtreemPoints y_limit = find_extreem_points_on_axis(body, y_sort);
+	ExtreemPoints z_limit = find_extreem_points_on_axis(body, z_sort);
 
-	ASSERT(limit.min_limit < limit.max_limit);
+	limit.min.x = x_limit.min;
+	limit.min.y = y_limit.min;
+	limit.min.z = z_limit.min;
+
+	limit.max.x = x_limit.max;
+	limit.max.y = y_limit.max;
+	limit.max.z = z_limit.max;
+
 	return limit;
 }
 
@@ -281,16 +307,17 @@ void sort_limits(Array<BodyLimit> *_limits)
 	Array<BodyLimit> limits = *_limits;
 	for (int32 i = 1; i < (int32) size(limits); i++)
 	{
-		BodyLimit i_limit = get(limits, i);
-		for (int32 j = i - 1; 0 <= j; j--)
+		for (int32 j = i; 0 < j; j--)
 		{
-			if (i_limit.min_limit < get(limits, j).min_limit)
+			BodyLimit a = get(limits, j);
+			BodyLimit b = get(limits, j - 1);
+			if (a.min.x < b.min.x)
 			{
-				for (uint32 copy_index = i; copy_index > (uint32) j; copy_index--)
-				{
-					set(limits, copy_index, limits[copy_index - 1]);
-				}
-				set(limits, j, i_limit);
+				set(limits, j - 1, a);
+				set(limits, j, b);
+			}
+			else
+			{
 				break;
 			}
 		}
@@ -300,6 +327,7 @@ void sort_limits(Array<BodyLimit> *_limits)
 // TODO: Do a "NOT IMPLEMENTED MACRO" that prevents you from compiling.
 void find_collisions(ECS *ecs, Physics *engine)
 {
+	uint32 num_collision_tests = 0;
 	for (int32 outer_limit_index = 0; 
 		outer_limit_index < (int32) size(engine->body_limits);
 		outer_limit_index++)
@@ -311,13 +339,21 @@ void find_collisions(ECS *ecs, Physics *engine)
 				inner_limit_index++)
 		{
 			BodyLimit inner_limit = engine->body_limits[inner_limit_index];
-			if (outer_limit.max_limit < inner_limit.min_limit)
-				break; // They can't possibly collide.
+			// They can't possibly collide.
+			if (outer_limit.max.x < inner_limit.min.x)
+				break;
+			// More complete broadphase.
+			if ((outer_limit.max.y < inner_limit.min.y) || 
+				(outer_limit.min.y > inner_limit.max.y) ||
+				(outer_limit.max.z < inner_limit.min.z) || 
+			    (outer_limit.min.z > inner_limit.max.z))
+				continue;
 			CBody *b = (CBody *) get_component(ecs, inner_limit.owner, C_BODY);
 
 			if (a->inverse_mass == 0.0f && b->inverse_mass == 0.0f)
 				continue;
 
+			num_collision_tests++;
 			Collision collision = collision_test({0.0f, 0.0f, 1.0f}, a, b, false);
 			if (isnan(collision.contact_point.x))
 				continue;
@@ -606,9 +642,9 @@ void solve_collisions_randomly(Physics *engine)
 void debug_draw_engine(ECS *ecs, Physics *engine)
 {
 
-	GFX::debug_draw_line({}, {5.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f});
-	GFX::debug_draw_line({}, {0.0f, 5.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
-	GFX::debug_draw_line({}, {0.0f, 0.0f, 5.0f}, {0.0f, 0.0f, 1.0f});
+	GFX::debug_draw_line({}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f});
+	GFX::debug_draw_line({}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+	GFX::debug_draw_line({}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f});
 
 	uint32 grid_dim = 8;
 	for (uint32 grid = 1; grid < grid_dim * 2.0f; grid++)
@@ -639,8 +675,11 @@ void debug_draw_engine(ECS *ecs, Physics *engine)
 				body->_transform->position + body->velocity, 
 				{0.0f, 1.0f, 1.0f});
 
+		Transform t = create_transform();
+		t.position = (limit.min + limit.max) / 2.0f;
+		Vec3f dim = limit.max - limit.min;
+		debug_draw_box(t, dim, V3(1.0f, 0.0f, 0.0f));
 #if 0 // Draws the broadphase.
-		Vec3f sort_direction = {0.0f, 0.0f, 1.0f}; // COpY
 		Vec3f offset = {(float32) i, 1.0f, 1.0f};
 		GFX::debug_draw_line(
 				sort_direction * limit.min_limit + offset, 
@@ -694,10 +733,13 @@ void update_physics(ECS *ecs, Physics *engine, float32 world_delta)
 
 	while (time_accumulator > delta)
 	{
+		auto integrate_clock = start_debug_clock("Integrate");
 		time_accumulator -= delta;
 
-		Vec3f gravity = {0.0f, -50.0f * delta, 0.0f};
-		Vec3f sort_direction = {0.0f, 0.0f, 1.0f};
+		Vec3f gravity = {0.0f, -0.0f * delta, 0.0f};
+		Vec3f x_sort_direction = {1.0f, 0.0f, 0.0f};
+		Vec3f y_sort_direction = {0.0f, 1.0f, 0.0f};
+		Vec3f z_sort_direction = {0.0f, 0.0f, 1.0f};
 		for (uint32 i = 0; i < size(engine->body_limits); i++)
 		{
 			BodyLimit limit = get(engine->body_limits, i);
@@ -705,29 +747,24 @@ void update_physics(ECS *ecs, Physics *engine, float32 world_delta)
 
 			integrate_body(body, gravity, delta);
 
-			limit = find_limit(body, sort_direction);
+			limit = find_limit(body, x_sort_direction, y_sort_direction, z_sort_direction);
 			set(engine->body_limits, i, limit);
 		}
+		stop_debug_clock(integrate_clock);
 
-		// TODO: Drag the shapes by the velocity. It will help tunneling a bit.
-
+		auto limit_clock = start_debug_clock("Limit Sort");
 		sort_limits(&engine->body_limits);
+		stop_debug_clock(limit_clock);
 
-		// NOTE: We're running the collision detection multiple times. This is 
-		// very slow and a bad idea... But it does produce some nice results.
-		// If we need to fix this. We can. It's just more complex to implement. 
-		// That would involce changeing the collision detection to return multiple
-		// collision points and updateing the collisions after by approximation after
-		// we calculate one.
-		for (uint32 i = 0; i < 1; i++)
-		{
-			clear(&engine->collisions);
-			find_collisions(ecs, engine);
-			if (size(engine->collisions) == 0)
-				break;
-			// Solving them randomly, is a bad idea. If we sort them and then solve them and updat them,
-			// we can make this bad boy run faster.
-			solve_collisions_randomly(engine);
-		}
+		clear(&engine->collisions);
+		auto col_clock = start_debug_clock("Collision");
+		find_collisions(ecs, engine);
+		stop_debug_clock(col_clock);
+
+		if (size(engine->collisions) == 0)
+			break;
+		auto solve_clock = start_debug_clock("Solve");
+		solve_collisions_randomly(engine);
+		stop_debug_clock(solve_clock);
 	}
 }
