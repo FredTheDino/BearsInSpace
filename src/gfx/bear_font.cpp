@@ -77,7 +77,6 @@ namespace GFX
 		for (uint32 i = 0; i < length; i++)
 		{
 			char current_c = text[i];
-
 			//
 			// TODO: Kerning
 			//
@@ -93,8 +92,11 @@ namespace GFX
 			}
 
 			last_c = current_c;
+			uint64 mapped = char_mapping_function(current_c);
+			ASSERT(mapped < num_glyphs);
+			ASSERT(0 <= mapped);
 
-			Glyph c = glyphs[char_mapping_function(current_c)];
+			Glyph c = glyphs[mapped];
 			float32 xpos = x + c.x * scale;
 			float32 ypos = y - 0.0f * scale;
 			float32 w = c.w * scale;
@@ -132,7 +134,6 @@ namespace GFX
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		float32 edge = (0.4f / (scale * scale));
-		PRINT("E(%.4f) = %.4f\n", scale, edge);
 		send1f(font_program_flat, "text_edge", edge);
 		send3f(font_program_flat, "text_color", color);
 		bind(font_program_flat);

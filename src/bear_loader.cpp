@@ -255,7 +255,7 @@ void update_assets() // Create the assets here since this is called on the main 
 					{
 						uint64 image_size = sizeof(int8) * header->font.width * header->font.height * header->font.color_depth;
 						uint64 glyph_size = sizeof(Glyph) * header->font.num_glyphs;
-						uint64 kerning_size = sizeof(Kerning) * header->font.num_kernings;
+						//uint64 kerning_size = sizeof(Kerning) * header->font.num_kernings; // We don't need to calculate this, it's here for completion.
 						header->font.image = (int8 *) data;
 						header->font.glyphs = (Glyph *) (data + image_size);
 						header->font.kernings = (Kerning *) (data + image_size + glyph_size);
@@ -298,7 +298,6 @@ void start_loader()
 	load_asset(mesh_id);
 	load_asset(img_id);
 
-	AssetState state;
 	while (is_loading());
 
 	update_assets();
