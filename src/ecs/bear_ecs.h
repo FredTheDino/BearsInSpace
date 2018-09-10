@@ -7,6 +7,10 @@ enum SystemType
 
 	S_PHYSICS,
 
+	S_DEBUG_CAMERA_CONTROL,
+
+	S_DRAW_GAME_WORLD,
+
 	// Length
 	NUM_SYSTEMS,
 };
@@ -87,5 +91,3 @@ struct CAsteroid
 {
 	COMPONENT
 };
-
-

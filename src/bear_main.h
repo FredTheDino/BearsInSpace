@@ -58,13 +58,16 @@ struct World
 	CLK clk;
 
 	// Holds global matrix profiles
-	Array<GFX::MatrixProfile> matrix_profiles;
+	Camera camera;
+
+	// Random number generator
+	RandomState rng;
 	
 	// Graphics output
-	GFX::FrameBuffer output_buffer;
-	GFX::VertexBuffer output_vb;
-	GFX::VertexArray output_quad;
-	GFX::ShaderProgram output_program;
+	FrameBuffer output_buffer;
+	VertexBuffer output_vb;
+	VertexArray output_quad;
+	ShaderProgram output_program;
 };
 
 #define AXIS_VAL(name) (plt.axis_value(name))

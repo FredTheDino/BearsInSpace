@@ -1,10 +1,7 @@
 #pragma once
 
-namespace GFX
+struct Texture
 {
-	struct Texture
-	{
-		uint32 id;
-		uint32 width, height;
-	};
-}
+	uint32 id;
+	uint32 width, height;
+};
