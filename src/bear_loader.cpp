@@ -213,28 +213,28 @@ void update_assets() // Create the assets here since this is called on the main 
 					{
 						header->mesh.verticies = (Vertex *) header->data;
 						header->mesh.indices = (uint32 *) (data + (sizeof(Vertex) * header->mesh.num_verticies));
-						GFX::VertexBuffer buffer = GFX::create_vertex_buffer(
+						VertexBuffer buffer = create_vertex_buffer(
 							(float32 *) header->mesh.verticies,
 							header->mesh.num_verticies * 8);
 
-						GFX::IndexBuffer index = GFX::create_index_buffer(
+						IndexBuffer index = create_index_buffer(
 							(uint32 *) header->mesh.indices, 
 							header->mesh.num_indicies);
 						static_pop(data);
 
-						GFX::VertexAttribute attributes[3];
+						VertexAttribute attributes[3];
 						const uint32 v_size = sizeof(Vertex);
 						const uint32 f_size = sizeof(float32);
 						attributes[0] = {buffer, 0, 3, GL_FLOAT, false, v_size, (void *) (0 * f_size)};
 						attributes[1] = {buffer, 1, 2, GL_FLOAT, false, v_size, (void *) (3 * f_size)};
 						attributes[2] = {buffer, 2, 3, GL_FLOAT, false, v_size, (void *) (5 * f_size)};
-						asset.vao = GFX::create_vertex_array(attributes, 3, index);
+						asset.vao = create_vertex_array(attributes, 3, index);
 						asset.draw_length = header->mesh.num_indicies;
 						break;
 					}
 				case (BAT_IMAGE):
 					{
-						asset.texture = GFX::create_texture(
+						asset.texture = create_texture(
 								header->image.width, header->image.height, 
 								header->image.color_depth, data);
 						static_pop(data);
@@ -260,7 +260,7 @@ void update_assets() // Create the assets here since this is called on the main 
 						header->font.glyphs = (Glyph *) (data + image_size);
 						header->font.kernings = (Kerning *) (data + image_size + glyph_size);
 						
-						asset.texture = GFX::create_texture(
+						asset.texture = create_texture(
 								header->font.width, header->font.height, 
 								header->font.color_depth, data);
 					}

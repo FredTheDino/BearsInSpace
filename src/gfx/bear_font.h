@@ -1,22 +1,19 @@
 #pragma once
 
-namespace GFX
-{
-	#define GFX_MAXIMUM_TEXT_LENGTH 64
-	
-	ShaderProgram font_program_flat;
-	VertexBuffer font_vertex_buffer;
-	VertexArray font_vertex_array;
-	IndexBuffer font_index_buffer;
-	
-	void init_font_rendering();
+#define GFX_MAXIMUM_TEXT_LENGTH 64
 
-	void destroy_font_rendering();
+ShaderProgram font_program_flat;
+VertexBuffer font_vertex_buffer;
+VertexArray font_vertex_array;
+IndexBuffer font_index_buffer;
 
-	void draw_surface_text(AssetID asset_id, 
+void init_font_rendering();
+
+void destroy_font_rendering();
+
+void draw_surface_text(AssetID asset_id, 
 		float32 x, float32 y, string text, 
 		float32 scale, Vec3f color={ 1.0f, 1.0f, 1.0f });
-}
 
 // 
 // NOTE:
@@ -54,7 +51,7 @@ bool is_white_space(char c)
 void add_font(string name, GFX::Texture texture, Array<Glyph> glyphs)
 {
 	FontEntry *entry = &font_map[font_map_hash(name)];
-	
+
 	if (size(entry->glyphs) == 0)
 	{
 		entry->texture = texture;
@@ -87,10 +84,10 @@ bool is_inside_font(uint8 *src, int32 x, int32 y, int32 width, int32 height, int
 void bitmap_to_sdf(uint8 *dst, uint8 *src, int32 width, int32 height, int32 border)
 {
 	int32 search_radius = width;
-	
+
 	for (int32 center_y = 0; 
-		center_y < height + border * 2; 
-		center_y++)
+			center_y < height + border * 2; 
+			center_y++)
 	{
 		for (int32 center_x = 0; center_x < width + border * 2; center_x++)
 		{
@@ -117,7 +114,7 @@ void bitmap_to_sdf(uint8 *dst, uint8 *src, int32 width, int32 height, int32 bord
 				if (offset.x != 0)
 					break;
 			}
-			
+
 			float32 distance = length_squared(offset);
 			uint32 current_pixel = center_y * (width + 2 * border) + center_x;
 			if (in)
@@ -159,17 +156,17 @@ void scale_down(uint8 *dst, uint8 *src, int32 width, int32 height)
 
 			uint32 total = 0;
 			total += src[(src_y + 0) * (width) + (src_x + 0)];
-			
+
 			total += src[(src_y + 1) * (width) + (src_x + 0)] / 2;
 			total += src[(src_y - 1) * (width) + (src_x + 0)] / 2;
 			total += src[(src_y + 0) * (width) + (src_x + 1)] / 2;
 			total += src[(src_y + 0) * (width) + (src_x - 1)] / 2;
-			
+
 			total += src[(src_y + 1) * (width) + (src_x + 1)] / 4;
 			total += src[(src_y + 1) * (width) + (src_x - 1)] / 4;
 			total += src[(src_y - 1) * (width) + (src_x + 1)] / 4;
 			total += src[(src_y - 1) * (width) + (src_x - 1)] / 4;
-			
+
 			dst[i * (width / 2) + j] = total / 4;
 		}
 	}
@@ -205,9 +202,9 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 		uint32 x, y;
 		uint32 width, height;
 	};
-	
+
 	Array<GlyphTexture> textures = static_array<GlyphTexture>(128);
-	
+
 	// Retrieve FreeType data
 	for (uint16 i = 0; i < 128; i++)
 	{
@@ -227,7 +224,7 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 
 		// Make sure the glyph textures are sorted from largest to smallest
 		if (size(textures) == 0)
-		  append(&textures, { (uint8) i, data, 0, 0, w, h });
+			append(&textures, { (uint8) i, data, 0, 0, w, h });
 		else
 		{
 			for (uint8 j = size(textures); j > 0; j--)
@@ -262,7 +259,7 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 
 	// Pack textures (TODO: IMPROVE THIS A LOT)
 	uint32 total_width = 0, total_height = 0;
-	
+
 	uint32 current_x = 0;
 	for (uint8 i = 0; i < 128; i++)
 	{
@@ -272,9 +269,9 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 
 		gt->x = current_x;
 		gt->y = 0;
-		
+
 		current_x += gt->width;
-		
+
 		if (gt->height > total_height)
 			total_height = gt->height;
 	}
@@ -285,11 +282,11 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 
 	// Combine textures
 	uint8 *data = (uint8 *) static_push(total_width * total_height);
-	
+
 	for (uint8 i = 0; i < 128; i++)
 	{
 		GlyphTexture gt = textures[i];
-		
+
 		if (gt.width > 0 && gt.height > 0)
 		{
 			for (uint32 j = 0; j < gt.height; j++)
@@ -299,9 +296,9 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 					data[(total_width * total_height - (j + gt.y + 1) * total_width) + (k + gt.x)] = gt.data[j * gt.width + k];
 				}
 			}
-			
+
 			static_pop((void *) gt.data);
-			
+
 			Glyph *c = get_ptr(glyphs, gt.glyph);
 			c->uv_min = { ((float32) gt.x + uv_margin) / total_width, 1.0f - ((float32) gt.height + uv_margin) / total_height };
 			c->uv_max = { ((float32) (gt.x + gt.width) - uv_margin) / total_width, 1.0f };
@@ -311,21 +308,21 @@ void load_font(string name, string path, float32 uv_margin=.5f)
 	uint8 *scaled_data1 = (uint8 *) static_push((total_width / 2) * (total_height / 2));
 
 	scale_down(scaled_data1, data, total_width, total_height);
-	
+
 	static_pop((void *) data);
 
 	uint8 *scaled_data2 = (uint8 *) static_push((total_width / 4) * (total_height / 4));
-	
+
 	scale_down(scaled_data2, scaled_data1, total_width / 2, total_height / 2);
 
 	static_pop((void *) scaled_data1);
-	
+
 	add_font(name, GFX::create_texture((int32) total_width / 4, (int32) total_height / 4, 1, scaled_data2, GL_RED, GL_RED), glyphs);
 
 	delete_array(&textures);
 
 	static_pop((void *) scaled_data2);
-	
+
 	// Only allow texture dimensions of 4^n (DEFAULT)
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
@@ -345,7 +342,7 @@ void destroy_fonts()
 		{
 			GFX::delete_texture(e->texture);
 			delete_array(&e->glyphs);
-			
+
 			FontEntry *e_old = e;
 			e = e->next;
 			delete e_old;

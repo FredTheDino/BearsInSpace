@@ -23,13 +23,13 @@ Collision collision_test(Vec3f inital_direction,
 		Vec3f d = simplex.points[3].point;
 		Vec3f center = (a + b + c + d) / 4.0f;
 
-		GFX::debug_draw_line(a, b, {0.3f, 0.9f, 0.9f});
-		GFX::debug_draw_line(a, c, {0.3f, 0.9f, 0.9f});
-		GFX::debug_draw_line(a, d, {0.3f, 0.9f, 0.9f});
-		GFX::debug_draw_line(b, c, {0.3f, 0.9f, 0.9f});
-		GFX::debug_draw_line(b, d, {0.3f, 0.9f, 0.9f});
-		GFX::debug_draw_line(c, d, {0.3f, 0.9f, 0.9f});
-		GFX::debug_draw_point(center, {0.0f, 1.0f, 0.5f});
+		debug_draw_line(a, b, {0.3f, 0.9f, 0.9f});
+		debug_draw_line(a, c, {0.3f, 0.9f, 0.9f});
+		debug_draw_line(a, d, {0.3f, 0.9f, 0.9f});
+		debug_draw_line(b, c, {0.3f, 0.9f, 0.9f});
+		debug_draw_line(b, d, {0.3f, 0.9f, 0.9f});
+		debug_draw_line(c, d, {0.3f, 0.9f, 0.9f});
+		debug_draw_point(center, {0.0f, 1.0f, 0.5f});
 	}
 
 	Array<Triangle> triangles = temp_array<Triangle>(100);
@@ -45,16 +45,16 @@ Collision collision_test(Vec3f inital_direction,
 			for (int32 i = 0; i < (int32) size(triangles); i++)
 			{
 				Triangle t = triangles[i];
-				GFX::debug_draw_line(t.a.point, t.b.point, {0.9f, 0.9f, 0.3f});
-				GFX::debug_draw_line(t.a.point, t.c.point, {0.9f, 0.9f, 0.3f});
-				GFX::debug_draw_line(t.c.point, t.b.point, {0.9f, 0.9f, 0.3f});
+				debug_draw_line(t.a.point, t.b.point, {0.9f, 0.9f, 0.3f});
+				debug_draw_line(t.a.point, t.c.point, {0.9f, 0.9f, 0.3f});
+				debug_draw_line(t.c.point, t.b.point, {0.9f, 0.9f, 0.3f});
 				Vec3f center = (t.a.point + t.b.point + t.c.point) / 3.0f;
-				GFX::debug_draw_line(center, center + t.normal, {0.5f, 0.3f, 0.75f});
+				debug_draw_line(center, center + t.normal, {0.5f, 0.3f, 0.75f});
 			}
 
-			GFX::debug_draw_line({}, penetration, {1.0f, 0.5f, 0.3f});
-			GFX::debug_draw_point(collision.contact_point, {0.5f, 1.0f, 0.3f});
-			GFX::debug_draw_point(collision.contact_point, {1.0f, 1.0f, 1.0f});
+			debug_draw_line({}, penetration, {1.0f, 0.5f, 0.3f});
+			debug_draw_point(collision.contact_point, {0.5f, 1.0f, 0.3f});
+			debug_draw_point(collision.contact_point, {1.0f, 1.0f, 1.0f});
 		}
 	}
 
@@ -138,22 +138,22 @@ Vec3f corner(Vec3f dim, Transform t, float32 x, float32 y, float32 z)
 
 void debug_draw_box(Transform t, Vec3f dim, Vec3f color)
 {
-	GFX::debug_draw_line(corner(dim, t, -1, -1, -1), corner(dim, t, -1, -1,  1), color);
-	GFX::debug_draw_line(corner(dim, t, -1, -1, -1), corner(dim, t, -1,  1, -1), color);
-	GFX::debug_draw_line(corner(dim, t, -1, -1, -1), corner(dim, t,  1, -1, -1), color);
+	debug_draw_line(corner(dim, t, -1, -1, -1), corner(dim, t, -1, -1,  1), color);
+	debug_draw_line(corner(dim, t, -1, -1, -1), corner(dim, t, -1,  1, -1), color);
+	debug_draw_line(corner(dim, t, -1, -1, -1), corner(dim, t,  1, -1, -1), color);
 
-	GFX::debug_draw_line(corner(dim, t, -1, -1,  1), corner(dim, t,  1, -1,  1), color);
-	GFX::debug_draw_line(corner(dim, t, -1, -1,  1), corner(dim, t, -1,  1,  1), color);
+	debug_draw_line(corner(dim, t, -1, -1,  1), corner(dim, t,  1, -1,  1), color);
+	debug_draw_line(corner(dim, t, -1, -1,  1), corner(dim, t, -1,  1,  1), color);
 
-	GFX::debug_draw_line(corner(dim, t, -1,  1, -1), corner(dim, t, -1,  1,  1), color);
-	GFX::debug_draw_line(corner(dim, t, -1,  1, -1), corner(dim, t,  1,  1, -1), color);
+	debug_draw_line(corner(dim, t, -1,  1, -1), corner(dim, t, -1,  1,  1), color);
+	debug_draw_line(corner(dim, t, -1,  1, -1), corner(dim, t,  1,  1, -1), color);
 
-	GFX::debug_draw_line(corner(dim, t,  1, -1, -1), corner(dim, t,  1, -1,  1), color);
-	GFX::debug_draw_line(corner(dim, t,  1, -1, -1), corner(dim, t,  1,  1, -1), color);
+	debug_draw_line(corner(dim, t,  1, -1, -1), corner(dim, t,  1, -1,  1), color);
+	debug_draw_line(corner(dim, t,  1, -1, -1), corner(dim, t,  1,  1, -1), color);
 
-	GFX::debug_draw_line(corner(dim, t,  1,  1,  1), corner(dim, t,  1,  1, -1), color);
-	GFX::debug_draw_line(corner(dim, t,  1,  1,  1), corner(dim, t,  1, -1,  1), color);
-	GFX::debug_draw_line(corner(dim, t,  1,  1,  1), corner(dim, t, -1,  1,  1), color);
+	debug_draw_line(corner(dim, t,  1,  1,  1), corner(dim, t,  1,  1, -1), color);
+	debug_draw_line(corner(dim, t,  1,  1,  1), corner(dim, t,  1, -1,  1), color);
+	debug_draw_line(corner(dim, t,  1,  1,  1), corner(dim, t, -1,  1,  1), color);
 }
 
 void debug_draw_box(CBody *body, Vec3f color)
@@ -184,9 +184,9 @@ void debug_draw_sphere(Transform t, float32 radius, Vec3f color)
 			current_loop[j] = t * (point * radius);
 
 			if (i == 0) continue;
-			GFX::debug_draw_line(last_loop[j], current_loop[j], color);
+			debug_draw_line(last_loop[j], current_loop[j], color);
 			if (j > 0)
-				GFX::debug_draw_line(current_loop[j], current_loop[j - 1], color);
+				debug_draw_line(current_loop[j], current_loop[j - 1], color);
 		}
 	}
 }
@@ -201,7 +201,7 @@ void debug_draw_mesh_as_points(Transform t, Array<Vec3f> points, Vec3f color)
 	for (uint32 i = 0; i < size(points); i++)
 	{
 		Vec3f p = get(points, i);
-		GFX::debug_draw_point(t * p, color);
+		debug_draw_point(t * p, color);
 	}
 }
 
@@ -212,9 +212,9 @@ void debug_draw_mesh_with_indicies(Transform t, Array<Vec3f> points, uint32 stri
 		Vec3f a = t * get(points, get(indicies, i + stride * 0) - 1);
 		Vec3f b = t * get(points, get(indicies, i + stride * 1) - 1);
 		Vec3f c = t * get(points, get(indicies, i + stride * 2) - 1);
-		GFX::debug_draw_line(a, b, color);
-		GFX::debug_draw_line(c, b, color);
-		GFX::debug_draw_line(c, a, color);
+		debug_draw_line(a, b, color);
+		debug_draw_line(c, b, color);
+		debug_draw_line(c, a, color);
 	}
 }
 
@@ -452,7 +452,7 @@ void relative_impulse(CBody *body, Vec3f impulse, Vec3f rel)
 	body->rotation += body->inverse_inertia * cross(rel, impulse);
 
 #ifdef DEBUG_DRAW_PHYSCIS
-	GFX::debug_draw_line(
+	debug_draw_line(
 			body->_transform->position + rel,
 			body->_transform->position + rel + impulse,
 			{1.0f, 0.55f, 0.33f});
@@ -465,7 +465,7 @@ void impulse_at_relative_position(CBody *body, Vec3f impulse, Vec3f rel)
 	body->rotation += body->inverse_inertia * cross(rel, impulse);
 
 #ifdef DEBUG_DRAW_PHYSCIS 
-	GFX::debug_draw_line(
+	debug_draw_line(
 			body->_transform->position + rel,
 			body->_transform->position + rel + impulse,
 			{1.0f, 0.55f, 0.33f});
@@ -479,7 +479,7 @@ void impulse_at(CBody *body, Vec3f impulse, Vec3f at)
 	body->rotation += body->inverse_inertia * cross(rel, impulse);
 
 #ifdef DEBUG_DRAW_PHYSCIS
-	GFX::debug_draw_line(
+	debug_draw_line(
 			body->_transform->position + at,
 			body->_transform->position + at + impulse,
 			{1.0f, 0.55f, 0.33f});
@@ -500,7 +500,7 @@ void solve_collisions_randomly(Physics *engine)
 		CBody *b = collision.b;
 
 #ifdef DEBUG_DRAW_PHYSCIS
-		GFX::debug_draw_line(
+		debug_draw_line(
 				collision.contact_point, 
 				collision.contact_point + collision.normal, 
 				{0.5f, 0.33f, 0.77f});
@@ -642,9 +642,9 @@ void solve_collisions_randomly(Physics *engine)
 void debug_draw_engine(ECS *ecs, Physics *engine)
 {
 
-	GFX::debug_draw_line({}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f});
-	GFX::debug_draw_line({}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
-	GFX::debug_draw_line({}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f});
+	debug_draw_line({}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f});
+	debug_draw_line({}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+	debug_draw_line({}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f});
 
 	uint32 grid_dim = 8;
 	for (uint32 grid = 1; grid < grid_dim * 2.0f; grid++)
@@ -658,11 +658,11 @@ void debug_draw_engine(ECS *ecs, Physics *engine)
 		float32 depth = -0.5f;
 		Vec3f z_start = {-length, depth, offset};
 		Vec3f z_end = {length, depth, offset};
-		GFX::debug_draw_line(z_start, z_end, color);
+		debug_draw_line(z_start, z_end, color);
 
 		Vec3f x_start = {offset, depth, -length};
 		Vec3f x_end = {offset, depth, length};
-		GFX::debug_draw_line(x_start, x_end, color);
+		debug_draw_line(x_start, x_end, color);
 	}
 
 	for (uint32 i = 0; i < size(engine->body_limits); i++)
@@ -670,7 +670,7 @@ void debug_draw_engine(ECS *ecs, Physics *engine)
 		BodyLimit limit = get(engine->body_limits, i);
 		CBody *body = (CBody *) get_component(ecs, limit.owner, C_BODY);
 
-		GFX::debug_draw_line(
+		debug_draw_line(
 				body->_transform->position,
 				body->_transform->position + body->velocity, 
 				{0.0f, 1.0f, 1.0f});
@@ -681,7 +681,7 @@ void debug_draw_engine(ECS *ecs, Physics *engine)
 		debug_draw_box(t, dim, V3(1.0f, 0.0f, 0.0f));
 #if 0 // Draws the broadphase.
 		Vec3f offset = {(float32) i, 1.0f, 1.0f};
-		GFX::debug_draw_line(
+		debug_draw_line(
 				sort_direction * limit.min_limit + offset, 
 				sort_direction * limit.max_limit + offset, 
 				{1.0f, 0.32f, 0.77f});
@@ -699,7 +699,7 @@ void debug_draw_engine(ECS *ecs, Physics *engine)
 				debug_draw_mesh(body, {1.0f, 1.0f, 0.0f});
 				break;
 			default:
-				GFX::debug_draw_point(body->_transform->position, {1.0f, 1.0f, 0.0f});
+				debug_draw_point(body->_transform->position, {1.0f, 1.0f, 0.0f});
 		}
 	}
 }

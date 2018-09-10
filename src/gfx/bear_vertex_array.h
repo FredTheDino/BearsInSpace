@@ -1,10 +1,7 @@
 #pragma once
 
-namespace GFX
+struct VertexArray
 {
-	struct VertexArray
-	{
-		uint32 id;
-		bool has_indices;
-	};
-}
+	uint32 id;
+	bool has_indices;
+};

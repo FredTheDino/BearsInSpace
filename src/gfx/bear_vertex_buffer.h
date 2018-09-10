@@ -1,9 +1,6 @@
 #pragma once
 
-namespace GFX
+struct VertexBuffer
 {
-	struct VertexBuffer
-	{
-		uint32 id;
-	};
-}
+	uint32 id;
+};

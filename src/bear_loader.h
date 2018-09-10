@@ -17,10 +17,10 @@ struct Asset
 	union
 	{
 		struct {
-			GFX::VertexArray vao;
+			VertexArray vao;
 			uint32 draw_length;
 		};
-		GFX::Texture texture;
+		Texture texture;
 		AudioID buffer_id;
 	};
 };

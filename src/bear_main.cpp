@@ -30,6 +30,9 @@ World *world;
 #define GL_LOADED glClear
 #include "bear_gfx.h"
 
+// TODO: REMOVE THIS SHIT
+ShaderProgram program;
+
 // ECS
 #include "ecs/bear_ecs.cpp"
 

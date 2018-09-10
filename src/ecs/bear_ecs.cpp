@@ -323,7 +323,7 @@ void run_system(SystemType type_id, World *world, float32 delta)
 
 		SYSTEM_ENTRY(S_PHYSICS, update_physics(&world->ecs, &world->phy, delta));
 		SYSTEM_ENTRY(S_DRAW_GAME_WORLD, draw_game_world(world->output_buffer, &world->ecs));
-		SYSTEM_ENTRY(S_DEBUG_CAMERA_CONTROL, debug_camera_control(&world->camera));
+		SYSTEM_ENTRY(S_DEBUG_CAMERA_CONTROL, debug_camera_control(&world->camera, delta));
 		
 	default:
 		ASSERT(!"Unknown systemtype!");

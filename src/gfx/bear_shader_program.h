@@ -1,9 +1,6 @@
 #pragma once
 
-namespace GFX
+struct ShaderProgram
 {
-	struct ShaderProgram
-	{
-		uint32 id;
-	};
-}
+	uint32 id;
+};
